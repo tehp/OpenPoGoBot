@@ -16,6 +16,7 @@ import logger
 
 
 class Stepper(object):
+
     def __init__(self, bot):
         self.bot = bot
         self.api = bot.api
@@ -70,7 +71,7 @@ class Stepper(object):
         residuum = steps - intSteps
         logger.log('[#] Walking from ' + str((i2f(self.api._position_lat), i2f(
             self.api._position_lng))) + " to " + str(str((lat, lng))) +
-                   " for approx. " + str(format_time(ceil(steps))))
+            " for approx. " + str(format_time(ceil(steps))))
         if steps != 0:
             dLat = (lat - i2f(self.api._position_lat)) / steps
             dLng = (lng - i2f(self.api._position_lng)) / steps

@@ -1,7 +1,8 @@
 import polyline
 import haversine
 import time
-from itertools import  chain
+from itertools import chain
+
 
 class PolylineWalker(object):
 
@@ -32,7 +33,7 @@ class PolylineWalker(object):
         crd_points = []
         for points in polyline_points:
             crd_points += polyline.decode(points)
-        crd_points = [x for n,x in enumerate(crd_points) if x not in crd_points[:n]]
+        crd_points = [x for n, x in enumerate(crd_points) if x not in crd_points[:n]]
         return crd_points
 
     def combine_polylines(self, points):
@@ -63,7 +64,7 @@ class PolylineWalker(object):
             remaining_points = []
             time_passed_distance = self.speed * abs(time_passed - self._timestamp - self._paused_total)
             for step in self.walk_steps():
-                step_distance = haversine.haversine(*step)*1000
+                step_distance = haversine.haversine(*step) * 1000
                 if walked_distance + step_distance >= time_passed_distance:
                     if walked_distance > time_passed_distance:
                         percentage_walked = 0.0
@@ -71,8 +72,8 @@ class PolylineWalker(object):
                         if step_distance == 0.0:
                             percentage_walked = 1.0
                         else:
-                            percentage_walked = (time_passed_distance - walked_distance)/step_distance
-                    remaining_points += self.calculate_coord(percentage_walked,*step)
+                            percentage_walked = (time_passed_distance - walked_distance) / step_distance
+                    remaining_points += self.calculate_coord(percentage_walked, *step)
                 else:
                     percentage_walked = 1.0
                 walked_distance += step_distance * percentage_walked
@@ -87,7 +88,6 @@ class PolylineWalker(object):
         return (self.lat, self.long)
 
     def calculate_coord(self, percentage, o, d):
-        lat = o[0]+ (d[0] -o[0]) * percentage
-        lon = o[1]+ (d[1] -o[1]) * percentage
+        lat = o[0] + (d[0] - o[0]) * percentage
+        lon = o[1] + (d[1] - o[1]) * percentage
         return [(lat, lon)]
-

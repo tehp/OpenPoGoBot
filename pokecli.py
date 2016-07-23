@@ -76,8 +76,7 @@ def init_config():
     parser.add_argument(
         "-w",
         "--walk",
-        help=
-        "Walk instead of teleport with given speed (meters per second, e.g. 2.5)",
+        help="Walk instead of teleport with given speed (meters per second, e.g. 2.5)",
         type=float,
         default=2.5)
     parser.add_argument("-c",
@@ -99,15 +98,13 @@ def init_config():
     parser.add_argument(
         "-ms",
         "--max_steps",
-        help=
-        "Set the steps around your initial location(DEFAULT 5 mean 25 cells around your location)",
+        help="Set the steps around your initial location(DEFAULT 5 mean 25 cells around your location)",
         type=int,
         default=50)
     parser.add_argument(
         "-it",
         "--initial_transfer",
-        help=
-        "Transfer all pokemon with same ID on bot start, except pokemon with highest CP. It works with -c",
+        help="Transfer all pokemon with same ID on bot start, except pokemon with highest CP. It works with -c",
         type=bool,
         default=False)
     parser.add_argument("-d",
@@ -123,8 +120,7 @@ def init_config():
     parser.add_argument(
         "-du",
         "--distance_unit",
-        help=
-        "Set the unit to display distance in (e.g, km for kilometers, mi for miles, ft for feet)",
+        help="Set the unit to display distance in (e.g, km for kilometers, mi for miles, ft for feet)",
         type=str,
         default="km")
 

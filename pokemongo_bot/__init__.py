@@ -20,6 +20,7 @@ from item_list import Item
 
 
 class PokemonGoBot(object):
+
     def __init__(self, config):
         self.config = config
         self.pokemon_list = json.load(open('data/pokemon.json'))
@@ -80,8 +81,7 @@ class PokemonGoBot(object):
             # Sort all by distance from current pos- eventually this should
             # build graph & A* it
             cell['catchable_pokemons'].sort(
-                key=
-                lambda x: distance(self.position[0], self.position[1], x['latitude'], x['longitude']))
+                key=lambda x: distance(self.position[0], self.position[1], x['latitude'], x['longitude']))
             for pokemon in cell['catchable_pokemons']:
                 with open('web/catchable-%s.json' %
                           (self.config.username), 'w') as outfile:
@@ -97,8 +97,7 @@ class PokemonGoBot(object):
             # Sort all by distance from current pos- eventually this should
             # build graph & A* it
             cell['wild_pokemons'].sort(
-                key=
-                lambda x: distance(self.position[0], self.position[1], x['latitude'], x['longitude']))
+                key=lambda x: distance(self.position[0], self.position[1], x['latitude'], x['longitude']))
             for pokemon in cell['wild_pokemons']:
                 worker = PokemonCatchWorker(pokemon, self)
                 if worker.work() == -1:
@@ -210,11 +209,11 @@ class PokemonGoBot(object):
 
     def initial_transfer(self):
         logger.log('[x] Initial Transfer.')
-       	ignlist = self.config.ign_init_trans.split(',')
+        ignlist = self.config.ign_init_trans.split(',')
 
         if self.config.cp:
             logger.log('[x] Will NOT transfer anything above CP {} or these {}'.format(
-                self.config.cp,ignlist))
+                self.config.cp, ignlist))
         else:
             logger.log(
                 '[x] Preparing to transfer all Pokemon duplicates, keeping the highest CP of each one type.')
@@ -228,13 +227,13 @@ class PokemonGoBot(object):
                 group_cp.sort()
                 group_cp.reverse()
 
-                pokemon_name=self.pokemon_list[int(id-1)]['Name']
+                pokemon_name = self.pokemon_list[int(id - 1)]['Name']
 
                 for x in range(1, len(group_cp)):
 
                     if (self.config.cp and group_cp[x] > self.config.cp) or\
-                    self.pokemon_list[id - 1]['Name'] in ignlist or\
-                    self.pokemon_list[id - 1]['Number'].lstrip('0') in ignlist:
+                            self.pokemon_list[id - 1]['Name'] in ignlist or\
+                            self.pokemon_list[id - 1]['Number'].lstrip('0') in ignlist:
                         continue
 
                     print('[x] Transferring #{} ({}) with CP {}'.format(

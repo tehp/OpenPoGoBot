@@ -17,6 +17,7 @@ from time import *
 
 
 class i2c_device:
+
     def __init__(self, addr, port=1):
         self.addr = addr
         self.bus = smbus.SMBus(port)
@@ -53,8 +54,8 @@ class i2c_device:
 LCD_WIDTH = 20
 LCD_HEIGHT = 2
 LCD_CHARS = [0x40, 0x48, 0x50, 0x58, 0x60, 0x68, 0x70,
-             0x78]  #Address position for custom chars
-#Use char generator here: https://omerk.github.io/lcdchargen/ or http://www.quinapalus.com/hd44780udg.html
+             0x78]  # Address position for custom chars
+# Use char generator here: https://omerk.github.io/lcdchargen/ or http://www.quinapalus.com/hd44780udg.html
 # commands
 LCD_CLEARDISPLAY = 0x01
 LCD_RETURNHOME = 0x02
@@ -104,7 +105,7 @@ Rs = 0b00000001  # Register select bit
 
 class lcd:
     # initializes objects and lcd
-    #def __init__(self, adress):
+    # def __init__(self, adress):
 
     def set_addr(self, adress):
         self.lcd_device = i2c_device(adress)
