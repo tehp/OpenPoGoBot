@@ -1,20 +1,7 @@
-FROM gliderlabs/alpine:3.4
+FROM namlehong/alpine-pgo-base:latest
 
 COPY requirements.txt /app/
-WORKDIR /app/
-
-RUN apk add --update --no-cache \
-  ca-certificates \
-  && update-ca-certificates \
-  && apk add --update --no-cache \
-    git \
-    python \
-    python-dev \
-    py-pip \
-    build-base \
-  && pip install --upgrade pip \
-  && pip install --no-cache-dir -r requirements.txt \
-  && apk del git
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /app
 
