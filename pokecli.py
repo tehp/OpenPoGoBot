@@ -36,12 +36,12 @@ import logging
 import sys
 import codecs
 from pokemongo_bot import logger
-if sys.version_info >= (2, 7, 9):
-    ssl._create_default_https_context = ssl._create_unverified_context
-
 from getpass import getpass
 from pokemongo_bot import PokemonGoBot
 from pokemongo_bot.cell_workers.utils import print_green, print_yellow, print_red
+
+if sys.version_info >= (2, 7, 9):
+    ssl._create_default_https_context = ssl._create_unverified_context
 
 
 def init_config():
@@ -55,7 +55,7 @@ def init_config():
             load.update(json.load(data))
 
     # Read passed in Arguments
-    required = lambda x: not x in load
+    required = lambda x: x not in load
     parser.add_argument("-a",
                         "--auth_service",
                         help="Auth Service ('ptc' or 'google')",
@@ -131,9 +131,9 @@ def init_config():
         default='')
 
     config = parser.parse_args()
-    if not config.username and not 'username' in load:
+    if not config.username and 'username' not in load:
         config.username = raw_input("Username: ")
-    if not config.password and not 'password' in load:
+    if not config.password and 'password' not in load:
         config.password = getpass("Password: ")
 
     # Passed in arguments shoud trump
@@ -155,7 +155,7 @@ def init_config():
 def main():
     # log settings
     # log format
-    #logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(module)10s] [%(levelname)5s] %(message)s')
+    # logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(module)10s] [%(levelname)5s] %(message)s')
 
     sys.stdout = codecs.getwriter('utf8')(sys.stdout)
     sys.stderr = codecs.getwriter('utf8')(sys.stderr)
