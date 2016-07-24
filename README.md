@@ -60,7 +60,7 @@ pip install -r requirements.txt
 ### Develop OpenPoGoBot
 
 ```
-$ git clone -b dev https://github.com/OpenPoGo/OpenPoGoBot  
+$ git clone --recursive -b dev https://github.com/OpenPoGo/OpenPoGoBot
 $ cd OpenPoGo  
 $ virtualenv .  
 $ source bin/activate  
