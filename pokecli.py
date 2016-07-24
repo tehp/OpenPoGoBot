@@ -66,8 +66,7 @@ def init_config():
     parser.add_argument("-lc",
                         "--location_cache",
                         help="Bot will start at last known location",
-                        type=bool,
-                        default=False)
+                        action='store_true')
     parser.add_argument("-m",
                         "--mode",
                         help="Farming Mode",
@@ -105,18 +104,15 @@ def init_config():
         "-it",
         "--initial_transfer",
         help="Transfer all pokemon with same ID on bot start, except pokemon with highest CP. It works with -c",
-        type=bool,
-        default=False)
+        action='store_true')
     parser.add_argument("-d",
                         "--debug",
                         help="Debug Mode",
-                        type=bool,
-                        default=False)
+                        action='store_true')
     parser.add_argument("-t",
                         "--test",
                         help="Only parse the specified location",
-                        type=bool,
-                        default=False)
+                        action='store_true')
     parser.add_argument(
         "-du",
         "--distance_unit",
