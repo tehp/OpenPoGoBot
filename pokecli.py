@@ -29,7 +29,6 @@ from __future__ import print_function
 from getpass import getpass
 #pylint: disable=redefined-builtin
 from builtins import input
-import os
 import json
 import argparse
 import ssl
@@ -46,106 +45,133 @@ if sys.version_info >= (2, 7, 9):
 
 
 def init_config():
-    parser = argparse.ArgumentParser()
-    config_file = "config.json"
+    default_config = {
+        "mode": "all",
+        "walk": 2.5,
+        "cp": 100,
+        "pokemon_potential": 0.40,
+        "max_steps": 50,
+        "distance_unit": "km",
+        "ign_init_trans": ""
+    }
 
-    # If config file exists, load variables from json
-    load = {}
-    if os.path.isfile(config_file):
-        with open(config_file) as data:
-            load.update(json.load(data))
+    parser = argparse.ArgumentParser()
 
     # Read passed in Arguments
-    required = lambda x: x not in load
+    parser.add_argument("-j",
+                        "--config-json",
+                        help="Load a config JSON file. Overrides all other command line options if specified.",
+                        type=str,
+                        dest="json")
     parser.add_argument("-a",
                         "--auth-service",
                         help="Auth Service ('ptc' or 'google')",
-                        required=required("auth_service"))
-    parser.add_argument("-u", "--username", help="Username")
-    parser.add_argument("-p", "--password", help="Password")
-    parser.add_argument("-l", "--location", help="Location")
+                        dest="auth_service")
+    parser.add_argument("-u", "--username", help="Username", dest="username")
+    parser.add_argument("-p", "--password", help="Password", dest="password")
+    parser.add_argument("-l", "--location", help="Location", dest="location")
     parser.add_argument("-lc",
-                        "--location_cache",
+                        "--location-cache",
                         help="Bot will start at last known location",
-                        action='store_true')
+                        action="store_true",
+                        dest="location_cache")
     parser.add_argument("-m",
                         "--mode",
                         help="Farming Mode",
                         type=str,
-                        default="all")
+                        dest="mode")
     parser.add_argument(
         "-w",
         "--walk",
         help="Walk instead of teleport with given speed (meters per second, e.g. 2.5)",
         type=float,
-        default=2.5)
-    parser.add_argument("-c",
-                        "--cp",
-                        help="Set CP less than to transfer(DEFAULT 100)",
+        dest="walk")
+    parser.add_argument("-cp",
+                        "--combat-power",
+                        "--combat-points",
+                        help="Transfer Pokemon that have CP less than this value (default 100)",
                         type=int,
-                        default=100)
+                        dest="cp")
     parser.add_argument(
         "-iv",
         "--pokemon-potential",
-        help="Set IV ratio less than to transfer(DEFAULT 0.40)",
+        help="Transfer Pokemon that have an IV ratio less than this value (default 0.40)",
         type=float,
-        default=0.40)
+        dest="pokemon_potential")
     parser.add_argument("-k",
                         "--gmapkey",
                         help="Set Google Maps API KEY",
                         type=str,
-                        default=None)
+                        dest="gmapkey")
     parser.add_argument(
         "-ms",
         "--max-steps",
         help="Set the steps around your initial location(DEFAULT 5 mean 25 cells around your location)",
         type=int,
-        default=50)
+        dest="max_steps")
     parser.add_argument(
         "-it",
-        "--initial_transfer",
-        help="Transfer all pokemon with same ID on bot start, except pokemon with highest CP. It works with -c",
-        action='store_true')
+        "--initial-transfer",
+        help="Transfer all pokemon with same ID on bot start, except pokemon with highest CP. Respects --cp",
+        action="store_true",
+        dest="initial_transfer")
     parser.add_argument("-d",
                         "--debug",
                         help="Debug Mode",
-                        action='store_true')
+                        action="store_true",
+                        dest="debug")
     parser.add_argument("-t",
                         "--test",
                         help="Only parse the specified location",
-                        action='store_true')
+                        action="store_true",
+                        dest="test")
     parser.add_argument(
         "-du",
         "--distance-unit",
         help="Set the unit to display distance in (e.g, km for kilometers, mi for miles, ft for feet)",
         type=str,
-        default="km")
+        dest="distance_unit")
 
     parser.add_argument(
         "-ign",
         "--ign-init-trans",
         type=str,
-        default='')
+        dest="ign_init_trans")
 
     config = parser.parse_args()
-    if not config.username and 'username' not in load:
-        config.username = input("Username: ")
-    if not config.password and 'password' not in load:
-        config.password = getpass("Password: ")
 
-    # Passed in arguments shoud trump
+    if config.json:
+        try:
+            # attempt to load values from JSON, overwriting any existing values
+            loaded_config = {}
+            with open(config.json) as data:
+                loaded_config.update(json.load(data))
+            for key in config.__dict__:
+                if config.__dict__.get(key) is None and loaded_config.get(key) is not None:
+                    config.__dict__[key] = loaded_config.get(key)
+        except Exception:
+            logging.error("Error loading %s", config.json)
+            return None
+
     for key in config.__dict__:
-        if key in load:
-            config.__dict__[key] = load[key]
+        if config.__dict__.get(key) is None and default_config.get(key) is not None:
+            config.__dict__[key] = default_config.get(key)
+
+    print(config.__dict__)
 
     if config.auth_service not in ['ptc', 'google']:
         logging.error("Invalid Auth service specified! ('ptc' or 'google')")
         return None
 
-    if not (config.location or config.location_cache):
+    if config.location is None and config.location_cache is None:
         parser.error("Needs either --use-location-cache or --location.")
         return None
-    print(config)
+
+    if config.username is None:
+        config.username = input("Username: ")
+    if config.password is None:
+        config.password = getpass("Password: ")
+
     return config
 
 
