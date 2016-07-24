@@ -30,7 +30,7 @@ class SeenFortWorker(object):
 
         logger.log("[#] Found fort {} at distance {}".format(fortID, format_dist(dist, unit)))
 
-        if dist > 10:
+        if dist > 0:
             logger.log("[#] Need to move closer to Pokestop")
             position = (lat, lng, 0.0)
 
@@ -51,7 +51,7 @@ class SeenFortWorker(object):
         fort_name = fort_name if fort_name is not None else "Unknown"
         logger.log("[#] Now at Pokestop: " + fort_name + " - Spinning...",
                    "yellow")
-        sleep(2)
+        sleep(3)
         self.api.fort_search(fort_id=self.fort["id"],
                              fort_latitude=lat,
                              fort_longitude=lng,
@@ -126,5 +126,5 @@ class SeenFortWorker(object):
         else:
             print_yellow("[#] may search too often, lets have a rest")
             return 11
-        sleep(8)
+        sleep(10)
         return 0

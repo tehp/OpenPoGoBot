@@ -1,120 +1,113 @@
 # -*- coding: utf-8 -*-
 
-import logging
+import datetime
 import googlemaps
 import json
-import random
-import threading
-import datetime
-import sys
-import yaml
 import logger
-from pgoapi import PGoApi
+import logging
+import random
+import sys
+import threading
+import yaml
+
 from cell_workers import PokemonCatchWorker, SeenFortWorker
-from cell_workers.utils import distance
+from cell_workers.utils import filtered_forts, distance
 from human_behaviour import sleep
+from item_list import Item
+from pgoapi import PGoApi
 from stepper import Stepper
+
 from geopy.geocoders import GoogleV3
 from math import radians, sqrt, sin, cos, atan2
-from item_list import Item
 
 
 class PokemonGoBot(object):
+    process_ignored_pokemon = False
 
     def __init__(self, config):
         self.config = config
-        self.pokemon_list = json.load(open('data/pokemon.json'))
         self.item_list = json.load(open('data/items.json'))
+        self.pokemon_list = json.load(open('data/pokemon.json'))
 
     def start(self):
         self._setup_logging()
         self._setup_api()
+        self._setup_ignored_pokemon()
         self.stepper = Stepper(self)
         random.seed()
 
     def take_step(self):
         self.stepper.take_step()
 
-    def work_on_cell(self, cell, position, include_fort_on_path):
-        process_ignore = False
-        try:
-            with open("./data/catch-ignore.yml", 'r') as y:
-                ignores = yaml.load(y)['ignore']
-                if len(ignores) > 0:
-                    process_ignore = True
-        except Exception, e:
-            pass
+    def work_on_cell(self, map_cells, position, include_fort_on_path):
+        self._remove_ignored_pokemon(map_cells)
 
-        if process_ignore:
-            #
-            # remove any wild pokemon
+        if (self.config.mode == "all" or self.config.mode == "poke"):
+            self._work_on_catchable_pokemon(map_cells)
+
+        if (self.config.mode == "all" or self.config.mode == "poke"):
+            self._work_on_wild_pokemon(map_cells)
+
+        if (self.config.mode == "all" or self.config.mode == "farm") and include_fort_on_path:
+            self._work_on_forts(position, map_cells)
+
+    def _work_on_forts(self, position, map_cells):
+        forts = filtered_forts(position[0], position[1], sum([cell.get("forts", []) for cell in map_cells], []))
+        if forts:
+            worker = SeenFortWorker(forts[0], self)
+            hack_chain = worker.work()
+
+    def _remove_ignored_pokemon(self, map_cells):
+        if self.process_ignored_pokemon:
             try:
-                for p in cell['wild_pokemons'][:]:
-                    pokemon_id = p['pokemon_data']['pokemon_id']
-                    pokemon_name = filter(
-                        lambda x: int(x.get('Number')) == pokemon_id,
-                        self.pokemon_list)[0]['Name']
+                for cell in map_cells:
+                    for p in cell['wild_pokemons'][:]:
+                        pokemon_id = p['pokemon_data']['pokemon_id']
+                        pokemon_name = filter(lambda x: int(x.get('Number')) == pokemon_id, self.pokemon_list)[0]['Name']
 
-                    if pokemon_name in ignores:
-                        cell['wild_pokemons'].remove(p)
+                        if pokemon_name in ignores:
+                            cell['wild_pokemons'].remove(p)
             except KeyError:
                 pass
 
-            #
-            # remove catchable pokemon
             try:
-                for p in cell['catchable_pokemons'][:]:
-                    pokemon_id = p['pokemon_id']
-                    pokemon_name = filter(
-                        lambda x: int(x.get('Number')) == pokemon_id,
-                        self.pokemon_list)[0]['Name']
+                for call in map_cells:
+                    for p in cell['catchable_pokemons'][:]:
+                        pokemon_id = p['pokemon_id']
+                        pokemon_name = filter(lambda x: int(x.get('Number')) == pokemon_id, self.pokemon_list)[0]['Name']
 
-                    if pokemon_name in ignores:
-                        cell['catchable_pokemons'].remove(p)
+                        if pokemon_name in ignores:
+                            cell['catchable_pokemons'].remove(p)
             except KeyError:
                 pass
 
-        if (self.config.mode == "all" or self.config.mode ==
-                "poke") and 'catchable_pokemons' in cell and len(cell[
-                    'catchable_pokemons']) > 0:
-            logger.log('[#] Something rustles nearby!')
-            # Sort all by distance from current pos- eventually this should
-            # build graph & A* it
-            cell['catchable_pokemons'].sort(
-                key=lambda x: distance(self.position[0], self.position[1], x['latitude'], x['longitude']))
-            for pokemon in cell['catchable_pokemons']:
-                with open('web/catchable-%s.json' % (self.config.username), 'w') as outfile:
-                    json.dump(pokemon, outfile)
-                worker = PokemonCatchWorker(pokemon, self)
-                if worker.work() == -1:
-                    break
-                with open('web/catchable-%s.json' % (self.config.username), 'w') as outfile:
-                    json.dump({}, outfile)
-        if (self.config.mode == "all" or self.config.mode == "poke") and 'wild_pokemons' in cell and len(cell['wild_pokemons']) > 0:
-            # Sort all by distance from current pos- eventually this should
-            # build graph & A* it
-            cell['wild_pokemons'].sort(
-                key=lambda x: distance(self.position[0], self.position[1], x['latitude'], x['longitude']))
-            for pokemon in cell['wild_pokemons']:
-                worker = PokemonCatchWorker(pokemon, self)
-                if worker.work() == -1:
-                    break
-        if (self.config.mode == "all" or
-                self.config.mode == "farm") and include_fort_on_path:
-            if 'forts' in cell:
-                # Only include those with a lat/long
-                forts = [fort
-                         for fort in cell['forts']
-                         if 'latitude' in fort and 'type' in fort]
-
+    def _work_on_catchable_pokemon(self, map_cells):
+        for cell in map_cells:
+            if 'catchable_pokemons' in cell and len(cell['catchable_pokemons']) > 0:
+                logger.log('[#] Something rustles nearby!')
                 # Sort all by distance from current pos- eventually this should
                 # build graph & A* it
-                forts.sort(key=lambda x: distance(self.position[0], self.position[1], x['latitude'], x['longitude']))
-                for fort in cell['forts']:
-                    worker = SeenFortWorker(fort, self)
-                    hack_chain = worker.work()
-                    if hack_chain > 10:
-                        # print('need a rest')
+                cell['catchable_pokemons'].sort(
+                    key=lambda x: distance(self.position[0], self.position[1], x['latitude'], x['longitude']))
+                for pokemon in cell['catchable_pokemons']:
+                    with open('web/catchable-%s.json' % (self.config.username), 'w') as outfile:
+                        json.dump(pokemon, outfile)
+                    worker = PokemonCatchWorker(pokemon, self)
+                    if worker.work() == -1:
+                        break
+                    with open('web/catchable-%s.json' % (self.config.username), 'w') as outfile:
+                        json.dump({}, outfile)
+
+    def _work_on_wild_pokemon(self, map_cells):
+        for cell in map_cells:
+            if 'wild_pokemons' in cell and len(cell['wild_pokemons']) > 0:
+                # Sort all by distance from current pos- eventually this should
+                # build graph & A* it
+                cell['wild_pokemons'].sort(
+                    key=lambda x: distance(self.position[0], self.position[1], x['latitude'], x['longitude']))
+                for pokemon in cell['wild_pokemons']:
+                    worker = PokemonCatchWorker(pokemon, self)
+                    if worker.work() == -1:
                         break
 
     def _setup_logging(self):
@@ -197,6 +190,15 @@ class PokemonGoBot(object):
 
         logger.log('[#]')
         self.update_inventory()
+
+    def _setup_ignored_pokemon(self):
+        try:
+            with open("./data/catch-ignore.yml", 'r') as y:
+                ignores = yaml.load(y)['ignore']
+                if len(ignores) > 0:
+                    self.process_ignored_pokemon = True
+        except Exception, e:
+            pass
 
     def drop_item(self, item_id, count):
         self.api.recycle_inventory_item(item_id=item_id, count=count)
