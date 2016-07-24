@@ -35,7 +35,7 @@ class SeenFortWorker(object):
             position = (lat, lng, 0.0)
 
             if self.config.walk > 0:
-                self.stepper._walk_to(self.config.walk, *position)
+                self.stepper.walk_to(self.config.walk, *position)
             else:
                 self.api.set_position(*position)
             self.api.player_update(latitude=lat, longitude=lng)
