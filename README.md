@@ -1,10 +1,10 @@
-# OpenPoGo
+# OpenPoGoBot
 
   A quick note:
   
   This is a fork of the project [PokemonGo-Bot](https://github.com/PokemonGoF/PokemonGo-Bot) by [PokemonGoF](https://github.com/PokemonGoF).
   
-  The goal of this fork is to progress the bot in an organized manner, and to promote a clean and functional codebase.
+  The goal of this fork is to progress the bot in an organized manner, and to promote a clean and functional codebase. As a result, OpenPoGoBot will be more reliable and secure than PokemonGo-Bot.
 
 --------
 
