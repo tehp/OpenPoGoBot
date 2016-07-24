@@ -83,14 +83,12 @@ class PokemonGoBot(object):
             cell['catchable_pokemons'].sort(
                 key=lambda x: distance(self.position[0], self.position[1], x['latitude'], x['longitude']))
             for pokemon in cell['catchable_pokemons']:
-                with open('web/catchable-%s.json' %
-                          (self.config.username), 'w') as outfile:
+                with open('web/catchable-%s.json' % (self.config.username), 'w') as outfile:
                     json.dump(pokemon, outfile)
                 worker = PokemonCatchWorker(pokemon, self)
                 if worker.work() == -1:
                     break
-                with open('web/catchable-%s.json' %
-                          (self.config.username), 'w') as outfile:
+                with open('web/catchable-%s.json' % (self.config.username), 'w') as outfile:
                     json.dump({}, outfile)
         if (self.config.mode == "all" or self.config.mode == "poke") and 'wild_pokemons' in cell and len(cell['wild_pokemons']) > 0:
             # Sort all by distance from current pos- eventually this should
@@ -111,8 +109,7 @@ class PokemonGoBot(object):
 
                 # Sort all by distance from current pos- eventually this should
                 # build graph & A* it
-                forts.sort(key=lambda x: distance(self.position[
-                           0], self.position[1], x['latitude'], x['longitude']))
+                forts.sort(key=lambda x: distance(self.position[0], self.position[1], x['latitude'], x['longitude']))
                 for fort in cell['forts']:
                     worker = SeenFortWorker(fort, self)
                     hack_chain = worker.work()
@@ -186,9 +183,9 @@ class PokemonGoBot(object):
                 'max_pokemon_storage']))
         logger.log('[#] Stardust: {}'.format(stardust))
         logger.log('[#] Pokecoins: {}'.format(pokecoins))
-        logger.log('[#] PokeBalls: ' + str(balls_stock[1]))
-        logger.log('[#] GreatBalls: ' + str(balls_stock[2]))
-        logger.log('[#] UltraBalls: ' + str(balls_stock[3]))
+        logger.log('[#] PokeBalls: {}'.format(balls_stock[1]))
+        logger.log('[#] GreatBalls: {}'.format(balls_stock[2]))
+        logger.log('[#] UltraBalls: {}'.format(balls_stock[3]))
 
         # Testing
         # self.drop_item(Item.ITEM_POTION.value,1)
@@ -214,31 +211,29 @@ class PokemonGoBot(object):
             logger.log('[x] Will NOT transfer anything above CP {} or these {}'.format(
                 self.config.cp, ignlist))
         else:
-            logger.log(
-                '[x] Preparing to transfer all Pokemon duplicates, keeping the highest CP of each one type.')
+            logger.log('[x] Preparing to transfer all Pokemon duplicates, keeping the highest CP of each one type.')
 
         pokemon_groups = self._initial_transfer_get_groups()
 
         for id in pokemon_groups:
 
             group_cp = pokemon_groups[id].keys()
+
             if len(group_cp) > 1:
                 group_cp.sort()
                 group_cp.reverse()
 
-                pokemon_name = self.pokemon_list[int(id - 1)]['Name']
+                pokemon = self.pokemon_list[int(id - 1)]
+                pokemon_name = pokemon['Name']
+                pokemon_num = pokemon['Number'].lstrip('0')
 
                 for x in range(1, len(group_cp)):
 
-                    if (self.config.cp and group_cp[x] > self.config.cp) or\
-                            self.pokemon_list[id - 1]['Name'] in ignlist or\
-                            self.pokemon_list[id - 1]['Number'].lstrip('0') in ignlist:
+                    if (self.config.cp and group_cp[x] > self.config.cp) or (pokemon_name in ignlist or pokemon_num in ignlist):
                         continue
 
-                    print('[x] Transferring #{} ({}) with CP {}'.format(
-                        id, pokemon_name, group_cp[x]))
-                    self.api.release_pokemon(
-                        pokemon_id=pokemon_groups[id][group_cp[x]])
+                    print('[x] Transferring #{} ({}) with CP {}'.format(id, pokemon_name, group_cp[x]))
+                    self.api.release_pokemon(pokemon_id=pokemon_groups[id][group_cp[x]])
                     response_dict = self.api.call()
                     sleep(2)
 
@@ -248,10 +243,8 @@ class PokemonGoBot(object):
         pokemon_groups = {}
         self.api.get_player().get_inventory()
         inventory_req = self.api.call()
-        inventory_dict = inventory_req['responses']['GET_INVENTORY'][
-            'inventory_delta']['inventory_items']
-        with open('web/inventory-%s.json' %
-                  (self.config.username), 'w') as outfile:
+        inventory_dict = inventory_req['responses']['GET_INVENTORY']['inventory_delta']['inventory_items']
+        with open('web/inventory-%s.json' % (self.config.username), 'w') as outfile:
             json.dump(inventory_dict, outfile)
 
         for pokemon in inventory_dict:
@@ -262,12 +255,10 @@ class PokemonGoBot(object):
             except KeyError:
                 continue
 
-            group_id = pokemon['inventory_item_data'][
-                'pokemon_data']['pokemon_id']
-            group_pokemon = pokemon['inventory_item_data'][
-                'pokemon_data']['id']
-            group_pokemon_cp = pokemon[
-                'inventory_item_data']['pokemon_data']['cp']
+            pokemon_data = pokemon['inventory_item_data']['pokemon_data']
+            group_id = pokemon_data['pokemon_id']
+            group_pokemon = pokemon_data['id']
+            group_pokemon_cp = pokemon_data['cp']
 
             if group_id not in pokemon_groups:
                 pokemon_groups[group_id] = {}
@@ -279,59 +270,42 @@ class PokemonGoBot(object):
         self.api.get_inventory()
         response = self.api.call()
         self.inventory = list()
-        if 'responses' in response:
-            if 'GET_INVENTORY' in response['responses']:
-                if 'inventory_delta' in response['responses']['GET_INVENTORY']:
-                    if 'inventory_items' in response['responses'][
-                            'GET_INVENTORY']['inventory_delta']:
-                        for item in response['responses']['GET_INVENTORY'][
-                                'inventory_delta']['inventory_items']:
-                            if 'inventory_item_data' not in item:
-                                continue
-                            if 'item' not in item['inventory_item_data']:
-                                continue
-                            if 'item_id' not in item['inventory_item_data'][
-                                    'item']:
-                                continue
-                            if 'count' not in item['inventory_item_data'][
-                                    'item']:
-                                continue
-                            self.inventory.append(item['inventory_item_data'][
-                                'item'])
+        try:
+            inventory_items = response['responses']['GET_INVENTORY']['inventory_delta']['inventory_items']
+            for item in inventory_items:
+                try:
+                    item_data = item['inventory_item_data']['item']
+                    if 'item_id' not in item_data or 'count' not in item_data:
+                        continue
+                    self.inventory.append(item_data)
+                except KeyError:
+                    pass
+        except KeyError:
+            pass
 
     def pokeball_inventory(self):
         self.api.get_player().get_inventory()
 
         inventory_req = self.api.call()
-        inventory_dict = inventory_req['responses']['GET_INVENTORY'][
-            'inventory_delta']['inventory_items']
+        inventory_dict = inventory_req['responses']['GET_INVENTORY']['inventory_delta']['inventory_items']
         with open('web/inventory-%s.json' %
                   (self.config.username), 'w') as outfile:
             json.dump(inventory_dict, outfile)
 
         # get player balls stock
         # ----------------------
-        balls_stock = {1: 0, 2: 0, 3: 0, 4: 0}
+        balls_stock = {Item.ITEM_POKE_BALL.value: 0,
+                       Item.ITEM_GREAT_BALL.value: 0,
+                       Item.ITEM_ULTRA_BALL.value: 0,
+                       Item.ITEM_MASTER_BALL.value: 0}
 
         for item in inventory_dict:
             try:
-                # print(item['inventory_item_data']['item'])
-                if item['inventory_item_data']['item'][
-                        'item_id'] == Item.ITEM_POKE_BALL.value:
-                    # print('Poke Ball count: ' + str(item['inventory_item_data']['item']['count']))
-                    balls_stock[1] = item[
-                        'inventory_item_data']['item']['count']
-                if item['inventory_item_data']['item'][
-                        'item_id'] == Item.ITEM_GREAT_BALL.value:
-                    # print('Great Ball count: ' + str(item['inventory_item_data']['item']['count']))
-                    balls_stock[2] = item[
-                        'inventory_item_data']['item']['count']
-                if item['inventory_item_data']['item'][
-                        'item_id'] == Item.ITEM_ULTRA_BALL.value:
-                    # print('Ultra Ball count: ' + str(item['inventory_item_data']['item']['count']))
-                    balls_stock[3] = item[
-                        'inventory_item_data']['item']['count']
-            except:
+                item_id = item['inventory_item_data']['item']['item_id']
+                item_count = item['inventory_item_data']['item']['item_count']
+                if item_id in balls_stock:
+                    balls_stock[item_id] = item_count
+            except KeyError:
                 continue
         return balls_stock
 
@@ -345,27 +319,21 @@ class PokemonGoBot(object):
                 #
                 # save location flag used to pull the last known location from
                 # the location.json
-                with open('data/last-location-%s.json' %
-                          (self.config.username)) as f:
+                with open('data/last-location-%s.json' % (self.config.username)) as f:
                     location_json = json.load(f)
 
-                    self.position = (location_json['lat'],
-                                     location_json['lng'], 0.0)
+                    self.position = (location_json['lat'], location_json['lng'], 0.0)
                     self.api.set_position(*self.position)
 
                     logger.log('')
-                    logger.log(
-                        '[x] Last location flag used. Overriding passed in location')
-                    logger.log(
-                        '[x] Last in-game location was set as: {}'.format(
-                            self.position))
+                    logger.log('[x] Last location flag used. Overriding passed in location')
+                    logger.log('[x] Last in-game location was set as: {}'.format(self.position))
                     logger.log('')
 
                     return
             except:
                 if not self.config.location:
-                    sys.exit(
-                        "No cached Location. Please specify initial location.")
+                    sys.exit("No cached Location. Please specify initial location.")
                 else:
                     pass
 
@@ -399,81 +367,55 @@ class PokemonGoBot(object):
     def get_inventory_count(self, what):
         self.api.get_inventory()
         response_dict = self.api.call()
-        if 'responses' in response_dict:
-            if 'GET_INVENTORY' in response_dict['responses']:
-                if 'inventory_delta' in response_dict['responses'][
-                        'GET_INVENTORY']:
-                    if 'inventory_items' in response_dict['responses'][
-                            'GET_INVENTORY']['inventory_delta']:
-                        pokecount = 0
-                        itemcount = 1
-                        for item in response_dict['responses'][
-                                'GET_INVENTORY']['inventory_delta'][
-                                    'inventory_items']:
-                            # print('item {}'.format(item))
-                            if 'inventory_item_data' in item:
-                                if 'pokemon_data' in item[
-                                        'inventory_item_data']:
-                                    pokecount = pokecount + 1
-                                if 'item' in item['inventory_item_data']:
-                                    if 'count' in item['inventory_item_data'][
-                                            'item']:
-                                        itemcount = itemcount + \
-                                            item['inventory_item_data'][
-                                                'item']['count']
+
+        pokecount = 0
+        itemcount = 1
+        try:
+            inventory_items = response_dict['responses']['GET_INVENTORY']['inventory_delta']['inventory_items']
+            for item in inventory_items:
+                # print('item {}'.format(item))
+                if 'inventory_item_data' in item:
+                    item_data = item['inventory_item_data']
+                    if 'pokemon_data' in item_data:
+                        pokecount += 1
+                    if 'item' in item_data and 'count' in item_data['item']:
+                        itemcount += item_data['item']['count']
+        except KeyError:
+            pass
+
         if 'pokemon' in what:
             return pokecount
         if 'item' in what:
             return itemcount
-        return '0'
+        return 0
 
     def get_player_info(self):
         self.api.get_inventory()
         response_dict = self.api.call()
-        if 'responses' in response_dict:
-            if 'GET_INVENTORY' in response_dict['responses']:
-                if 'inventory_delta' in response_dict['responses'][
-                        'GET_INVENTORY']:
-                    if 'inventory_items' in response_dict['responses'][
-                            'GET_INVENTORY']['inventory_delta']:
-                        pokecount = 0
-                        itemcount = 1
-                        for item in response_dict['responses'][
-                                'GET_INVENTORY']['inventory_delta'][
-                                    'inventory_items']:
-                            # print('item {}'.format(item))
-                            if 'inventory_item_data' in item:
-                                if 'player_stats' in item[
-                                        'inventory_item_data']:
-                                    playerdata = item['inventory_item_data'][
-                                        'player_stats']
+        try:
+            inventory_items = response_dict['responses']['GET_INVENTORY']['inventory_delta']['inventory_items']
+            for item in inventory_items:
+                # print('item {}'.format(item))
+                try:
+                    player_stats = item['inventory_item_data']['player_stats']
 
-                                    if 'experience' not in playerdata:
-                                        playerdata['experience'] = 0
+                    if 'experience' not in player_stats:
+                        player_stats['experience'] = 0
 
-                                    nextlvlxp = (
-                                        int(playerdata['next_level_xp']) -
-                                        int(playerdata['experience']))
+                    if 'level' in player_stats:
+                        logger.log('[#] -- Level: {level}'.format(**player_stats))
 
-                                    if 'level' in playerdata:
-                                        logger.log(
-                                            '[#] -- Level: {level}'.format(
-                                                **playerdata))
+                    if 'next_level_xp' in player_stats:
+                        nextlvlxp = int(player_stats['next_level_xp']) - int(player_stats['experience'])
+                        logger.log('[#] -- Experience: {experience}'.format(**player_stats))
+                        logger.log('[#] -- Experience until next level: {}'.format(nextlvlxp))
 
-                                    if 'experience' in playerdata:
-                                        logger.log(
-                                            '[#] -- Experience: {experience}'.format(
-                                                **playerdata))
-                                        logger.log(
-                                            '[#] -- Experience until next level: {}'.format(
-                                                nextlvlxp))
+                    if 'pokemons_captured' in player_stats:
+                        logger.log('[#] -- Pokemon Captured: {pokemons_captured}'.format(**player_stats))
 
-                                    if 'pokemons_captured' in playerdata:
-                                        logger.log(
-                                            '[#] -- Pokemon Captured: {pokemons_captured}'.format(
-                                                **playerdata))
-
-                                    if 'poke_stop_visits' in playerdata:
-                                        logger.log(
-                                            '[#] -- Pokestops Visited: {poke_stop_visits}'.format(
-                                                **playerdata))
+                    if 'poke_stop_visits' in player_stats:
+                        logger.log('[#] -- Pokestops Visited: {poke_stop_visits}'.format(**player_stats))
+                except KeyError:
+                    pass
+        except KeyError:
+            pass
