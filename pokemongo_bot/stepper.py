@@ -22,13 +22,20 @@ class Stepper(object):
         self.config = bot.config
 
         self.pos = 1
+        self.first_step = True
         self.step_limit = self.config.max_steps
         self.step_limit_squared = self.step_limit ** 2
         self.origin_lat = self.bot.position[0]
         self.origin_lon = self.bot.position[1]
 
     def take_step(self):
-        position = (self.origin_lat, self.origin_lon, 0.0)
+        position = (0, 0, 0)
+        if self.first_step:
+            self.first_step = False
+            position = (self.origin_lat, self.origin_lon, 0.0)
+        else:
+            position = (i2f(self.api._position_lat), i2f(self.api._position_lng), 0.0)
+
         self.api.set_position(*position)
         self._work_at_position(position[0], position[1], position[2], True)
         sleep(5)
