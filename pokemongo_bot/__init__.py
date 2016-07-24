@@ -92,8 +92,7 @@ class PokemonGoBot(object):
                 with open('web/catchable-%s.json' %
                           (self.config.username), 'w') as outfile:
                     json.dump({}, outfile)
-        if (self.config.mode == "all" or self.config.mode == "poke"
-            ) and 'wild_pokemons' in cell and len(cell['wild_pokemons']) > 0:
+        if (self.config.mode == "all" or self.config.mode == "poke") and 'wild_pokemons' in cell and len(cell['wild_pokemons']) > 0:
             # Sort all by distance from current pos- eventually this should
             # build graph & A* it
             cell['wild_pokemons'].sort(
@@ -118,7 +117,7 @@ class PokemonGoBot(object):
                     worker = SeenFortWorker(fort, self)
                     hack_chain = worker.work()
                     if hack_chain > 10:
-                        #print('need a rest')
+                        # print('need a rest')
                         break
 
     def _setup_logging(self):
@@ -158,7 +157,7 @@ class PokemonGoBot(object):
         self.api.get_player()
 
         response_dict = self.api.call()
-        #print('Response dictionary: \n\r{}'.format(json.dumps(response_dict, indent=2)))
+        # print('Response dictionary: \n\r{}'.format(json.dumps(response_dict, indent=2)))
         currency_1 = "0"
         currency_2 = "0"
 
@@ -287,14 +286,14 @@ class PokemonGoBot(object):
                             'GET_INVENTORY']['inventory_delta']:
                         for item in response['responses']['GET_INVENTORY'][
                                 'inventory_delta']['inventory_items']:
-                            if not 'inventory_item_data' in item:
+                            if 'inventory_item_data' not in item:
                                 continue
-                            if not 'item' in item['inventory_item_data']:
+                            if 'item' not in item['inventory_item_data']:
                                 continue
-                            if not 'item_id' in item['inventory_item_data'][
+                            if 'item_id' not in item['inventory_item_data'][
                                     'item']:
                                 continue
-                            if not 'count' in item['inventory_item_data'][
+                            if 'count' not in item['inventory_item_data'][
                                     'item']:
                                 continue
                             self.inventory.append(item['inventory_item_data'][
@@ -385,8 +384,8 @@ class PokemonGoBot(object):
         geolocator = GoogleV3(api_key=self.config.gmapkey)
         loc = geolocator.geocode(location_name, timeout=10)
 
-        #self.log.info('Your given location: %s', loc.address.encode('utf-8'))
-        #self.log.info('lat/long/alt: %s %s %s', loc.latitude, loc.longitude, loc.altitude)
+        # self.log.info('Your given location: %s', loc.address.encode('utf-8'))
+        # self.log.info('lat/long/alt: %s %s %s', loc.latitude, loc.longitude, loc.altitude)
 
         return (loc.latitude, loc.longitude, loc.altitude)
 
@@ -411,7 +410,7 @@ class PokemonGoBot(object):
                         for item in response_dict['responses'][
                                 'GET_INVENTORY']['inventory_delta'][
                                     'inventory_items']:
-                            #print('item {}'.format(item))
+                            # print('item {}'.format(item))
                             if 'inventory_item_data' in item:
                                 if 'pokemon_data' in item[
                                         'inventory_item_data']:
@@ -442,7 +441,7 @@ class PokemonGoBot(object):
                         for item in response_dict['responses'][
                                 'GET_INVENTORY']['inventory_delta'][
                                     'inventory_items']:
-                            #print('item {}'.format(item))
+                            # print('item {}'.format(item))
                             if 'inventory_item_data' in item:
                                 if 'player_stats' in item[
                                         'inventory_item_data']:

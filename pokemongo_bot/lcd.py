@@ -50,7 +50,7 @@ class i2c_device:
         return self.bus.read_block_data(self.addr, cmd)
 
 # LCD Address
-#ADDRESS = 0x27
+# ADDRESS = 0x27
 LCD_WIDTH = 20
 LCD_HEIGHT = 2
 LCD_CHARS = [0x40, 0x48, 0x50, 0x58, 0x60, 0x68, 0x70,

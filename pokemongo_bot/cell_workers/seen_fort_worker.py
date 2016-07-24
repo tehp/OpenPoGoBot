@@ -82,7 +82,7 @@ class SeenFortWorker(object):
                     tmp_count_items = {}
                     for item in items_awarded:
                         item_id = item['item_id']
-                        if not item_id in tmp_count_items:
+                        if item_id not in tmp_count_items:
                             tmp_count_items[item_id] = item['item_count']
                         else:
                             tmp_count_items[item_id] += item['item_count']
