@@ -1,16 +1,27 @@
 # -*- coding: utf-8 -*-
 
 import struct
-from math import cos, asin, sqrt
+import s2sphere
+import time
+
 from colorama import init
+from geopy.distance import VincentyDistance, vincenty
+from math import cos, asin, sqrt
+
 init()
 
 
 def distance(lat1, lon1, lat2, lon2):
-    p = 0.017453292519943295
-    a = 0.5 - cos((lat2 - lat1) * p) / 2 + cos(lat1 * p) * \
-        cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2
-    return 12742 * asin(sqrt(a)) * 1000
+    return vincenty((lat1, lon2), (lat2, lon2)).meters
+
+
+def filtered_forts(lat, lng, forts):
+    forts = [(
+        fort, distance(lat, lng, fort['latitude'], fort['longitude']))
+        for fort in forts
+        if fort.get('type', None) == 1 and ("enabled" in fort or "lure_info" in fort) and (fort.get('cooldown_complete_timestamp_ms', -1) < time.time() * 1000)
+    ]
+    return [x[0] for x in sorted(forts, lambda x, y: cmp(x[1], y[1]))]
 
 
 def convert(distance, from_unit, to_unit):  # Converts units
