@@ -57,7 +57,7 @@ def init_config():
     # Read passed in Arguments
     required = lambda x: x not in load
     parser.add_argument("-a",
-                        "--auth_service",
+                        "--auth-service",
                         help="Auth Service ('ptc' or 'google')",
                         required=required("auth_service"))
     parser.add_argument("-u", "--username", help="Username")
@@ -85,7 +85,7 @@ def init_config():
                         default=100)
     parser.add_argument(
         "-iv",
-        "--pokemon_potential",
+        "--pokemon-potential",
         help="Set IV ratio less than to transfer(DEFAULT 0.40)",
         type=float,
         default=0.40)
@@ -96,7 +96,7 @@ def init_config():
                         default=None)
     parser.add_argument(
         "-ms",
-        "--max_steps",
+        "--max-steps",
         help="Set the steps around your initial location(DEFAULT 5 mean 25 cells around your location)",
         type=int,
         default=50)
@@ -115,14 +115,14 @@ def init_config():
                         action='store_true')
     parser.add_argument(
         "-du",
-        "--distance_unit",
+        "--distance-unit",
         help="Set the unit to display distance in (e.g, km for kilometers, mi for miles, ft for feet)",
         type=str,
         default="km")
 
     parser.add_argument(
         "-ign",
-        "--ign_init_trans",
+        "--ign-init-trans",
         type=str,
         default='')
 
