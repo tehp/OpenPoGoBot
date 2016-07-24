@@ -14,3 +14,4 @@ instance/
 # Other useless files
 .DS_Store
 Thumbs.db
+.idea
