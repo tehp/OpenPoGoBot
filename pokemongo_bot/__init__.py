@@ -234,7 +234,7 @@ class PokemonGoBot(object):
                     if (self.config.cp and group_cp[x] > self.config.cp) or (pokemon_name in ignlist or pokemon_num in ignlist):
                         continue
 
-                    print('[x] Transferring #{} ({}) with CP {}'.format(id, pokemon_name, group_cp[x]))
+                    logger.log('[x] Transferring #{} ({}) with CP {}'.format(id, pokemon_name, group_cp[x]))
                     self.api.release_pokemon(pokemon_id=pokemon_groups[id][group_cp[x]])
                     response_dict = self.api.call()
                     sleep(2)
