@@ -302,7 +302,7 @@ class PokemonGoBot(object):
         for item in inventory_dict:
             try:
                 item_id = item['inventory_item_data']['item']['item_id']
-                item_count = item['inventory_item_data']['item']['item_count']
+                item_count = item['inventory_item_data']['item']['count']
                 if item_id in balls_stock:
                     balls_stock[item_id] = item_count
             except KeyError:
