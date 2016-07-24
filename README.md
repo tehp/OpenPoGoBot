@@ -12,8 +12,6 @@
 - [Contributing](#contributing)
 - [Features](#features)
 - [Installation](#installation)
-- [Requirements](#requirements)
-- [Develop OpenPoGoBot](#develop-openpogobot)
 - [Usage](#usage)
 - [FAQ](#faq)
 
@@ -25,11 +23,11 @@ See [CONTRIBUTING.md](https://github.com/OpenPoGo/OpenPoGoBot/blob/master/CONTRI
  * Catch Pokemon
  * Release low cp pokemon
  * Walk to a location
- * Catch nearby pokemon when you have pokeballs available, don't if you don't
- * Auto farm/catch mode switching
- * Ignore certain pokemon filter
+ * Catch nearby pokemon when you have pokeballs available
+ * Switch between catching pokemon and farming pokestops automatically
+ * Filter certain pokemon
  * Use superior ball types when necessary
- * When out of normal pokeballs, use the next type of ball unless there are less than 10 of that type, in which case switch to farm mode
+ * When out of normal pokeballs, use the next type of ball unless there are less than 10 of that type, in which case start automatically farming pokestops
 
 
 ## Installation
@@ -51,34 +49,11 @@ See [CONTRIBUTING.md](https://github.com/OpenPoGo/OpenPoGoBot/blob/master/CONTRI
 
 ### Install
 ```
+git clone --recursive https://www.github.com/OpenPoGo/OpenPoGoBot
 virtualenv env
 source env/bin/activate
 pip install -r requirements.txt
 ```
-
-
-### Develop OpenPoGoBot
-
-```
-$ git clone --recursive -b dev https://github.com/OpenPoGo/OpenPoGoBot
-$ cd OpenPoGo  
-$ virtualenv .  
-$ source bin/activate  
-$ pip install -r requirements.txt  
-```
-
-### Google Maps API (in development)
-
-Google Maps API: a brief guide to your own key
-
-This project uses Google Maps. There's one map coupled with the project, but as it gets more popular we'll definitely hit the rate-limit making the map unusable. That said, here's how you can get your own and replace ours:
-
-1. Navigate to this [page](https://console.developers.google.com/flows/enableapi?apiid=maps_backend,geocoding_backend,directions_backend,distance_matrix_backend,elevation_backend,places_backend&keyType=CLIENT_SIDE&reusekey=true)
-2. Select 'Create a project' in the dropdown menu.
-3. Wait an eternity.
-4. Click 'Create' on the next page (optionally, fill out the info)
-5. Copy the API key that appears.
-6. After the code done, will update here how to replace.
 
 ## Usage
     usage: pokecli.py [-h] -a AUTH_SERVICE -u USERNAME -p PASSWORD -l LOCATION [-lc] [-c] [-m] [-w] [--distance_unit] [--initial-transfer] [--maxsteps] [-iv] [-d] [-t]
@@ -107,43 +82,21 @@ This project uses Google Maps. There's one map coupled with the project, but as 
     $ python2 pokecli.py -a google -u tejado -p 1234 --location "New York, Washington Square"
 
 ### Advance Releasing Configuration
-    To edit the pokemon release configuration, copy file ``release_config.json.example`` and rename it to ``release_config.json``
+    To edit the pokemon release configuration, copy the file ``release_config.json.example`` and rename it to ``release_config.json``
 
-    Edit this file however you like, but keep in mind:
+    Edit this file however you want, but keep in mind:
 
-    1. Pokemon name is always capitalize and case-sensitive
-    2. Be careful with the ``any`` configuration!
+    1. Pokemon names should always be capitalized and are case-sensitive
+    2. The ``any`` configuration effects every pokemon
     
-
-
-## How to add/discover new API
-    1. Check the type of your API request in   [POGOProtos](https://github.com/AeonLucid/POGOProtos/blob/eeccbb121b126aa51fc4eebae8d2f23d013e1cb8/src/POGOProtos/Networking/Requests/RequestType.proto) For example: RECYCLE_INVENTORY_ITEM  
-    2. Convert to the api call in OpenPoGoBot/__init__.py,  RECYCLE_INVENTORY_ITEM change to self.api.recycle_inventory_item
-        ```
-        def drop_item(self,item_id,count):
-            self.api.recycle_inventory_item(...............)
-        ```
-    3. Where is the param list?  
-        You need check this [Requests/Messages/RecycleInventoryItemMessage.proto](https://github.com/AeonLucid/POGOProtos/blob/eeccbb121b126aa51fc4eebae8d2f23d013e1cb8/src/POGOProtos/Networking/Requests/Messages/RecycleInventoryItemMessage.proto)
-    4. Then our final api call is  
-        ```
-        def drop_item(self,item_id,count):
-            self.api.recycle_inventory_item(item_id=item_id,count=count)
-            inventory_req = self.api.call()
-            print(inventory_req)
-        ```  
-    5. You can now debug on the log to see if get what you need  
-
 ## FAQ
 
 ### What's IV ?
 Here's the [introduction](http://bulbapedia.bulbagarden.net/wiki/Individual_values)
 ### Losing Starter Pokemon and others
 You can use -c 1 to protect your first stage low CP pokemon.
-### Does it run automatally?
-Not yet, still need a trainer to train the script param. But we are very close to.
 ### Set GEO Location
-It works, use -l "xx.yyyy,zz.ttttt" to set lat long for location. -- diordache
+Use either `-l "lat, long"` or `--location "lat, long"` 
 ### Google login issues (Login Error, Server busy)?
 
 Try to generate an [app password](!https://support.google.com/accounts/answer/185833?hl=en) and set is as
@@ -156,13 +109,10 @@ This error is mostly occurs for those who using 2 factor authentication but eith
 ### FLEE
 The status code "3" corresponds to "Flee" - meaning your Pokemon has ran away.
    {"responses": { "CATCH_POKEMON": { "status": 3 } }
-### My pokemon are not showing up in my Pokedex?
+### Why aren't my pokemon showing up in my Pokedex?
 Finish the tutorial on a smartphone. This will then allow everything to be visible.
-### How can I maximise my XP per hour?
-Quick Tip: When using this script, use a Lucky egg to double the XP for 30 mins. You will level up much faster. A Lucky egg is obtained on level 9 and further on whilst leveling up. (from VipsForever via /r/pokemongodev)
-### How can I not collect certain pokemon
-You don't want to collect common pokemon once you hit a certain level. It will
-slow down leveling but you won't fill up either.
+
+
 
 Create the following filter
 ```
@@ -195,8 +145,9 @@ If using multiple usernames format like this:
 
 
 ## Credits
-- [tejado](https://github.com/tejado) many thanks for the API
+- [tejado](https://github.com/tejado) for the API
 - [Mila432](https://github.com/Mila432/Pokemon_Go_API) for the login secrets
 - [elliottcarlson](https://github.com/elliottcarlson) for the Google Auth PR
 - [AeonLucid](https://github.com/AeonLucid/POGOProtos) for improved protos
 - [AHAAAAAAA](https://github.com/AHAAAAAAA/PokemonGo-Map) for parts of the s2sphere stuff
+- [PokemonGoF](https://github.com/PokemonGoF/PokemonGo-bot) and all contributors for the original bot this fork is based on
