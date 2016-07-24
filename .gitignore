@@ -19,3 +19,7 @@ data/last-location-*.json
 web/catchable-*.json
 web/inventory-*.json
 web/location-*.json
+
+# Config files
+config.json
+release_config.json
