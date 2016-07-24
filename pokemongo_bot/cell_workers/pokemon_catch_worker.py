@@ -34,7 +34,7 @@ class PokemonCatchWorker(object):
         self.inventory = bot.inventory
 
     def should_transfer(self, cp, pokemon_potential):
-        return cp < self.config.cp or pokemon_potential < self.config.pokemon_potential
+        return cp < self.config.cp and pokemon_potential < self.config.pokemon_potential
 
     def throw_pokeball(self, encounter_id, pokeball, spawnpoint_id, cp, pokemon_potential, pokemon_name):
         id_list_before_catching = self.get_pokemon_ids()
