@@ -8,6 +8,7 @@ from pokemongo_bot import logger
 
 
 class PokemonCatchWorker(object):
+
     def __init__(self, pokemon, bot):
         self.pokemon = pokemon
         self.api = bot.api
@@ -80,14 +81,14 @@ class PokemonCatchWorker(object):
                                 if pokeball is 0 and cp <= 300 and balls_stock[2] < 10:
                                     print('Great Ball stock is low... saving for pokemon with cp greater than 300')
                                 elif cp > 300 or pokeball is 0:
-                                    #print 'use Great Ball'
+                                    # print 'use Great Ball'
                                     pokeball = 2
 
                             if balls_stock[3] > 0:
                                 if pokeball is 0 and cp <= 700 and balls_stock[3] < 10:
                                     print('Ultra Ball stock is low... saving for pokemon with cp greater than 700')
                                 elif cp > 700 or pokeball is 0:
-                                    #print 'use Utra Ball'
+                                    # print 'use Utra Ball'
                                     pokeball = 3
 
                             if pokeball is 0:
@@ -99,7 +100,7 @@ class PokemonCatchWorker(object):
                                 return -1
 
                             logger.log('[x] Using {}... ({} left!)'.format(
-                                self.item_list[str(pokeball)], balls_stock[pokeball]-1))
+                                self.item_list[str(pokeball)], balls_stock[pokeball] - 1))
 
                             balls_stock[pokeball] = balls_stock[pokeball] - 1
                             id_list1 = self.count_pokemon_inventory()

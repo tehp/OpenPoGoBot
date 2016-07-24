@@ -10,6 +10,7 @@ from pokemongo_bot import logger
 
 
 class SeenFortWorker(object):
+
     def __init__(self, fort, bot):
         self.fort = fort
         self.api = bot.api
