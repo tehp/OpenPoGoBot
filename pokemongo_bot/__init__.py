@@ -1,24 +1,25 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+from math import radians, sqrt, sin, cos, atan2
 import datetime
-import googlemaps
 import json
-import logger
 import logging
 import random
 import sys
 import threading
 import yaml
 
-from cell_workers import PokemonCatchWorker, SeenFortWorker
-from cell_workers.utils import filtered_forts, distance
-from human_behaviour import sleep
-from item_list import Item
-from pgoapi import PGoApi
-from stepper import Stepper
+import googlemaps
 
+from pokemongo_bot import logger, cell_workers, human_behaviour, item_list, stepper
+from pokemongo_bot.cell_workers import PokemonCatchWorker, SeenFortWorker
+from pokemongo_bot.cell_workers.utils import filtered_forts, distance
+from pokemongo_bot.human_behaviour import sleep
+from pokemongo_bot.item_list import Item
+from pokemongo_bot.stepper import Stepper
+from pgoapi import PGoApi
 from geopy.geocoders import GoogleV3
-from math import radians, sqrt, sin, cos, atan2
 
 
 class PokemonGoBot(object):
@@ -28,6 +29,13 @@ class PokemonGoBot(object):
         self.config = config
         self.item_list = json.load(open('data/items.json'))
         self.pokemon_list = json.load(open('data/pokemon.json'))
+
+        self.log = None
+        self.stepper = None
+        self.api = None
+        self.inventory = None
+        self.ignores = None
+        self.position = None
 
     def start(self):
         self._setup_logging()
@@ -42,10 +50,8 @@ class PokemonGoBot(object):
     def work_on_cell(self, map_cells, position, include_fort_on_path):
         self._remove_ignored_pokemon(map_cells)
 
-        if (self.config.mode == "all" or self.config.mode == "poke"):
+        if self.config.mode == "all" or self.config.mode == "poke":
             self._work_on_catchable_pokemon(map_cells)
-
-        if (self.config.mode == "all" or self.config.mode == "poke"):
             self._work_on_wild_pokemon(map_cells)
 
         if (self.config.mode == "all" or self.config.mode == "farm") and include_fort_on_path:
@@ -55,29 +61,32 @@ class PokemonGoBot(object):
         forts = filtered_forts(position[0], position[1], sum([cell.get("forts", []) for cell in map_cells], []))
         if forts:
             worker = SeenFortWorker(forts[0], self)
-            hack_chain = worker.work()
+
+            # Why do we need the return value? Commenting out for now to pass pylint
+            # hack_chain = worker.work()
+            worker.work()
 
     def _remove_ignored_pokemon(self, map_cells):
         if self.process_ignored_pokemon:
             try:
                 for cell in map_cells:
-                    for p in cell['wild_pokemons'][:]:
-                        pokemon_id = p['pokemon_data']['pokemon_id']
-                        pokemon_name = filter(lambda x: int(x.get('Number')) == pokemon_id, self.pokemon_list)[0]['Name']
+                    for pokemon in cell['wild_pokemons'][:]:
+                        pokemon_id = pokemon['pokemon_data']['pokemon_id']
+                        pokemon_name = [x for x in self.pokemon_list if int(x.get('Number')) == pokemon_id][0]['Name']
 
-                        if pokemon_name in ignores:
-                            cell['wild_pokemons'].remove(p)
+                        if pokemon_name in self.ignores:
+                            cell['wild_pokemons'].remove(pokemon)
             except KeyError:
                 pass
 
             try:
-                for call in map_cells:
-                    for p in cell['catchable_pokemons'][:]:
-                        pokemon_id = p['pokemon_id']
-                        pokemon_name = filter(lambda x: int(x.get('Number')) == pokemon_id, self.pokemon_list)[0]['Name']
+                for cell in map_cells:
+                    for pokemon in cell['catchable_pokemons'][:]:
+                        pokemon_id = pokemon['pokemon_id']
+                        pokemon_name = [x for x in self.pokemon_list if int(x.get('Number')) == pokemon_id][0]['Name']
 
-                        if pokemon_name in ignores:
-                            cell['catchable_pokemons'].remove(p)
+                        if pokemon_name in self.ignores:
+                            cell['catchable_pokemons'].remove(pokemon)
             except KeyError:
                 pass
 
@@ -148,8 +157,6 @@ class PokemonGoBot(object):
 
         response_dict = self.api.call()
         # print('Response dictionary: \n\r{}'.format(json.dumps(response_dict, indent=2)))
-        currency_1 = "0"
-        currency_2 = "0"
 
         player = response_dict['responses']['GET_PLAYER']['player_data']
 
@@ -157,14 +164,10 @@ class PokemonGoBot(object):
         creation_date = datetime.datetime.fromtimestamp(
             player['creation_timestamp_ms'] / 1e3)
 
-        pokecoins = '0'
-        stardust = '0'
         balls_stock = self.pokeball_inventory()
 
-        if 'amount' in player['currencies'][0]:
-            pokecoins = player['currencies'][0]['amount']
-        if 'amount' in player['currencies'][1]:
-            stardust = player['currencies'][1]['amount']
+        pokecoins = player['currencies'][0].get('amount', '0')
+        stardust = player['currencies'][1].get('amount', '0')
 
         logger.log('[#]')
         logger.log('[#] Username: {username}'.format(**player))
@@ -193,11 +196,11 @@ class PokemonGoBot(object):
 
     def _setup_ignored_pokemon(self):
         try:
-            with open("./data/catch-ignore.yml", 'r') as y:
-                ignores = yaml.load(y)['ignore']
-                if len(ignores) > 0:
+            with open("./data/catch-ignore.yml", 'r') as ignore_file:
+                self.ignores = yaml.load(ignore_file)['ignore']
+                if len(self.ignores) > 0:
                     self.process_ignored_pokemon = True
-        except Exception, e:
+        except Exception:
             pass
 
     def drop_item(self, item_id, count):
@@ -217,26 +220,30 @@ class PokemonGoBot(object):
 
         pokemon_groups = self._initial_transfer_get_groups()
 
-        for id in pokemon_groups:
+        for group_id in pokemon_groups:
 
-            group_cp = pokemon_groups[id].keys()
+            group_cp = pokemon_groups[group_id].keys()
 
             if len(group_cp) > 1:
                 group_cp.sort()
                 group_cp.reverse()
 
-                pokemon = self.pokemon_list[int(id - 1)]
+                pokemon = self.pokemon_list[int(group_id - 1)]
                 pokemon_name = pokemon['Name']
                 pokemon_num = pokemon['Number'].lstrip('0')
 
-                for x in range(1, len(group_cp)):
+                for i in range(1, len(group_cp)):
 
-                    if (self.config.cp and group_cp[x] > self.config.cp) or (pokemon_name in ignlist or pokemon_num in ignlist):
+                    if (self.config.cp and group_cp[i] > self.config.cp) or (pokemon_name in ignlist or pokemon_num in ignlist):
                         continue
 
-                    logger.log('[x] Transferring #{} ({}) with CP {}'.format(id, pokemon_name, group_cp[x]))
-                    self.api.release_pokemon(pokemon_id=pokemon_groups[id][group_cp[x]])
-                    response_dict = self.api.call()
+                    logger.log('[x] Transferring #{} ({}) with CP {}'.format(group_id, pokemon_name, group_cp[i]))
+                    self.api.release_pokemon(pokemon_id=pokemon_groups[group_id][group_cp[i]])
+
+                    # Not using the response from API at the moment; commenting out to pass pylint
+                    # response_dict = self.api.call()
+                    self.api.call()
+
                     sleep(2)
 
         logger.log('[x] Transferring Done.')
@@ -251,21 +258,17 @@ class PokemonGoBot(object):
 
         for pokemon in inventory_dict:
             try:
-                reduce(dict.__getitem__, [
-                    "inventory_item_data", "pokemon_data", "pokemon_id"
-                ], pokemon)
+                pokemon_data = pokemon['inventory_item_data']['pokemon_data']
+                group_id = pokemon_data['pokemon_id']
+                group_pokemon = pokemon_data['id']
+                group_pokemon_cp = pokemon_data['cp']
+
+                if group_id not in pokemon_groups:
+                    pokemon_groups[group_id] = {}
+
+                pokemon_groups[group_id].update({group_pokemon_cp: group_pokemon})
             except KeyError:
                 continue
-
-            pokemon_data = pokemon['inventory_item_data']['pokemon_data']
-            group_id = pokemon_data['pokemon_id']
-            group_pokemon = pokemon_data['id']
-            group_pokemon_cp = pokemon_data['cp']
-
-            if group_id not in pokemon_groups:
-                pokemon_groups[group_id] = {}
-
-            pokemon_groups[group_id].update({group_pokemon_cp: group_pokemon})
         return pokemon_groups
 
     def update_inventory(self):
@@ -321,8 +324,8 @@ class PokemonGoBot(object):
                 #
                 # save location flag used to pull the last known location from
                 # the location.json
-                with open('data/last-location-%s.json' % (self.config.username)) as f:
-                    location_json = json.load(f)
+                with open('data/last-location-%s.json' % (self.config.username)) as last_location_file:
+                    location_json = json.load(last_location_file)
 
                     self.position = (location_json['lat'], location_json['lng'], 0.0)
                     self.api.set_position(*self.position)
@@ -333,7 +336,7 @@ class PokemonGoBot(object):
                     logger.log('')
 
                     return
-            except:
+            except Exception:
                 if not self.config.location:
                     sys.exit("No cached Location. Please specify initial location.")
                 else:

@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import json
 import time
-from math import radians, sqrt, sin, cos, atan2
-from pgoapi.utilities import f2i, h2f
-from utils import distance, print_green, print_yellow, print_red, format_dist, format_time
-from pokemongo_bot.human_behaviour import sleep
+
+from pgoapi.utilities import f2i
 from pokemongo_bot import logger
+from pokemongo_bot.human_behaviour import sleep
+from pokemongo_bot.cell_workers.utils import distance, format_dist, format_time
 
 
 class SeenFortWorker(object):
@@ -25,10 +24,10 @@ class SeenFortWorker(object):
         lng = self.fort["longitude"]
         unit = self.config.distance_unit  # Unit to use when printing formatted distance
 
-        fortID = self.fort["id"]
+        fort_id = self.fort["id"]
         dist = distance(self.position[0], self.position[1], lat, lng)
 
-        logger.log("[#] Found fort {} at distance {}".format(fortID, format_dist(dist, unit)))
+        logger.log("[#] Found fort {} at distance {}".format(fort_id, format_dist(dist, unit)))
 
         if dist > 0:
             logger.log("[#] Need to move closer to Pokestop")
@@ -78,7 +77,7 @@ class SeenFortWorker(object):
                     else:
                         tmp_count_items[item_id] += item["item_count"]
 
-                for item_id, item_count in tmp_count_items.iteritems():
+                for item_id, item_count in tmp_count_items.items():
                     item_id = str(item_id)
                     item_name = self.item_list[item_id]
 
@@ -116,7 +115,7 @@ class SeenFortWorker(object):
                     format_time((pokestop_cooldown / 1000) -
                                 seconds_since_epoch)))
         elif spin_result == 4:
-            print_red("[#] Inventory is full, switching to catch mode...")
+            logger.log("[#] Inventory is full, switching to catch mode...", "red")
             self.config.mode = "poke"
 
         if "chain_hack_sequence_number" in fort_details:
@@ -124,7 +123,7 @@ class SeenFortWorker(object):
             return fort_details[
                 "chain_hack_sequence_number"]
         else:
-            print_yellow("[#] may search too often, lets have a rest")
+            logger.log("[#] may search too often, lets have a rest", "yellow")
             return 11
         sleep(10)
         return 0

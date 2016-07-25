@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import time
+from __future__ import print_function
 import random
+import time
+
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot import logger
 
@@ -33,10 +35,10 @@ class PokemonCatchWorker(object):
         self.item_list = bot.item_list
         self.inventory = bot.inventory
 
-    def should_transfer(self, cp, pokemon_potential):
-        return cp < self.config.cp and pokemon_potential < self.config.pokemon_potential
+    def should_transfer(self, combat_power, pokemon_potential):
+        return combat_power < self.config.cp and pokemon_potential < self.config.pokemon_potential
 
-    def throw_pokeball(self, encounter_id, pokeball, spawnpoint_id, cp, pokemon_potential, pokemon_name):
+    def throw_pokeball(self, encounter_id, pokeball, spawnpoint_id, combat_power, pokemon_potential, pokemon_name):
         id_list_before_catching = self.get_pokemon_ids()
         self.api.catch_pokemon(
             encounter_id=encounter_id,
@@ -63,10 +65,10 @@ class PokemonCatchWorker(object):
                     pokemon_name), 'red')
             return False
         elif status is 1:
-            if self.should_transfer(cp, pokemon_potential):
+            if self.should_transfer(combat_power, pokemon_potential):
                 logger.log(
                     '[x] Captured {}! [CP {}] [IV {}] - exchanging for candy'.format(
-                        pokemon_name, cp,
+                        pokemon_name, combat_power,
                         pokemon_potential), 'green')
                 id_list_after_catching = self.get_pokemon_ids()
 
@@ -77,7 +79,7 @@ class PokemonCatchWorker(object):
                     '[#] {} has been exchanged for candy!'.format(pokemon_name), 'green')
             else:
                 logger.log(
-                    '[x] Captured {}! [CP {}]'.format(pokemon_name, cp), 'green')
+                    '[x] Captured {}! [CP {}]'.format(pokemon_name, combat_power), 'green')
             return False
         else:
             return False
@@ -101,23 +103,23 @@ class PokemonCatchWorker(object):
             logger.log('[x] Pokemon Bag is full!', 'red')
             self.bot.initial_transfer()
         elif status is 1:
-            cp = 0
-            total_IV = 0
+            combat_power = 0
+            total_iv = 0
             pokemon = encounter.get('wild_pokemon')
             if pokemon is not None:
                 pokemon_data = pokemon.get('pokemon_data', {})
-                cp = pokemon_data.get('cp')  # cp can be none
+                combat_power = pokemon_data.get('cp')  # cp can be none
                 iv_stats = ['individual_attack', 'individual_defense', 'individual_stamina']
                 for individual_stat in iv_stats:
                     try:
-                        total_IV += pokemon_data[individual_stat]
+                        total_iv += pokemon_data[individual_stat]
                     except KeyError:
                         continue
-                pokemon_potential = round((total_IV / 45.0), 2)
+                pokemon_potential = round((total_iv / 45.0), 2)
                 pokemon_num = int(pokemon['pokemon_data'][
                     'pokemon_id']) - 1
                 pokemon_name = self.pokemon_list[int(pokemon_num)]['Name']
-                logger.log('[#] A Wild {} appeared! [CP {}] [Potential {}]'.format(pokemon_name, cp if cp is not None else "unknown", pokemon_potential), 'yellow')
+                logger.log('[#] A Wild {} appeared! [CP {}] [Potential {}]'.format(pokemon_name, combat_power if combat_power is not None else "unknown", pokemon_potential), 'yellow')
 
                 # Simulate app
                 sleep(3)
@@ -131,15 +133,15 @@ class PokemonCatchWorker(object):
                     pokeball = 1
 
                 if balls_stock[2] > 0:
-                    if pokeball is 0 and cp <= 300 and balls_stock[2] < 10:
+                    if pokeball is 0 and combat_power <= 300 and balls_stock[2] < 10:
                         print('Great Ball stock is low... saving for pokemon with cp greater than 300')
-                    elif cp > 300 or pokeball is 0:
+                    elif combat_power > 300 or pokeball is 0:
                         pokeball = 2
 
                 if balls_stock[3] > 0:
-                    if pokeball is 0 and cp <= 700 and balls_stock[3] < 10:
+                    if pokeball is 0 and combat_power <= 700 and balls_stock[3] < 10:
                         print('Ultra Ball stock is low... saving for pokemon with cp greater than 700')
-                    elif cp > 700 or pokeball is 0:
+                    elif combat_power > 700 or pokeball is 0:
                         pokeball = 3
 
                 if pokeball is 0:
@@ -153,7 +155,7 @@ class PokemonCatchWorker(object):
                 logger.log('[x] Using {}... ({} left!)'.format(self.item_list[str(pokeball)], balls_stock[pokeball] - 1))
 
                 balls_stock[pokeball] -= 1
-                should_continue_throwing = self.throw_pokeball(encounter_id, pokeball, spawnpoint_id, cp, pokemon_potential, pokemon_name)
+                should_continue_throwing = self.throw_pokeball(encounter_id, pokeball, spawnpoint_id, combat_power, pokemon_potential, pokemon_name)
         time.sleep(5)
 
     def _transfer_low_cp_pokemon(self, value):
@@ -162,7 +164,6 @@ class PokemonCatchWorker(object):
         self._transfer_all_low_cp_pokemon(value, response_dict)
 
     def _transfer_all_low_cp_pokemon(self, value, response_dict):
-        id_list = []
         inventory_items = response_dict.get("responses", {}).get("GET_INVENTORY", {}).get("inventory_delta", {}).get(
             "inventory_items")
         if response_dict is not None:
@@ -177,7 +178,9 @@ class PokemonCatchWorker(object):
 
     def transfer_pokemon(self, pid):
         self.api.release_pokemon(pokemon_id=pid)
-        response_dict = self.api.call()
+        # Why do we need response_dict? Commenting out to pass pylint
+        # response_dict = self.api.call()
+        self.api.call()
 
     def get_pokemon_ids(self):
         self.api.get_inventory()

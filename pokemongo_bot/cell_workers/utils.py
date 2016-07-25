@@ -1,30 +1,30 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
 import struct
-import s2sphere
 import time
 
 from colorama import init
-from geopy.distance import VincentyDistance, vincenty
-from math import cos, asin, sqrt
+from geopy.distance import vincenty
 
 init()
 
 
 def distance(lat1, lon1, lat2, lon2):
-    return vincenty((lat1, lon2), (lat2, lon2)).meters
+    return vincenty((lat1, lon1), (lat2, lon2)).meters
 
 
 def filtered_forts(lat, lng, forts):
+    #pylint: disable=bad-continuation
     forts = [(
         fort, distance(lat, lng, fort['latitude'], fort['longitude']))
         for fort in forts
         if fort.get('type', None) == 1 and ("enabled" in fort or "lure_info" in fort) and (fort.get('cooldown_complete_timestamp_ms', -1) < time.time() * 1000)
     ]
-    return [x[0] for x in sorted(forts, lambda x, y: cmp(x[1], y[1]))]
+    return [x[0] for x in sorted(forts, lambda x, y: x[1] < y[1])]
 
 
-def convert(distance, from_unit, to_unit):  # Converts units
+def convert(original_distance, from_unit, to_unit):  # Converts units
     # Example of converting distance from meters to feet:
     # convert(100.0,"m","ft")
     conversions = {
@@ -78,17 +78,17 @@ def convert(distance, from_unit, to_unit):  # Converts units
                "yd": 1760.0,
                "mi": 1.0}
     }
-    return distance * conversions[from_unit][to_unit]
+    return original_distance * conversions[from_unit][to_unit]
 
 
-def dist_to_str(distance, unit):
-    return '{:.2f}{}'.format(distance, unit)
+def dist_to_str(original_distance, unit):
+    return '{:.2f}{}'.format(original_distance, unit)
 
 
-def format_dist(distance, unit):
+def format_dist(original_distance, unit):
     # Assumes that distance is in meters and converts it to the given unit, then a formatted string is returned
     # Ex: format_dist(1500, 'km') returns the string "1.5km"
-    return dist_to_str(convert(distance, 'm', unit), unit)
+    return dist_to_str(convert(original_distance, 'm', unit), unit)
 
 
 def format_time(seconds):
@@ -103,8 +103,8 @@ def format_time(seconds):
     return '{:.2f} seconds'.format(seconds)
 
 
-def i2f(int):
-    return struct.unpack('<d', struct.pack('<Q', int))[0]
+def i2f(input_int):
+    return struct.unpack('<d', struct.pack('<Q', input_int))[0]
 
 
 def print_green(message):
