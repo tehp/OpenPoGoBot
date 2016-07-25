@@ -1,4 +1,5 @@
 # OpenPoGoBot
+[![Build Status](https://travis-ci.org/OpenPoGo/OpenPoGoBot.svg?branch=master)](https://travis-ci.org/OpenPoGo/OpenPoGoBot)
 
   A quick note:
   
@@ -56,10 +57,11 @@ pip install -r requirements.txt
 ```
 
 ## Usage
-    usage: pokecli.py [-h] -a AUTH_SERVICE -u USERNAME -p PASSWORD -l LOCATION [-lc] [-c] [-m] [-w] [--distance_unit] [--initial-transfer] [--maxsteps] [-iv] [-d] [-t]
+    usage: pokecli.py [-h] -a AUTH_SERVICE -u USERNAME -p PASSWORD -l LOCATION [-lc] [-c] [-m] [-w] [--distance_unit] [--initial-transfer] [--maxsteps] [-cp] [-iv] [-d] [-t]
 
     optional arguments:
-      -h, --help                                    show this help message and exit
+      -h, --help                                    Show this help message and exit
+      -j, --config-json                             Load a config JSON file. Any arguments specified on command line override those specified in the file.
       -a AUTH_SERVICE, --auth-service AUTH_SERVICE  Auth Service ('ptc' or 'google')
       -u USERNAME, --username USERNAME              Username
       -p PASSWORD, --password PASSWORD              Password
@@ -67,10 +69,11 @@ pip install -r requirements.txt
       -lc, --location-cache                         Bot will start at last known location
       -m MODE, --mode MODE                          Set farming Mode for the bot ('all', 'poke', 'farm')
       -w SPEED,  --walk SPEED                       Walk instead of teleport with given speed (meters per second max 4.16 because of walking end on 15km/h)
-      -du, --distance-unit UNIT                     Set the unit to display distance in (e.g, km for kilometers, mi for miles, ft for feet)
+      -du UNIT, --distance-unit UNIT                Set the unit to display distance in (e.g, km for kilometers, mi for miles, ft for feet)
       -it, --initial-transfer                       Start the bot with a pokemon clean up, keeping only the higher CP of each pokemon. It respects -c as upper limit to release.
-      -ms, --max-steps MAX_STEP                     Set the steps around your initial location (DEFAULT 5 mean 25 cells around your location)
-      -iv IV, --pokemon-potential                   Set the ratio for the IV values to transfer (DEFAULT 0.4 eg. 0.4 will transfer a pokemon with IV 0.3)
+      -ms MAX_STEP, --max-steps MAX_STEP            Set the steps around your initial location (DEFAULT 5 mean 25 cells around your location)
+      -cp COMBAT_POWER, --combat-power COMBAT_POWER Transfer Pokemon that have CP less than this value (default 100)",
+      -iv IV, --pokemon-potential IV                Set the ratio for the IV values to transfer (DEFAULT 0.4 eg. 0.4 will transfer a pokemon with IV 0.3)
       -if LIST, --item-filter LIST                  Pass a list of unwanted items to recycle when collected at a Pokestop (e.g, [\"101\",\"102\",\"103\",\"104\"] to recycle potions when collected)" 
       -d, --debug                                   Debug Mode
       -t, --test                                    Only parse the specified location
@@ -80,6 +83,13 @@ pip install -r requirements.txt
     $ python2 pokecli.py -a ptc -u tejado -p 1234 --location "New York, Washington Square"
     Google Account:
     $ python2 pokecli.py -a google -u tejado -p 1234 --location "New York, Washington Square"
+
+### Bot Configuration via JSON
+    To load arguments for the bot from a JSON file, use the ``--config-json`` argument with the name of a file.
+    Any other command line arguments specified will override the parameters specified in the loaded JSON file.
+
+    Example - this will load config.json but use cp=1000 and iv=0.7 even if already defined in config.json:
+    $ python2 pokecli.py --config-json config.json -cp 1000 -iv 0.7 
 
 ### Advance Releasing Configuration
     To edit the pokemon release configuration, copy the file ``release_config.json.example`` and rename it to ``release_config.json``
@@ -94,7 +104,7 @@ pip install -r requirements.txt
 ### What's IV ?
 Here's the [introduction](http://bulbapedia.bulbagarden.net/wiki/Individual_values)
 ### Losing Starter Pokemon and others
-You can use -c 1 to protect your first stage low CP pokemon.
+You can use -cp 1 to protect your first stage low CP pokemon.
 ### Set GEO Location
 Use either `-l "lat, long"` or `--location "lat, long"` 
 ### Google login issues (Login Error, Server busy)?

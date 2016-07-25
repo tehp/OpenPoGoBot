@@ -60,7 +60,7 @@ def init_config():
     # Read passed in Arguments
     parser.add_argument("-j",
                         "--config-json",
-                        help="Load a config JSON file. Overrides all other command line options if specified.",
+                        help="Load a config JSON file. Any arguments specified on command line override those specified in the file.",
                         type=str,
                         dest="json")
     parser.add_argument("-a",
@@ -106,7 +106,7 @@ def init_config():
     parser.add_argument(
         "-ms",
         "--max-steps",
-        help="Set the steps around your initial location(DEFAULT 5 mean 25 cells around your location)",
+        help="Set the steps around your initial location(DEFAULT 50 mean 2500 cells around your location)",
         type=int,
         dest="max_steps")
     parser.add_argument(

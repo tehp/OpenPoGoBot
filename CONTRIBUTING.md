@@ -12,5 +12,5 @@ Please do not join the Slack team to ask questions that are not related to devel
 
 ## Pull Requests
   - Please squash your commits before merging.
-  - All PR's must be reviewed and aproved by 2 team members before merge. Please be patient as this may take some time.
+  - All PR's must be reviewed and approved by 2 team members before merge. Please be patient as this may take some time.
   - Use detailed commit messages to allow for quicker review.
