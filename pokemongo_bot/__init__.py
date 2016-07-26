@@ -214,7 +214,6 @@ class PokemonGoBot(object):
 
         response_dict = self.api.call()
         if response_dict is not None:
-            logger.log("Failed to initialize API...", "red")
             # print('Response dictionary: \n\r{}'.format(json.dumps(response_dict, indent=2)))
 
             player = response_dict['responses']['GET_PLAYER']['player_data']
@@ -241,7 +240,6 @@ class PokemonGoBot(object):
             logger.log('[#] PokeBalls: {}'.format(balls_stock[1]))
             logger.log('[#] GreatBalls: {}'.format(balls_stock[2]))
             logger.log('[#] UltraBalls: {}'.format(balls_stock[3]))
-
         # Testing
         # self.drop_item(Item.ITEM_POTION.value,1)
         # exit(0)
