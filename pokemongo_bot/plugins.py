@@ -1,25 +1,25 @@
-__author__    = "Michael E. Cotterell"
-__email__     = "mepcotterell@gmail.com"
+__author__ = "Michael E. Cotterell"
+__email__ = "mepcotterell@gmail.com"
 __copyright__ = "Copyright 2013, Michael E. Cotterell"
-__license__   = "MIT"
+__license__ = "MIT"
 
 import imp
 import os
 import logging
 import collections
 
-logging.basicConfig(level = logging.DEBUG)
+logging.basicConfig(level=logging.DEBUG)
 
-class PluginManager:
+class PluginManager(object):
     '''
     A simple plugin manager
     '''
 
-    def __init__(self, plugin_folder, main_module = '__init__', log = logging):
-        self.logging        = log
-        self.plugin_folder  = plugin_folder
-        self.main_module    = main_module
-        self.loaded_plugins = collections.OrderedDict({})
+    def __init__(self, plugin_folder, main_module='__init__', log=logging):
+        self.logging = log
+        self.plugin_folder = plugin_folder
+        self.main_module = main_module
+        self.loaded_plugins = collections.OrderedDict()
 
     def get_available_plugins(self):
         '''
@@ -69,29 +69,33 @@ class PluginManager:
         del self.loaded_plugins[plugin_name]
         self.logging.log('plugin "%s" unloaded' % plugin_name)
 
-    def execute_action_hook(self, hook_name, hook_params = {}):
+    def execute_action_hook(self, hook_name, hook_params=None):
         '''
         Executes action hook functions of the form action_hook_name contained in
         the loaded plugin modules.
         '''
-        for key, plugin_info in self.loaded_plugins.items():
+        if hook_params is None:
+            hook_params = {}
+        for plugin_info in self.loaded_plugins.values():
             module = plugin_info['module']
             hook_func_name = 'action_%s' % hook_name
             if hasattr(module, hook_func_name):
                 hook_func = getattr(module, hook_func_name)
                 hook_func(hook_params)
 
-    def execute_filter_hook(self, hook_name, hook_params = {}):
+    def execute_filter_hook(self, hook_name, hook_params=None):
         '''
         Filters the hook_params through filter hook functions of the form
         filter_hook_name contained in the loaded plugin modules.
         '''
+        if hook_params is None:
+            hook_params = {}
         hook_params_keys = hook_params.keys()
-        for key, plugin_info in self.loaded_plugins.items():
+        for plugin_info in self.loaded_plugins.values():
             module = plugin_info['module']
             hook_func_name = 'filter_%s' % hook_name
             if hasattr(module, hook_func_name):
-                hook_func   = getattr(module, hook_func_name)
+                hook_func = getattr(module, hook_func_name)
                 hook_params = hook_func(hook_params)
                 for nkey in hook_params_keys:
                     if nkey not in hook_params.keys():

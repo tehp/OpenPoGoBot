@@ -1,5 +1,4 @@
 import json
-import os
 
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot import logger

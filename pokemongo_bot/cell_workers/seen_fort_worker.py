@@ -89,14 +89,7 @@ class SeenFortWorker(object):
                         logger.log("[+] Recycling " + str(item_count) + "x " + item_name + "...", 'green')
 
                         # RECYCLE_INVENTORY_ITEM
-                        response_dict_recycle = self.bot.drop_item(item_id=item_id, count=item_count)
-                        recycle_status = response_dict_recycle.get("responses", {}).get("RECYCLE_INVENTORY_ITEM", {}).get("result")
-
-                        if recycle_status is not None:
-                            if recycle_status is 1:  # Request success
-                                logger.log("[+] Recycling success!", 'green')
-                            else:
-                                logger.log("[+] Recycling failed!", 'red')
+                        self.bot.drop_item(item_id=item_id, count=item_count)
 
             else:
                 logger.log("[#] Nothing found.", "yellow")

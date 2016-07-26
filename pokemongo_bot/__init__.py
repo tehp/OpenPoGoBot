@@ -22,7 +22,7 @@ from pgoapi import PGoApi
 from geopy.geocoders import GoogleV3
 
 
-class PokemonGoBot:
+class PokemonGoBot(object):
     process_ignored_pokemon = False
 
     def __init__(self, config):
@@ -33,13 +33,12 @@ class PokemonGoBot:
         self.log = None
         self.stepper = None
         self.api = None
-        self.inventory = None
-        self.ignores = None
-        self.position = None
+        self.inventory = []
+        self.ignores = []
+        self.position = (0, 0, 0)
         self.plugin_manager = None
-        self.init_plugins()
 
-    def init_plugins(self):
+    def _init_plugins(self):
         # create a plugin manager
         self.plugin_manager = PluginManager('./plugins', log=logger)
 
@@ -51,13 +50,14 @@ class PokemonGoBot:
         self._setup_logging()
         self._setup_api()
         self._setup_ignored_pokemon()
+        self._init_plugins()
         self.stepper = Stepper(self)
         random.seed()
 
     def take_step(self):
         self.stepper.take_step()
 
-    def work_on_cell(self, cell, position, include_fort_on_path):
+    def work_on_cell(self, cell, include_fort_on_path):
         self._remove_ignored_pokemon(cell)
 
         if (self.config.mode == "all" or self.config.mode == "poke") and 'catchable_pokemons' in cell and len(cell['catchable_pokemons']) > 0:
@@ -87,23 +87,22 @@ class PokemonGoBot:
             if 'forts' in cell:
                 # Only include those with a lat/long
                 forts = [fort for fort in cell['forts'] if 'latitude' in fort and 'type' in fort]
-                gyms = [gym for gym in cell['forts'] if 'gym_points' in gym]
+                # gyms = [gym for gym in cell['forts'] if 'gym_points' in gym]
 
                 # Sort all by distance from current pos- eventually this should
                 # build graph & A* it
-                forts.sort(key=lambda x: distance(self.position[
-                                                      0], self.position[1], x['latitude'], x['longitude']))
+                forts.sort(key=lambda x: distance(self.position[0], self.position[1], x['latitude'], x['longitude']))
                 for fort in forts:
                     worker = SeenFortWorker(fort, self)
                     worker.work()
 
     def catch_pokemon(self, pokemon):
-        worker = PokemonCatchWorker(pokemon, self)
-        return_value = worker.work()
+        catch_worker = PokemonCatchWorker(pokemon, self)
+        return_value = catch_worker.work()
 
         if return_value == PokemonCatchWorker.BAG_FULL:
-            worker = InitialTransferWorker(self)
-            worker.work()
+            transfer_worker = InitialTransferWorker(self)
+            transfer_worker.work()
 
         return return_value
 
@@ -257,7 +256,7 @@ class PokemonGoBot:
 
     def drop_item(self, item_id, count):
         self.api.recycle_inventory_item(item_id=item_id, count=count)
-        inventory_req = self.api.call()
+        self.api.call()
 
     def update_inventory(self):
         self.api.get_inventory()
