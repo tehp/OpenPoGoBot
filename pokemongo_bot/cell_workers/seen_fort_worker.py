@@ -46,7 +46,7 @@ class SeenFortWorker(object):
                               longitude=lng)
         response_dict = self.api.call()
         fort_details = response_dict.get("responses", {}).get("FORT_DETAILS", {})
-        fort_name = fort_details.get("name").encode("utf8", "replace")
+        fort_name = fort_details.get("name").encode("utf8", "replace") if fort_details.get("name") else fort_details.get("name")
         fort_name = fort_name if fort_name is not None else "Unknown"
         logger.log("[#] Now at Pokestop: " + fort_name + " - Spinning...",
                    "yellow")
