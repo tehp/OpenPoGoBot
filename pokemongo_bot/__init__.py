@@ -8,7 +8,6 @@ import logging
 import random
 import sys
 import threading
-import yaml
 
 import googlemaps
 
@@ -18,11 +17,12 @@ from pokemongo_bot.cell_workers.utils import filtered_forts, distance
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.item_list import Item
 from pokemongo_bot.stepper import Stepper
+from pokemongo_bot.plugins import PluginManager
 from pgoapi import PGoApi
 from geopy.geocoders import GoogleV3
 
 
-class PokemonGoBot(object):
+class PokemonGoBot:
     process_ignored_pokemon = False
 
     def __init__(self, config):
@@ -36,6 +36,16 @@ class PokemonGoBot(object):
         self.inventory = None
         self.ignores = None
         self.position = None
+        self.plugin_manager = None
+        self.init_plugins()
+
+    def init_plugins(self):
+        # create a plugin manager
+        self.plugin_manager = PluginManager('./plugins', log=logger)
+
+        # load all plugin modules
+        for plugin in self.plugin_manager.get_available_plugins():
+            self.plugin_manager.load_plugin(plugin)
 
     def start(self):
         self._setup_logging()
@@ -293,8 +303,7 @@ class PokemonGoBot(object):
 
         inventory_req = self.api.call()
         inventory_dict = inventory_req['responses']['GET_INVENTORY']['inventory_delta']['inventory_items']
-        with open('web/inventory-%s.json' %
-                  (self.config.username), 'w') as outfile:
+        with open('web/inventory-{}.json'.format(self.config.username), 'w') as outfile:
             json.dump(inventory_dict, outfile)
 
         # get player balls stock

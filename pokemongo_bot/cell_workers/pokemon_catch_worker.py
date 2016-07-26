@@ -66,10 +66,8 @@ class PokemonCatchWorker(object):
             return False
         elif status is 1:
             if self.should_transfer(combat_power, pokemon_potential):
-                logger.log(
-                    '[x] Captured {}! [CP {}] [IV {}] - exchanging for candy'.format(
-                        pokemon_name, combat_power,
-                        pokemon_potential), 'green')
+                self.bot.plugin_manager.execute_action_hook('after_catch_pokemon', {"name": pokemon_name, "cp": combat_power, "pokemon_potential": pokemon_potential})
+                logger.log('[x] Exchanging pokemon for candy!')
                 id_list_after_catching = self.get_pokemon_ids()
 
                 # Transfering Pokemon
@@ -78,8 +76,7 @@ class PokemonCatchWorker(object):
                 logger.log(
                     '[#] {} has been exchanged for candy!'.format(pokemon_name), 'green')
             else:
-                logger.log(
-                    '[x] Captured {}! [CP {}]'.format(pokemon_name, combat_power), 'green')
+                self.bot.plugin_manager.execute_action_hook('after_catch_pokemon', {"name": pokemon_name, "cp": combat_power, "pokemon_potential": pokemon_potential})
             return False
         else:
             return False
@@ -119,7 +116,7 @@ class PokemonCatchWorker(object):
                 pokemon_num = int(pokemon['pokemon_data'][
                     'pokemon_id']) - 1
                 pokemon_name = self.pokemon_list[int(pokemon_num)]['Name']
-                logger.log('[#] A Wild {} appeared! [CP {}] [Potential {}]'.format(pokemon_name, combat_power if combat_power is not None else "unknown", pokemon_potential), 'yellow')
+                self.bot.plugin_manager.execute_action_hook('before_catch_pokemon', {"name": pokemon_name, "cp": combat_power if combat_power is not None else "unknown", "pokemon_potential": pokemon_potential})
 
                 # Simulate app
                 sleep(3)
@@ -152,7 +149,7 @@ class PokemonCatchWorker(object):
                     self.config.mode = 'farm'
                     return -1
 
-                logger.log('[x] Using {}... ({} left!)'.format(self.item_list[str(pokeball)], balls_stock[pokeball] - 1))
+                self.bot.plugin_manager.execute_action_hook('use_pokeball', {"pokeball_name": self.item_list[str(pokeball)], "number_left": balls_stock[pokeball] - 1})
 
                 balls_stock[pokeball] -= 1
                 should_continue_throwing = self.throw_pokeball(encounter_id, pokeball, spawnpoint_id, combat_power, pokemon_potential, pokemon_name)

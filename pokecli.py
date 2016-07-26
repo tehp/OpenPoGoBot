@@ -27,7 +27,7 @@ Author: tjado <https://github.com/tejado>
 
 from __future__ import print_function
 from getpass import getpass
-#pylint: disable=redefined-builtin
+# pylint: disable=redefined-builtin
 from builtins import input
 import json
 import argparse
@@ -40,7 +40,7 @@ from pokemongo_bot import PokemonGoBot
 
 # Disable HTTPS certificate verification
 if sys.version_info >= (2, 7, 9):
-    #pylint: disable=protected-access
+    # pylint: disable=protected-access
     ssl._create_default_https_context = ssl._create_unverified_context
 
 
