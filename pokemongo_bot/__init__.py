@@ -12,6 +12,7 @@ import threading
 import googlemaps
 
 from pokemongo_bot import logger, cell_workers, human_behaviour, item_list, stepper
+from pokemongo_bot.event_manager import manager
 from pokemongo_bot.cell_workers import PokemonCatchWorker, SeenFortWorker, InitialTransferWorker, WalkTowardsFortWorker
 from pokemongo_bot.cell_workers.utils import filtered_forts, distance
 from pokemongo_bot.human_behaviour import sleep
@@ -53,6 +54,9 @@ class PokemonGoBot(object):
         self._init_plugins()
         self.stepper = Stepper(self)
         random.seed()
+
+    def fire(self, event, *args, **kwargs):
+        manager.fire_with_context(event, self, *args, **kwargs)
 
     def take_step(self):
         self.stepper.take_step()
@@ -96,7 +100,7 @@ class PokemonGoBot(object):
                     walk_worker = WalkTowardsFortWorker(fort, self)
                     walk_worker.work()
 
-                    if (self.config.mode == "all" or self.config.mode == "farm"):
+                    if self.config.mode == "all" or self.config.mode == "farm":
                         spinner_worker = SeenFortWorker(fort, self)
                         spinner_worker.work()
 
