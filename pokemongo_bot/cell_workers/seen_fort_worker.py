@@ -118,12 +118,4 @@ class SeenFortWorker(object):
             logger.log("[#] Inventory is full, switching to catch mode...", "red")
             self.config.mode = "poke"
 
-        if "chain_hack_sequence_number" in fort_details:
-            time.sleep(2)
-            return fort_details[
-                "chain_hack_sequence_number"]
-        else:
-            logger.log("[#] may search too often, lets have a rest", "yellow")
-            return 11
-        sleep(10)
-        return 0
+        sleep(2)
