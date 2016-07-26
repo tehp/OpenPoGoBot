@@ -51,6 +51,7 @@ See [CONTRIBUTING.md](https://github.com/OpenPoGo/OpenPoGoBot/blob/master/CONTRI
 ### Install
 ```
 git clone --recursive https://www.github.com/OpenPoGo/OpenPoGoBot
+cd OpenPoGoBot
 virtualenv env
 source env/bin/activate
 pip install -r requirements.txt
