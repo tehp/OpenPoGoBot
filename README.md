@@ -75,10 +75,11 @@ pip install -r requirements.txt
       -ms MAX_STEP, --max-steps MAX_STEP            Set the steps around your initial location (DEFAULT 5 mean 25 cells around your location)
       -cp COMBAT_POWER, --combat-power COMBAT_POWER Transfer Pokemon that have CP less than this value (default 100)",
       -iv IV, --pokemon-potential IV                Set the ratio for the IV values to transfer (DEFAULT 0.4 eg. 0.4 will transfer a pokemon with IV 0.3)
-      -if LIST, --item-filter LIST                  Pass a list of unwanted items to recycle when collected at a Pokestop (e.g, [\"101\",\"102\",\"103\",\"104\"] to recycle potions when collected)" 
+      -if LIST, --item-filter LIST                  Pass a list of unwanted items to recycle when collected at a Pokestop (e.g, [\"101\",\"102\",\"103\",\"104\"] to recycle potions when collected)"
+      -ig LIST, --ign-init-trans LIST               Pass a list of pokemon to ignore during initial transfer (e.g. 017,049,001)
+      -k KEY, --gmapkey KEY                         Set a google maps API key to use
       -d, --debug                                   Debug Mode
       -t, --test                                    Only parse the specified location
-      -if ITEM_FILTER, --item-filter ITEM_FILTER    Filter items to recycle in the form of "id,id,id    "
 
 ### Command Line Example
     Pokemon Trainer Club (PTC) account:

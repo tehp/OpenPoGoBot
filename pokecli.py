@@ -58,85 +58,99 @@ def init_config():
     parser = argparse.ArgumentParser()
 
     # Read passed in Arguments
-    parser.add_argument("-j",
-                        "--config-json",
-                        help="Load a config JSON file. Any arguments specified on command line override those specified in the file.",
-                        type=str,
-                        dest="json")
-    parser.add_argument("-a",
-                        "--auth-service",
-                        help="Auth Service ('ptc' or 'google')",
-                        dest="auth_service")
+    parser.add_argument(
+        "-j",
+        "--config-json",
+        help="Load a config JSON file. Any arguments specified on command line override those specified in the file.",
+        type=str,
+        dest="json")
+    parser.add_argument(
+        "-a",
+        "--auth-service",
+        help="Auth Service ('ptc' or 'google')",
+        dest="auth_service")
     parser.add_argument("-u", "--username", help="Username", dest="username")
     parser.add_argument("-p", "--password", help="Password", dest="password")
-    parser.add_argument("-l", "--location", help="Location", dest="location")
-    parser.add_argument("-lc",
-                        "--location-cache",
-                        help="Bot will start at last known location",
-                        action="store_true",
-                        dest="location_cache")
-    parser.add_argument("-m",
-                        "--mode",
-                        help="Farming Mode",
-                        type=str,
-                        dest="mode")
+    parser.add_argument("-l", "--location", help="Location", dest="Location (Address or 'xx.yyyy,zz.ttttt')")
+    parser.add_argument(
+        "-lc",
+        "--location-cache",
+        help="Bot will start at last known location",
+        action="store_true",
+        dest="location_cache")
+    parser.add_argument(
+        "-m",
+        "--mode",
+        help="Set farming Mode for the bot ('all', 'poke', 'farm')",
+        type=str,
+        dest="mode")
     parser.add_argument(
         "-w",
         "--walk",
-        help="Walk instead of teleport with given speed (meters per second, e.g. 2.5)",
+        help=" Walk instead of teleport with given speed (meters per second max 4.16 because of walking end on 15km/h)",
         type=float,
         dest="walk")
-    parser.add_argument("-cp",
-                        "--combat-power",
-                        "--combat-points",
-                        help="Transfer Pokemon that have CP less than this value (default 100)",
-                        type=int,
-                        dest="cp")
-    parser.add_argument(
-        "-iv",
-        "--pokemon-potential",
-        help="Transfer Pokemon that have an IV ratio less than this value (default 0.40)",
-        type=float,
-        dest="pokemon_potential")
-    parser.add_argument("-k",
-                        "--gmapkey",
-                        help="Set Google Maps API KEY",
-                        type=str,
-                        dest="gmapkey")
-    parser.add_argument(
-        "-ms",
-        "--max-steps",
-        help="Set the steps around your initial location(DEFAULT 50 mean 2500 cells around your location)",
-        type=int,
-        dest="max_steps")
-    parser.add_argument(
-        "-it",
-        "--initial-transfer",
-        help="Transfer all pokemon with same ID on bot start, except pokemon with highest CP. Respects --cp",
-        action="store_true",
-        dest="initial_transfer")
-    parser.add_argument("-d",
-                        "--debug",
-                        help="Debug Mode",
-                        action="store_true",
-                        dest="debug")
-    parser.add_argument("-t",
-                        "--test",
-                        help="Only parse the specified location",
-                        action="store_true",
-                        dest="test")
     parser.add_argument(
         "-du",
         "--distance-unit",
         help="Set the unit to display distance in (e.g, km for kilometers, mi for miles, ft for feet)",
         type=str,
         dest="distance_unit")
-
+    parser.add_argument(
+        "-it",
+        "--initial-transfer",
+        help="Start the bot with a pokemon clean up, keeping only the higher CP of each pokemon. It respects -c as upper limit to release.",
+        action="store_true",
+        dest="initial_transfer")
+    parser.add_argument(
+        "-ms",
+        "--max-steps",
+        help="Set the steps around your initial location (DEFAULT 5 mean 25 cells around your location)",
+        type=int,
+        dest="max_steps")
+    parser.add_argument(
+        "-cp",
+        "--combat-power",
+        "--combat-points",
+        help="Transfer Pokemon that have CP less than this value (default 100)",
+        type=int,
+        dest="cp")
+    parser.add_argument(
+        "-iv",
+        "--pokemon-potential",
+        help="Set the ratio for the IV values to transfer (DEFAULT 0.4 eg. 0.4 will transfer a pokemon with IV 0.3)",
+        type=float,
+        dest="pokemon_potential")
+    parser.add_argument(
+        "-if",
+        "--item-filter",
+        help="Pass a list of unwanted items to recycle when collected at a Pokestop (e.g, [\"101\",\"102\",\"103\",\"104\"] to recycle potions when collected)",
+        action="store_true",
+        dest="item_filter")
     parser.add_argument(
         "-ign",
         "--ign-init-trans",
+        help="Pass a list of pokemon to ignore during initial transfer (e.g. 017,049,001)",
         type=str,
         dest="ign_init_trans")
+    parser.add_argument(
+        "-k",
+        "--gmapkey",
+        help="Set Google Maps API KEY",
+        type=str,
+        dest="gmapkey")
+    parser.add_argument(
+        "-d",
+        "--debug",
+        help="Debug Mode",
+        action="store_true",
+        dest="debug")
+    parser.add_argument(
+        "-t",
+        "--test",
+        help="Only parse the specified location",
+        action="store_true",
+        dest="test")
 
     config = parser.parse_args()
 
