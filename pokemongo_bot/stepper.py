@@ -61,7 +61,6 @@ class Stepper(object):
                 position_lat, position_lng, _ = self.api.get_position()
                 self._work_at_position(i2f(position_lat), i2f(position_lng), alt, False)
 
-            self.api.set_position(lat, lng, alt)
             self.bot.heartbeat()
             logger.log("[#] Finished walking")
 
