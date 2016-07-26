@@ -24,7 +24,8 @@ def get_pokemon_ids_from_inventory(response_dict):
 
 
 class PokemonCatchWorker(object):
-
+    BAG_FULL = 'bag_full'
+    NO_POKEBALLS = 'no_pokeballs'
     def __init__(self, pokemon, bot):
         self.pokemon = pokemon
         self.api = bot.api
@@ -98,7 +99,7 @@ class PokemonCatchWorker(object):
             return  # servers are down
         elif status is 7:
             logger.log('[x] Pokemon Bag is full!', 'red')
-            self.bot.initial_transfer()
+            return self.BAG_FULL
         elif status is 1:
             combat_power = 0
             total_iv = 0
@@ -142,12 +143,10 @@ class PokemonCatchWorker(object):
                         pokeball = 3
 
                 if pokeball is 0:
-                    logger.log(
-                        '[x] Out of pokeballs, switching to farming mode...',
-                        'red')
+                    logger.log('[x] Out of pokeballs, switching to farming mode...', 'red')
                     # Begin searching for pokestops.
                     self.config.mode = 'farm'
-                    return -1
+                    return self.NO_POKEBALLS
 
                 self.bot.plugin_manager.execute_action_hook('use_pokeball', {"pokeball_name": self.item_list[str(pokeball)], "number_left": balls_stock[pokeball] - 1})
 

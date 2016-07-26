@@ -103,4 +103,5 @@ class Stepper(object):
                     position = lat, lng, alt
                 # Sort all by distance from current pos - eventually this should build graph and A* it
                 map_cells.sort(key=lambda x: distance(lat, lng, x["forts"][0]["latitude"], x["forts"][0]["longitude"]) if "forts" in x and x["forts"] != [] else 1e6)
-                self.bot.work_on_cell(map_cells, position, pokemon_only)
+                for cell in map_cells:
+                    self.bot.work_on_cell(cell, position, pokemon_only)
