@@ -4,14 +4,12 @@
     "password": "YOURPASSWORD",
     "location": "SOME LOCATION",
     "cp": 100,
-    "gmapkey": "AGMAPAPIKEY",
     "max_steps": 50,
     "mode": "all",
     "walk": 4.16,
-    "debug": false,
-    "test": false,
     "initial_transfer": false,
     "pokemon_potential": 0.70,
     "location_cache": true,
-    "distance_unit": "km"
+    "distance_unit": "km",
+    "item_filter": "101,102,103,104",
 }

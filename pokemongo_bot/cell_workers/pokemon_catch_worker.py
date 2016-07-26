@@ -24,7 +24,8 @@ def get_pokemon_ids_from_inventory(response_dict):
 
 
 class PokemonCatchWorker(object):
-
+    BAG_FULL = 'bag_full'
+    NO_POKEBALLS = 'no_pokeballs'
     def __init__(self, pokemon, bot):
         self.pokemon = pokemon
         self.api = bot.api
@@ -66,10 +67,8 @@ class PokemonCatchWorker(object):
             return False
         elif status is 1:
             if self.should_transfer(combat_power, pokemon_potential):
-                logger.log(
-                    '[x] Captured {}! [CP {}] [IV {}] - exchanging for candy'.format(
-                        pokemon_name, combat_power,
-                        pokemon_potential), 'green')
+                self.bot.fire('after_catch_pokemon', name=pokemon_name, cp=combat_power, pokemon_potential=pokemon_potential)
+                logger.log('[x] Exchanging pokemon for candy!')
                 id_list_after_catching = self.get_pokemon_ids()
 
                 # Transfering Pokemon
@@ -78,8 +77,7 @@ class PokemonCatchWorker(object):
                 logger.log(
                     '[#] {} has been exchanged for candy!'.format(pokemon_name), 'green')
             else:
-                logger.log(
-                    '[x] Captured {}! [CP {}]'.format(pokemon_name, combat_power), 'green')
+                self.bot.fire('after_catch_pokemon', name=pokemon_name, cp=combat_power, pokemon_potential=pokemon_potential)
             return False
         else:
             return False
@@ -101,7 +99,7 @@ class PokemonCatchWorker(object):
             return  # servers are down
         elif status is 7:
             logger.log('[x] Pokemon Bag is full!', 'red')
-            self.bot.initial_transfer()
+            return self.BAG_FULL
         elif status is 1:
             combat_power = 0
             total_iv = 0
@@ -119,7 +117,7 @@ class PokemonCatchWorker(object):
                 pokemon_num = int(pokemon['pokemon_data'][
                     'pokemon_id']) - 1
                 pokemon_name = self.pokemon_list[int(pokemon_num)]['Name']
-                logger.log('[#] A Wild {} appeared! [CP {}] [Potential {}]'.format(pokemon_name, combat_power if combat_power is not None else "unknown", pokemon_potential), 'yellow')
+                self.bot.fire('before_catch_pokemon', name=pokemon_name, cp=combat_power if combat_power is not None else "unknown", pokemon_potential=pokemon_potential)
 
                 # Simulate app
                 sleep(3)
@@ -145,14 +143,12 @@ class PokemonCatchWorker(object):
                         pokeball = 3
 
                 if pokeball is 0:
-                    logger.log(
-                        '[x] Out of pokeballs, switching to farming mode...',
-                        'red')
+                    logger.log('[x] Out of pokeballs, switching to farming mode...', 'red')
                     # Begin searching for pokestops.
                     self.config.mode = 'farm'
-                    return -1
+                    return self.NO_POKEBALLS
 
-                logger.log('[x] Using {}... ({} left!)'.format(self.item_list[str(pokeball)], balls_stock[pokeball] - 1))
+                self.bot.fire('use_pokeball', pokeball_name=self.item_list[str(pokeball)], number_left=balls_stock[pokeball] - 1)
 
                 balls_stock[pokeball] -= 1
                 should_continue_throwing = self.throw_pokeball(encounter_id, pokeball, spawnpoint_id, combat_power, pokemon_potential, pokemon_name)
