@@ -12,7 +12,7 @@ import threading
 import googlemaps
 
 from pokemongo_bot import logger, cell_workers, human_behaviour, item_list, stepper
-from pokemongo_bot.cell_workers import PokemonCatchWorker, SeenFortWorker, InitialTransferWorker
+from pokemongo_bot.cell_workers import PokemonCatchWorker, SeenFortWorker, InitialTransferWorker, WalkTowardsFortWorker
 from pokemongo_bot.cell_workers.utils import filtered_forts, distance
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.item_list import Item
@@ -83,7 +83,7 @@ class PokemonGoBot(object):
             for pokemon in cell['wild_pokemons']:
                 if self.catch_pokemon(pokemon) == PokemonCatchWorker.NO_POKEBALLS:
                     break
-        if (self.config.mode == "all" or self.config.mode == "farm") and include_fort_on_path:
+        if include_fort_on_path:
             if 'forts' in cell:
                 # Only include those with a lat/long
                 forts = [fort for fort in cell['forts'] if 'latitude' in fort and 'type' in fort]
@@ -93,8 +93,12 @@ class PokemonGoBot(object):
                 # build graph & A* it
                 forts.sort(key=lambda x: distance(self.position[0], self.position[1], x['latitude'], x['longitude']))
                 for fort in forts:
-                    worker = SeenFortWorker(fort, self)
-                    worker.work()
+                    walk_worker = WalkTowardsFortWorker(fort, self)
+                    walk_worker.work()
+
+                    if (self.config.mode == "all" or self.config.mode == "farm"):
+                        spinner_worker = SeenFortWorker(fort, self)
+                        spinner_worker.work()
 
     def catch_pokemon(self, pokemon):
         catch_worker = PokemonCatchWorker(pokemon, self)
@@ -109,11 +113,11 @@ class PokemonGoBot(object):
     def _work_on_forts(self, position, map_cells):
         forts = filtered_forts(position[0], position[1], sum([cell.get("forts", []) for cell in map_cells], []))
         if forts:
-            worker = SeenFortWorker(forts[0], self)
+            walk_worker = WalkTowardsFortWorker(forts[0], self)
+            walk_worker.work()
 
-            # Why do we need the return value? Commenting out for now to pass pylint
-            # hack_chain = worker.work()
-            worker.work()
+            spinner_worker = SeenFortWorker(forts[0], self)
+            spinner_worker.work()
 
     def _remove_ignored_pokemon(self, map_cells):
         if self.process_ignored_pokemon:
