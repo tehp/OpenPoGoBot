@@ -30,6 +30,8 @@ class SeenFortWorker(object):
                              player_latitude=f2i(self.position[0]),
                              player_longitude=f2i(self.position[1]))
         response_dict = self.api.call()
+        if response_dict is None:
+            return
         spin_details = response_dict.get("responses", {}).get("FORT_SEARCH", {})
         spin_result = spin_details.get("result")
         if spin_result == 1:

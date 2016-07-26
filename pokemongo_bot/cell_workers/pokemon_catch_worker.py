@@ -10,16 +10,17 @@ from pokemongo_bot import logger
 
 def get_pokemon_ids_from_inventory(response_dict):
     id_list = []
-    inventory_items = response_dict.get("responses", {}).get("GET_INVENTORY", {}).get("inventory_delta", {}).get(
-        "inventory_items")
     if response_dict is not None:
+        inventory_items = response_dict.get("responses", {}).get("GET_INVENTORY", {}).get("inventory_delta", {}).get(
+            "inventory_items")
         for item_data in inventory_items:
             pokemon = item_data.get("inventory_item_data", {}).get("pokemon_data")
             if pokemon is not None:
                 if pokemon.get('is_egg', False):
                     continue
                 id_list.append(pokemon['id'])
-
+    else:
+        return []
     return id_list
 
 
@@ -50,6 +51,8 @@ class PokemonCatchWorker(object):
             spin_modifier=1,
             NormalizedHitPosition=1)
         response_dict = self.api.call()
+        if response_dict is None:
+            return False
         pokemon_catch_response = response_dict.get('responses', {}).get('CATCH_POKEMON', {})
         status = pokemon_catch_response.get('status')
         if status is None:
@@ -92,6 +95,9 @@ class PokemonCatchWorker(object):
                            player_latitude=player_latitude,
                            player_longitude=player_longitude)
         response_dict = self.api.call()
+
+        if response_dict is None:
+            return
 
         encounter = response_dict.get('responses', {}).get('ENCOUNTER', {})
         status = encounter.get('status', {})
@@ -160,16 +166,14 @@ class PokemonCatchWorker(object):
         self._transfer_all_low_cp_pokemon(value, response_dict)
 
     def _transfer_all_low_cp_pokemon(self, value, response_dict):
-        inventory_items = response_dict.get("responses", {}).get("GET_INVENTORY", {}).get("inventory_delta", {}).get(
-            "inventory_items")
         if response_dict is not None:
+            inventory_items = response_dict.get("responses", {}).get("GET_INVENTORY", {}).get("inventory_delta", {}).get("inventory_items")
             for item_data in inventory_items:
                 item = item_data.get("inventory_item_data", {}).get("pokemon")
                 if item is not None:
                     pokemon = item['inventory_item_data']['pokemon']
                     if 'cp' in pokemon and pokemon['cp'] < value:
                         self.api.release_pokemon(pokemon_id=pokemon['id'])
-                        response_dict = self.api.call()
                     time.sleep(1.2)
 
     def transfer_pokemon(self, pid):

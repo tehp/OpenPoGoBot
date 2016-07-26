@@ -42,6 +42,8 @@ class WalkTowardsFortWorker(object):
                               latitude=lat,
                               longitude=lng)
         response_dict = self.api.call()
+        if response_dict is None:
+            return
         fort_details = response_dict.get("responses", {}).get("FORT_DETAILS", {})
         fort_name = fort_details.get("name").encode("utf8", "replace") if fort_details.get("name") else "Unknown"
         logger.log("[#] Now at Pokestop: " + fort_name)

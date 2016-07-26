@@ -88,6 +88,8 @@ class Stepper(object):
                                  cell_id=cell_id)
 
         response_dict = self.api.call()
+        if response_dict is None:
+            return
         # Passing data through last-location and location
         map_objects = response_dict.get("responses", {}).get("GET_MAP_OBJECTS")
         if map_objects is not None:

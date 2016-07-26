@@ -213,32 +213,34 @@ class PokemonGoBot(object):
         self.api.get_player()
 
         response_dict = self.api.call()
-        # print('Response dictionary: \n\r{}'.format(json.dumps(response_dict, indent=2)))
+        if response_dict is not None:
+            logger.log("Failed to initialize API...", "red")
+            # print('Response dictionary: \n\r{}'.format(json.dumps(response_dict, indent=2)))
 
-        player = response_dict['responses']['GET_PLAYER']['player_data']
+            player = response_dict['responses']['GET_PLAYER']['player_data']
 
-        # @@@ TODO: Convert this to d/m/Y H:M:S
-        creation_date = datetime.datetime.fromtimestamp(
-            player['creation_timestamp_ms'] / 1e3)
+            # @@@ TODO: Convert this to d/m/Y H:M:S
+            creation_date = datetime.datetime.fromtimestamp(
+                player['creation_timestamp_ms'] / 1e3)
 
-        balls_stock = self.pokeball_inventory()
+            balls_stock = self.pokeball_inventory()
 
-        pokecoins = player['currencies'][0].get('amount', '0')
-        stardust = player['currencies'][1].get('amount', '0')
+            pokecoins = player['currencies'][0].get('amount', '0')
+            stardust = player['currencies'][1].get('amount', '0')
 
-        logger.log('[#]')
-        logger.log('[#] Username: {username}'.format(**player))
-        logger.log('[#] Acccount Creation: {}'.format(creation_date))
-        logger.log('[#] Bag Storage: {}/{}'.format(
-            self.get_inventory_count('item'), player['max_item_storage']))
-        logger.log('[#] Pokemon Storage: {}/{}'.format(
-            self.get_inventory_count('pokemon'), player[
-                'max_pokemon_storage']))
-        logger.log('[#] Stardust: {}'.format(stardust))
-        logger.log('[#] Pokecoins: {}'.format(pokecoins))
-        logger.log('[#] PokeBalls: {}'.format(balls_stock[1]))
-        logger.log('[#] GreatBalls: {}'.format(balls_stock[2]))
-        logger.log('[#] UltraBalls: {}'.format(balls_stock[3]))
+            logger.log('[#]')
+            logger.log('[#] Username: {username}'.format(**player))
+            logger.log('[#] Acccount Creation: {}'.format(creation_date))
+            logger.log('[#] Bag Storage: {}/{}'.format(
+                self.get_inventory_count('item'), player['max_item_storage']))
+            logger.log('[#] Pokemon Storage: {}/{}'.format(
+                self.get_inventory_count('pokemon'), player[
+                    'max_pokemon_storage']))
+            logger.log('[#] Stardust: {}'.format(stardust))
+            logger.log('[#] Pokecoins: {}'.format(pokecoins))
+            logger.log('[#] PokeBalls: {}'.format(balls_stock[1]))
+            logger.log('[#] GreatBalls: {}'.format(balls_stock[2]))
+            logger.log('[#] UltraBalls: {}'.format(balls_stock[3]))
 
         # Testing
         # self.drop_item(Item.ITEM_POTION.value,1)
@@ -371,6 +373,8 @@ class PokemonGoBot(object):
         self.api.get_inventory()
         response_dict = self.api.call()
 
+        if response_dict is None:
+            return 0
         pokecount = 0
         itemcount = 1
         try:
@@ -395,6 +399,9 @@ class PokemonGoBot(object):
     def get_player_info(self):
         self.api.get_inventory()
         response_dict = self.api.call()
+        if response_dict is None:
+            logger.log("Couldn't get player info!", "red")
+            return
         try:
             inventory_items = response_dict['responses']['GET_INVENTORY']['inventory_delta']['inventory_items']
             for item in inventory_items:
