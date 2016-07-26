@@ -138,6 +138,13 @@ def init_config():
         type=str,
         dest="ign_init_trans")
 
+    parser.add_argument(
+        "-if",
+        "--item-filter",
+        type=str,
+        dest="item_filter",
+        default="101,102,103,104")
+
     config = parser.parse_args()
 
     if config.json:
@@ -171,6 +178,9 @@ def init_config():
         config.username = input("Username: ")
     if config.password is None:
         config.password = getpass("Password: ")
+
+    if config.item_filter:
+        config.item_filter = [str(item_id) for item_id in config.item_filter.split(',')]
 
     return config
 

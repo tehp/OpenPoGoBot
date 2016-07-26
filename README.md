@@ -77,6 +77,7 @@ pip install -r requirements.txt
       -if LIST, --item-filter LIST                  Pass a list of unwanted items to recycle when collected at a Pokestop (e.g, [\"101\",\"102\",\"103\",\"104\"] to recycle potions when collected)" 
       -d, --debug                                   Debug Mode
       -t, --test                                    Only parse the specified location
+      -if ITEM_FILTER, --item-filter ITEM_FILTER    Filter items to recycle in the form of "id,id,id    "
 
 ### Command Line Example
     Pokemon Trainer Club (PTC) account:
@@ -89,7 +90,10 @@ pip install -r requirements.txt
     Any other command line arguments specified will override the parameters specified in the loaded JSON file.
 
     Example - this will load config.json but use cp=1000 and iv=0.7 even if already defined in config.json:
-    $ python2 pokecli.py --config-json config.json -cp 1000 -iv 0.7 
+    $ python2 pokecli.py --config-json config.json -cp 1000 -iv 0.7
+
+ ### JSON Options
+
 
 ### Advance Releasing Configuration
     To edit the pokemon release configuration, copy the file ``release_config.json.example`` and rename it to ``release_config.json``

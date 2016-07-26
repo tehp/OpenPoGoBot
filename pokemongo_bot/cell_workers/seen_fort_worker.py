@@ -13,6 +13,7 @@ class SeenFortWorker(object):
     def __init__(self, fort, bot):
         self.fort = fort
         self.api = bot.api
+        self.bot = bot
         self.position = bot.position
         self.config = bot.config
         self.item_list = bot.item_list
@@ -83,6 +84,19 @@ class SeenFortWorker(object):
 
                     logger.log("[+] " + str(item_count) + "x " + item_name,
                                "green")
+
+                    if str(item_id) in self.config.item_filter:
+                        logger.log("[+] Recycling " + str(item_count) + "x " + item_name + "...", 'green')
+
+                        # RECYCLE_INVENTORY_ITEM
+                        response_dict_recycle = self.bot.drop_item(item_id=item_id, count=item_count)
+                        recycle_status = response_dict_recycle.get("responses", {}).get("RECYCLE_INVENTORY_ITEM", {}).get("result")
+
+                        if recycle_status is not None:
+                            if recycle_status is 1:  # Request success
+                                logger.log("[+] Recycling success!", 'green')
+                            else:
+                                logger.log("[+] Recycling failed!", 'red')
 
             else:
                 logger.log("[#] Nothing found.", "yellow")
