@@ -6,6 +6,7 @@ from pgoapi.utilities import f2i
 from pokemongo_bot import logger
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.cell_workers.utils import format_time
+from pokemongo_bot.cell_workers.recycle_items_worker import RecycleItemsWorker
 
 
 class SeenFortWorker(object):
@@ -55,12 +56,9 @@ class SeenFortWorker(object):
 
                     logger.log("[+] " + str(item_count) + "x " + item_name,
                                "green")
-
-                    if str(item_id) in self.config.item_filter:
-                        logger.log("[+] Recycling " + str(item_count) + "x " + item_name + "...", 'green')
-
-                        # RECYCLE_INVENTORY_ITEM
-                        self.bot.drop_item(item_id=item_id, count=item_count)
+                if self.config.recycle_items:
+                    recycle_worker = RecycleItemsWorker(self.bot)
+                    recycle_worker.work()
 
             else:
                 logger.log("[#] Nothing found.", "yellow")

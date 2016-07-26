@@ -13,7 +13,7 @@ import googlemaps
 
 from pokemongo_bot import logger, cell_workers, human_behaviour, item_list, stepper
 from pokemongo_bot.event_manager import manager
-from pokemongo_bot.cell_workers import PokemonCatchWorker, SeenFortWorker, InitialTransferWorker, WalkTowardsFortWorker
+from pokemongo_bot.cell_workers import PokemonCatchWorker, SeenFortWorker, InitialTransferWorker, WalkTowardsFortWorker, RecycleItemsWorker
 from pokemongo_bot.cell_workers.utils import filtered_forts, distance
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.item_list import Item
@@ -248,6 +248,10 @@ class PokemonGoBot(object):
         if self.config.initial_transfer:
             worker = InitialTransferWorker(self)
             worker.work()
+
+        if self.config.recycle_items:
+            recycle_worker = RecycleItemsWorker(self)
+            recycle_worker.work()
 
         logger.log('[#]')
         self.update_inventory()

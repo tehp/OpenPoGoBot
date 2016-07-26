@@ -138,13 +138,6 @@ def init_config():
         type=str,
         dest="ign_init_trans")
 
-    parser.add_argument(
-        "-if",
-        "--item-filter",
-        type=str,
-        dest="item_filter",
-        default="101,102,103,104")
-
     config = parser.parse_args()
 
     if config.json:
@@ -153,6 +146,9 @@ def init_config():
             loaded_config = {}
             with open(config.json) as data:
                 loaded_config.update(json.load(data))
+            for key in loaded_config:
+                if config.__dict__.get(key) is None:
+                    config.__dict__[key] = loaded_config.get(key)
             for key in config.__dict__:
                 if config.__dict__.get(key) is None and loaded_config.get(key) is not None:
                     config.__dict__[key] = loaded_config.get(key)
@@ -178,9 +174,6 @@ def init_config():
         config.username = input("Username: ")
     if config.password is None:
         config.password = getpass("Password: ")
-
-    if config.item_filter:
-        config.item_filter = [str(item_id) for item_id in config.item_filter.split(',')]
 
     return config
 

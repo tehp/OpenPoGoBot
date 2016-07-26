@@ -8,8 +8,16 @@
     "mode": "all",
     "walk": 4.16,
     "initial_transfer": false,
+    "recycle_items": false,
     "pokemon_potential": 0.70,
     "location_cache": true,
     "distance_unit": "km",
-    "item_filter": "101,102,103,104",
+    "item_filter": {
+        "1": { "keep": 50 },
+        "101": { "keep": 10 },
+        "102": { "keep": 30 },
+        "103": { "keep": 30 },
+        "201": { "keep": 30 },
+        "701": { "keep": 100 },
+    },
 }
