@@ -25,7 +25,7 @@ def log(string, color='black', fire_event=True):
         manager.fire("logging", output=string, color=color)
     output = '[' + time.strftime("%Y-%m-%d %H:%M:%S") + '] ' + string
     if color in color_hex:
-        output = b"\033[" + color_hex[color] + output + b"\033[0m"
+        output = "\033[" + color_hex[color] + output + "\033[0m"
     print(output)
     if LCD is not None and string is not None:
         LCD.message(string)

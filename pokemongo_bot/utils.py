@@ -111,9 +111,13 @@ def i2f(input_int):
 
 def convert_to_utf8(data):
     if isinstance(data, bytes):
-        return data.decode('utf-8')
-    if isinstance(data, (str, int)):
+        return data.decode()
+    if isinstance(data, str):
         return str(data)
+    if isinstance(data, int):
+        return int(data)
+    if isinstance(data, float):
+        return float(data)
     if isinstance(data, dict):
         return dict(map(convert_to_utf8, data.items()))
     if isinstance(data, tuple):
