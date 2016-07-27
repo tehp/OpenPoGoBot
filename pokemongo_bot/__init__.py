@@ -45,7 +45,10 @@ class PokemonGoBot(object):
 
         # load all plugin modules
         for plugin in self.plugin_manager.get_available_plugins():
-            self.plugin_manager.load_plugin(plugin)
+            if plugin not in self.config.exclude_plugins:
+                self.plugin_manager.load_plugin(plugin)
+            else:
+                logger.log("Not loading plugin \"{}\"".format(plugin))
 
     def start(self):
         self._setup_logging()

@@ -52,7 +52,9 @@ def init_config():
         "pokemon_potential": 0.40,
         "max_steps": 50,
         "distance_unit": "km",
-        "ign_init_trans": ""
+        "ign_init_trans": "",
+        "exclude_plugins": "",
+        "recycle_items": False
     }
 
     parser = argparse.ArgumentParser()
@@ -97,12 +99,6 @@ def init_config():
         type=str,
         dest="distance_unit")
     parser.add_argument(
-        "-it",
-        "--initial-transfer",
-        help="Start the bot with a pokemon clean up, keeping only the higher CP of each pokemon. It respects -c as upper limit to release.",
-        action="store_true",
-        dest="initial_transfer")
-    parser.add_argument(
         "-ms",
         "--max-steps",
         help="Set the steps around your initial location (DEFAULT 5 mean 25 cells around your location)",
@@ -115,6 +111,18 @@ def init_config():
         help="Transfer Pokemon that have CP less than this value (default 100)",
         type=int,
         dest="cp")
+    parser.add_argument(
+        "-it",
+        "--initial-transfer",
+        help="Transfer all pokemon with same ID on bot start, except pokemon with highest CP. Respects --cp",
+        action="store_true",
+        dest="initial_transfer")
+    parser.add_argument(
+        "-ri",
+        "--recycle-items",
+        help="Recycle unneeded items automatically",
+        action="store_true",
+        dest="recycle_items")
     parser.add_argument(
         "-iv",
         "--pokemon-potential",
@@ -152,6 +160,13 @@ def init_config():
         action="store_true",
         dest="test")
 
+    parser.add_argument(
+        "-ep",
+        "--exclude-plugins",
+        help="Pass a list of plugins to exclude from the loading process (e.g, logger,web).",
+        type=str,
+        dest="exclude_plugins")
+
     config = parser.parse_args()
 
     if config.json:
@@ -173,6 +188,8 @@ def init_config():
     for key in config.__dict__:
         if config.__dict__.get(key) is None and default_config.get(key) is not None:
             config.__dict__[key] = default_config.get(key)
+
+    config.exclude_plugins = [plugin_name for plugin_name in config.exclude_plugins.split(",")]
 
     print(config.__dict__)
 
