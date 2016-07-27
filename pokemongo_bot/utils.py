@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+# pylint: disable=redefined-builtin
+from builtins import bytes, str
 import struct
 import time
 

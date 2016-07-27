@@ -5,7 +5,7 @@ import time
 from pgoapi.utilities import f2i
 from pokemongo_bot import logger
 from pokemongo_bot.human_behaviour import sleep
-from pokemongo_bot.cell_workers.utils import format_time
+from pokemongo_bot.utils import format_time
 from pokemongo_bot.cell_workers.recycle_items_worker import RecycleItemsWorker
 
 

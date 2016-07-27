@@ -1,8 +1,9 @@
 from __future__ import print_function
 import time
 
-from pokemongo_bot.cell_workers.utils import convert_to_utf8
 from pokemongo_bot.event_manager import manager
+from pokemongo_bot.utils import convert_to_utf8
+
 try:
     #pylint: disable=import-error
     import lcd
