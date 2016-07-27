@@ -34,7 +34,6 @@ import argparse
 import ssl
 import logging
 import sys
-import codecs
 from pokemongo_bot import logger
 from pokemongo_bot import PokemonGoBot
 
@@ -213,9 +212,6 @@ def main():
     # log settings
     # log format
     # logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(module)10s] [%(levelname)5s] %(message)s')
-
-    sys.stdout = codecs.getwriter('utf8')(sys.stdout)
-    sys.stderr = codecs.getwriter('utf8')(sys.stderr)
 
     config = init_config()
     if not config:

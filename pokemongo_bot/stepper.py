@@ -6,7 +6,7 @@ import json
 from s2sphere import CellId, LatLng
 from pgoapi.utilities import f2i
 from pokemongo_bot.human_behaviour import sleep, random_lat_long_delta
-from pokemongo_bot.cell_workers.utils import distance, i2f, format_time
+from pokemongo_bot.cell_workers.utils import distance, i2f, format_time, convert_to_utf8
 import pokemongo_bot.logger as logger
 
 
@@ -94,7 +94,7 @@ class Stepper(object):
         map_objects = response_dict.get("responses", {}).get("GET_MAP_OBJECTS")
         if map_objects is not None:
             with open("web/location-{}.json".format(self.config.username), "w") as outfile:
-                json.dump({"lat": lat, "lng": lng, "cells": map_objects.get("map_cells")}, outfile)
+                json.dump({"lat": lat, "lng": lng, "cells": convert_to_utf8(map_objects.get("map_cells"))}, outfile)
             with open("data/last-location-{}.json".format(self.config.username), "w") as outfile:
                 outfile.truncate()
                 json.dump({"lat": lat, "lng": lng}, outfile)

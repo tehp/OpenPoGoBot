@@ -18,7 +18,6 @@ def log(string, color='black', fire_event=True):
         'yellow': '93m',
         'red': '91m'
     }
-    string = string.decode("utf-8")
     if fire_event:
         manager.fire("logging", output=string, color=color)
     output = '[' + time.strftime("%Y-%m-%d %H:%M:%S") + '] ' + string

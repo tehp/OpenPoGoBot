@@ -14,7 +14,7 @@ import googlemaps
 from pokemongo_bot import logger, cell_workers, human_behaviour, item_list, stepper
 from pokemongo_bot.event_manager import manager
 from pokemongo_bot.cell_workers import PokemonCatchWorker, SeenFortWorker, InitialTransferWorker, WalkTowardsFortWorker, RecycleItemsWorker
-from pokemongo_bot.cell_workers.utils import filtered_forts, distance
+from pokemongo_bot.cell_workers.utils import filtered_forts, distance, convert_to_utf8
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.item_list import Item
 from pokemongo_bot.stepper import Stepper
@@ -294,9 +294,9 @@ class PokemonGoBot(object):
         self.api.get_player().get_inventory()
 
         inventory_req = self.api.call()
-        inventory_dict = inventory_req['responses']['GET_INVENTORY']['inventory_delta']['inventory_items']
+        inventory_list = convert_to_utf8(inventory_req['responses']['GET_INVENTORY']['inventory_delta']['inventory_items'])
         with open('web/inventory-{}.json'.format(self.config.username), 'w') as outfile:
-            json.dump(inventory_dict, outfile)
+            json.dump(inventory_list, outfile)
 
         # get player balls stock
         # ----------------------
@@ -305,7 +305,7 @@ class PokemonGoBot(object):
                        Item.ITEM_ULTRA_BALL.value: 0,
                        Item.ITEM_MASTER_BALL.value: 0}
 
-        for item in inventory_dict:
+        for item in inventory_list:
             try:
                 item_id = item['inventory_item_data']['item']['item_id']
                 item_count = item['inventory_item_data']['item']['count']
@@ -349,8 +349,7 @@ class PokemonGoBot(object):
         self.position = self._get_pos_by_name(self.config.location)
         self.api.set_position(*self.position)
         logger.log('')
-        logger.log(u'[x] Address found: {}'.format(self.config.location.decode(
-            'utf-8')))
+        logger.log(u'[x] Address found: {}'.format(self.config.location))
         logger.log('[x] Position in-game set as: {}'.format(self.position))
         logger.log('')
 
