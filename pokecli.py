@@ -53,7 +53,11 @@ def init_config():
         "distance_unit": "km",
         "ign_init_trans": "",
         "exclude_plugins": "",
-        "recycle_items": False
+        "recycle_items": False,
+        "location_cache": False,
+        "initial_transfer": False,
+        "debug": False,
+        "test": False
     }
 
     parser = argparse.ArgumentParser()
@@ -78,7 +82,8 @@ def init_config():
         "--location-cache",
         help="Bot will start at last known location",
         action="store_true",
-        dest="location_cache")
+        dest="location_cache",
+        default=None)
     parser.add_argument(
         "-m",
         "--mode",
@@ -115,25 +120,21 @@ def init_config():
         "--initial-transfer",
         help="Transfer all pokemon with same ID on bot start, except pokemon with highest CP. Respects --cp",
         action="store_true",
-        dest="initial_transfer")
+        dest="initial_transfer",
+        default=None)
     parser.add_argument(
         "-ri",
         "--recycle-items",
         help="Recycle unneeded items automatically",
         action="store_true",
-        dest="recycle_items")
+        dest="recycle_items",
+        default=None)
     parser.add_argument(
         "-iv",
         "--pokemon-potential",
         help="Set the ratio for the IV values to transfer (DEFAULT 0.4 eg. 0.4 will transfer a pokemon with IV 0.3)",
         type=float,
         dest="pokemon_potential")
-    parser.add_argument(
-        "-if",
-        "--item-filter",
-        help="Pass a list of unwanted items to recycle when collected at a Pokestop (e.g, [\"101\",\"102\",\"103\",\"104\"] to recycle potions when collected)",
-        action="store_true",
-        dest="item_filter")
     parser.add_argument(
         "-ign",
         "--ign-init-trans",
@@ -151,13 +152,15 @@ def init_config():
         "--debug",
         help="Debug Mode",
         action="store_true",
-        dest="debug")
+        dest="debug",
+        default=None)
     parser.add_argument(
         "-t",
         "--test",
         help="Only parse the specified location",
         action="store_true",
-        dest="test")
+        dest="test",
+        default=None)
 
     parser.add_argument(
         "-ep",
