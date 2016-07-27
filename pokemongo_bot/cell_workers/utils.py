@@ -107,13 +107,16 @@ def i2f(input_int):
     return struct.unpack('<d', struct.pack('<Q', input_int))[0]
 
 
-def print_green(message):
-    print(u'\033[92m' + message.decode('utf-8') + '\033[0m')
-
-
-def print_yellow(message):
-    print(u'\033[93m' + message.decode('utf-8') + '\033[0m')
-
-
-def print_red(message):
-    print(u'\033[91m' + message.decode('utf-8') + '\033[0m')
+def convert_to_utf8(data):
+    if isinstance(data, bytes):
+        return data.decode('utf-8')
+    if isinstance(data, (str, int)):
+        return str(data)
+    if isinstance(data, dict):
+        return dict(map(convert_to_utf8, data.items()))
+    if isinstance(data, tuple):
+        return tuple(map(convert_to_utf8, data))
+    if isinstance(data, list):
+        return list(map(convert_to_utf8, data))
+    if isinstance(data, set):
+        return set(map(convert_to_utf8, data))
