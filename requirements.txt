@@ -1,11 +1,25 @@
--e git+https://github.com/tejado/pgoapi.git@1f25e907f3e5f1b603330e71041e1ad7bee7580f#egg=pgoapi
-geopy==1.11.0
-protobuf==3.0.0b4
-requests==2.10.0
-s2sphere==0.2.4
-gpsoauth==0.3.0
-protobuf-to-dict==0.1.0
-googlemaps==2.4.4
+click==6.6
 colorama==0.3.7
 enum34==1.1.6
-pyyaml==3.11
+Flask==0.11.1
+Flask-SocketIO==2.6
+future==0.15.2
+geopy==1.11.0
+googlemaps==2.4.4
+gpsoauth==0.3.0
+greenlet==0.4.10
+itsdangerous==0.24
+Jinja2==2.8
+MarkupSafe==0.23
+-e git+https://github.com/tejado/pgoapi.git@1f25e907f3e5f1b603330e71041e1ad7bee7580f#egg=pgoapi-dev
+protobuf==3.0.0b4
+protobuf-to-dict==0.1.0
+pycryptodomex==3.4.2
+python-engineio==0.9.2
+python-socketio==1.4.2
+PyYAML==3.11
+requests==2.10.0
+s2sphere==0.2.4
+six==1.10.0
+Werkzeug==0.11.10
+wheel==0.24.0
