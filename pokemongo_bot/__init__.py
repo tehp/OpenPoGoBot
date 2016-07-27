@@ -342,14 +342,14 @@ class PokemonGoBot(object):
                     sys.exit("No cached Location. Please specify initial location.")
                 else:
                     pass
+        else:
+            # this will fail if the location.json isn't there or not valid.
+            # Still runs if location is set.
+            self.position = self._get_pos_by_name(self.config.location)
+            self.api.set_position(*self.position)
+            logger.log('')
+            logger.log(u'[x] Address found: {}'.format(self.config.location))
 
-        #
-        # this will fail if the location.json isn't there or not valid.
-        # Still runs if location is set.
-        self.position = self._get_pos_by_name(self.config.location)
-        self.api.set_position(*self.position)
-        logger.log('')
-        logger.log(u'[x] Address found: {}'.format(self.config.location))
         logger.log('[x] Position in-game set as: {}'.format(self.position))
         logger.log('')
 
