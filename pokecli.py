@@ -73,7 +73,7 @@ def init_config():
         dest="auth_service")
     parser.add_argument("-u", "--username", help="Username", dest="username")
     parser.add_argument("-p", "--password", help="Password", dest="password")
-    parser.add_argument("-l", "--location", help="Location", dest="Location (Address or 'xx.yyyy,zz.ttttt')")
+    parser.add_argument("-l", "--location", help="Location (Address or 'xx.yyyy,zz.ttttt')", dest="location")
     parser.add_argument(
         "-lc",
         "--location-cache",
