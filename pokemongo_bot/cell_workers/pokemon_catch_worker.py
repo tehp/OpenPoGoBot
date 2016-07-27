@@ -71,7 +71,6 @@ class PokemonCatchWorker(object):
         elif status is 1:
             if self.should_transfer(combat_power, pokemon_potential):
                 self.bot.fire('after_catch_pokemon', name=pokemon_name, combat_power=combat_power, pokemon_potential=pokemon_potential)
-                logger.log('[x] Exchanging pokemon for candy!')
                 id_list_after_catching = self.get_pokemon_ids()
 
                 # Transfering Pokemon
