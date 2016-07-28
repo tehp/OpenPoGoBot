@@ -177,15 +177,15 @@ def init_config():
             loaded_config = {}
             with open(config.json) as data:
                 loaded_config.update(json.load(data))
-            for key in loaded_config:
-                if config.__dict__.get(key) is None:
-                    config.__dict__[key] = loaded_config.get(key)
-            for key in config.__dict__:
-                if config.__dict__.get(key) is None and loaded_config.get(key) is not None:
-                    config.__dict__[key] = loaded_config.get(key)
-        except Exception:
+        except ValueError:
             logging.error("Error loading %s", config.json)
             return None
+        for key in loaded_config:
+            if config.__dict__.get(key) is None:
+                config.__dict__[key] = loaded_config.get(key)
+        for key in config.__dict__:
+            if config.__dict__.get(key) is None and loaded_config.get(key) is not None:
+                config.__dict__[key] = loaded_config.get(key)
 
     for key in config.__dict__:
         if config.__dict__.get(key) is None and default_config.get(key) is not None:

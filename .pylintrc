@@ -2,10 +2,10 @@
 disable=line-too-long,
     missing-docstring,
     relative-import,
-    broad-except,
     too-many-instance-attributes,
     too-many-arguments,
     too-many-locals,
     too-many-branches,
     too-many-statements,
-    too-few-public-methods
+    too-few-public-methods,
+    too-many-return-statements
