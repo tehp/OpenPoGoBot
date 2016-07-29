@@ -302,10 +302,11 @@ class PokemonGoBot(object):
             item_data = item.get('inventory_item_data', {}).get('item')
             if item_data is None:
                 continue
-            item_id = int(item_data['item_id'])
-            item_count = int(item_data['count'])
-            if item_id in balls_stock:
-                balls_stock[item_id] = item_count
+            if "item_id" in item_data and "count" in item_data:
+                item_id = int(item_data['item_id'])
+                item_count = int(item_data['count'])
+                if item_id in balls_stock:
+                    balls_stock[item_id] = item_count
         return balls_stock
 
     def _set_starting_position(self):
