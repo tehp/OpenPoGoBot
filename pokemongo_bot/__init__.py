@@ -7,6 +7,7 @@ import json
 import logging
 import random
 import sys
+import time
 import threading
 
 import googlemaps
@@ -38,6 +39,7 @@ class PokemonGoBot(object):
         self.ignores = []
         self.position = (0, 0, 0)
         self.plugin_manager = None
+        self.last_session_check = time.gmtime()
 
     def _init_plugins(self):
         # create a plugin manager
@@ -65,6 +67,9 @@ class PokemonGoBot(object):
         self.stepper.take_step()
 
     def work_on_cell(self, cell, include_fort_on_path):
+        # check if token session has expired
+        self.check_session()
+
         self._remove_ignored_pokemon(cell)
 
         if (self.config.mode == "all" or self.config.mode == "poke") and 'catchable_pokemons' in cell and len(cell['catchable_pokemons']) > 0:
@@ -73,7 +78,7 @@ class PokemonGoBot(object):
             # build graph & A* it
             cell['catchable_pokemons'].sort(key=lambda x: distance(self.position[0], self.position[1], x['latitude'], x['longitude']))
 
-            user_web_catchable = 'web/catchable-%s.json' % (self.config.username)
+            user_web_catchable = 'web/catchable-%s.json' % self.config.username
             for pokemon in cell['catchable_pokemons']:
                 with open(user_web_catchable, 'w') as outfile:
                     json.dump(pokemon, outfile)
@@ -146,7 +151,6 @@ class PokemonGoBot(object):
                         if pokemon_name in self.ignores:
                             catchable_pokemons.remove(pokemon)
 
-
     def _work_on_catchable_pokemon(self, map_cells):
         for cell in map_cells:
             if 'catchable_pokemons' in cell and len(cell['catchable_pokemons']) > 0:
@@ -156,12 +160,12 @@ class PokemonGoBot(object):
                 cell['catchable_pokemons'].sort(
                     key=lambda x: distance(self.position[0], self.position[1], x['latitude'], x['longitude']))
                 for pokemon in cell['catchable_pokemons']:
-                    with open('web/catchable-%s.json' % (self.config.username), 'w') as outfile:
+                    with open('web/catchable-%s.json' % self.config.username, 'w') as outfile:
                         json.dump(pokemon, outfile)
                     worker = PokemonCatchWorker(pokemon, self)
                     if worker.work() == -1:
                         break
-                    with open('web/catchable-%s.json' % (self.config.username), 'w') as outfile:
+                    with open('web/catchable-%s.json' % self.config.username, 'w') as outfile:
                         json.dump({}, outfile)
 
     def _work_on_wild_pokemon(self, map_cells):
@@ -193,6 +197,68 @@ class PokemonGoBot(object):
             logging.getLogger("pgoapi").setLevel(logging.ERROR)
             logging.getLogger("rpc_api").setLevel(logging.ERROR)
 
+    @staticmethod
+    def same_minute(current_time, last_time):
+
+        # Time Structure
+        # (tm_year=2016, tm_mon=7, tm_mday=28, tm_hour=9, tm_min=26, tm_sec=57, tm_wday=3, tm_yday=210, tm_isdst=0)
+
+        current_time_list = [
+            current_time.tm_year,
+            current_time.tm_mon,
+            current_time.tm_mday,
+            current_time.tm_hour,
+            current_time.tm_min
+        ]
+
+        last_time_list = [
+            last_time.tm_year,
+            last_time.tm_mon,
+            last_time.tm_mday,
+            last_time.tm_hour,
+            last_time.tm_min
+        ]
+        return bool(current_time_list == last_time_list)
+
+    # noinspection PyProtectedMember
+    def check_session(self):
+        # Check session expiry
+        remaining_time = None
+        current = time.gmtime()
+
+        # pylint: disable=protected-access
+        if self.api._auth_provider and self.api._auth_provider._ticket_expire:
+            remaining_time = self.api._auth_provider._ticket_expire / 1000 - time.time()
+        if remaining_time is not None and remaining_time < 30:
+            logger.log("[X] Session stale, re-logging in", 'red')
+            self.login()
+
+        if not self.same_minute(current, self.last_session_check):
+            self.last_session_check = current
+            remaining_time_string = str(datetime.timedelta(seconds=remaining_time))
+            logger.log("[#] Remaining Session Time: %s" % remaining_time_string, 'yellow')
+
+    def login(self):
+        logger.log('[#] Attempting login to Pokemon Go.', 'white')
+        self.api.set_position(*self.position)
+
+        while not self.api.login(self.config.auth_service, str(self.config.username), str(self.config.password)):
+            logger.log('[X] Login Error, server busy', 'red')
+            logger.log('[X] Waiting 10 seconds to try again', 'red')
+            time.sleep(10)
+
+        logger.log('[+] Login to Pokemon Go successful.', 'green')
+        self.api.get_player()
+        response_dict = self.api.call()
+        try:
+            player = response_dict['responses']['GET_PLAYER']['player_data']
+            self.print_player_data(player)
+            self.get_player_info()
+        except TypeError:
+            logger.log("[X] Unable to parse player object from API", 'red')
+            logger.log("Forced Exit!", 'red')
+            exit(1)
+
     def _setup_api(self):
         # instantiate pgoapi
         self.api = PGoApi()
@@ -215,35 +281,17 @@ class PokemonGoBot(object):
         response_dict = self.api.call()
         if response_dict is not None:
             # print('Response dictionary: \n\r{}'.format(json.dumps(response_dict, indent=2)))
-
-            player = response_dict['responses']['GET_PLAYER']['player_data']
-
-            # @@@ TODO: Convert this to d/m/Y H:M:S
-            creation_date = datetime.datetime.fromtimestamp(
-                player['creation_timestamp_ms'] / 1e3)
-
-            balls_stock = self.pokeball_inventory()
-
-            pokecoins = player['currencies'][0].get('amount', '0')
-            stardust = player['currencies'][1].get('amount', '0')
-
-            logger.log('[#]')
-            logger.log('[#] Username: {username}'.format(**player))
-            logger.log('[#] Acccount Creation: {}'.format(creation_date))
-            logger.log('[#] Bag Storage: {}/{}'.format(
-                self.get_inventory_count('item'), player['max_item_storage']))
-            logger.log('[#] Pokemon Storage: {}/{}'.format(
-                self.get_inventory_count('pokemon'), player[
-                    'max_pokemon_storage']))
-            logger.log('[#] Stardust: {}'.format(stardust))
-            logger.log('[#] Pokecoins: {}'.format(pokecoins))
-            logger.log('[#] PokeBalls: {}'.format(balls_stock[1]))
-            logger.log('[#] GreatBalls: {}'.format(balls_stock[2]))
-            logger.log('[#] UltraBalls: {}'.format(balls_stock[3]))
+            try:
+                player = response_dict['responses']['GET_PLAYER']['player_data']
+                self.print_player_data(player)
+                self.get_player_info()
+            except TypeError:
+                logger.log("[X] Unable to parse player object from API: %s", 'red')
+                logger.log("Forced Exit!", 'red')
+                exit(1)
         # Testing
         # self.drop_item(Item.ITEM_POTION.value,1)
         # exit(0)
-        self.get_player_info()
 
         if self.config.initial_transfer:
             worker = InitialTransferWorker(self)
@@ -255,6 +303,32 @@ class PokemonGoBot(object):
 
         logger.log('[#]')
         self.update_inventory()
+
+    def print_player_data(self, player):
+        # @@@ TODO: Convert this to d/m/Y H:M:S
+        creation_date = datetime.datetime.fromtimestamp(
+            player['creation_timestamp_ms'] / 1e3)
+
+        balls_stock = self.pokeball_inventory()
+
+        pokecoins = player['currencies'][0].get('amount', '0')
+        stardust = player['currencies'][1].get('amount', '0')
+
+        logger.log('[#]')
+        logger.log('[#] Username: {username}'.format(**player))
+        logger.log('[#] Account Creation: {}'.format(creation_date))
+        logger.log('[#] Bag Storage: {}/{}'.format(
+            self.get_inventory_count('item'),
+            player['max_item_storage']))
+        logger.log('[#] Pokemon Storage: {}/{}'.format(
+            self.get_inventory_count('pokemon'),
+            player['max_pokemon_storage']
+        ))
+        logger.log('[#] Stardust: {}'.format(stardust))
+        logger.log('[#] Pokecoins: {}'.format(pokecoins))
+        logger.log('[#] PokeBalls: {}'.format(balls_stock[1]))
+        logger.log('[#] GreatBalls: {}'.format(balls_stock[2]))
+        logger.log('[#] UltraBalls: {}'.format(balls_stock[3]))
 
     def _setup_ignored_pokemon(self):
         pass
@@ -319,7 +393,7 @@ class PokemonGoBot(object):
                 #
                 # save location flag used to pull the last known location from
                 # the location.json
-                with open('data/last-location-%s.json' % (self.config.username)) as last_location_file:
+                with open('data/last-location-%s.json' % self.config.username) as last_location_file:
                     location_json = json.load(last_location_file)
 
                     self.position = (location_json['lat'], location_json['lng'], 0.0)
@@ -355,7 +429,7 @@ class PokemonGoBot(object):
         # self.log.info('Your given location: %s', loc.address.encode('utf-8'))
         # self.log.info('lat/long/alt: %s %s %s', loc.latitude, loc.longitude, loc.altitude)
 
-        return (loc.latitude, loc.longitude, loc.altitude)
+        return loc.latitude, loc.longitude, loc.altitude
 
     def heartbeat(self):
         self.api.get_player()
