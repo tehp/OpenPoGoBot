@@ -11,7 +11,8 @@ def sleep(seconds, delta=0.3):
     time.sleep(sleep_time)
 
 
-def random_lat_long_delta():
-    # Return random value from [-.000025, .000025]. Since 364,000 feet is equivalent to one degree of latitude, this
-    # should be 364,000 * .000025 = 9.1. So it returns between [-9.1, 9.1]
-    return ((random() * 0.00001) - 0.000005) * 5
+def random_lat_long_delta(factor=10):
+    # Return random value from [-.000001 * factor, .000001 * factor].
+    # Example: Since 364,000 feet is equivalent to one degree of latitude, a factor of 10 means this
+    # should be 364,000 * .000010 = 3.64. So it returns between [-3.64, 3.64]
+    return ((random() * 0.000001) * factor * 2) - (factor * 0.000001)

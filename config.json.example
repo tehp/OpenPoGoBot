@@ -3,6 +3,8 @@
     "username": "YOURACCOUNT@gmail.com",
     "password": "YOURPASSWORD",
     "location": "SOME LOCATION",
+    "gmapkey": "GOOGLE API KEY",
+    "google_directions": true,
     "cp": 100,
     "max_steps": 50,
     "mode": "all",

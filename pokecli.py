@@ -148,6 +148,13 @@ def init_config():
         type=str,
         dest="gmapkey")
     parser.add_argument(
+        "-gd",
+        "--google-directions",
+        help="Bot will use directions from google maps API to navigate",
+        action="store_true",
+        dest="google_directions",
+        default=None)
+    parser.add_argument(
         "-d",
         "--debug",
         help="Debug Mode",
