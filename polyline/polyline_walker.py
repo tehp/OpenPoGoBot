@@ -85,7 +85,7 @@ class PolylineWalker(object):
                 self.lat, self.long = None, None
                 self.polyline = ''
             self.reset_timestamps()
-        return (self.lat, self.long)
+        return self.lat, self.long
 
     def calculate_coord(self, percentage, o, d):
         lat = o[0] + (d[0] - o[0]) * percentage

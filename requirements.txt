@@ -11,7 +11,7 @@ greenlet==0.4.10
 itsdangerous==0.24
 Jinja2==2.8
 MarkupSafe==0.23
--e git+https://github.com/tejado/pgoapi.git@1f25e907f3e5f1b603330e71041e1ad7bee7580f#egg=pgoapi-dev
+-e git+https://github.com/tejado/pgoapi.git@e7c395523e25e357215bb16ac243103f846ddc5b#egg=pgoapi-dev
 protobuf==3.0.0b4
 protobuf-to-dict==0.1.0
 pycryptodomex==3.4.2

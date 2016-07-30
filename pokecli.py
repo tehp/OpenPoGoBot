@@ -40,7 +40,7 @@ from pokemongo_bot import PokemonGoBot
 # Disable HTTPS certificate verification
 if sys.version_info >= (2, 7, 9):
     # pylint: disable=protected-access
-    ssl._create_default_https_context = ssl._create_unverified_context
+    ssl._create_default_https_context = ssl._create_unverified_context  # type: ignore
 
 
 def init_config():
@@ -93,7 +93,7 @@ def init_config():
     parser.add_argument(
         "-w",
         "--walk",
-        help=" Walk instead of teleport with given speed (meters per second max 4.16 because of walking end on 15km/h)",
+        help="Walk instead of teleport with given speed (meters per second max 4.16 because of walking end on 15km/h)",
         type=float,
         dest="walk")
     parser.add_argument(
@@ -198,7 +198,7 @@ def init_config():
         if config.__dict__.get(key) is None and default_config.get(key) is not None:
             config.__dict__[key] = default_config.get(key)
 
-    config.exclude_plugins = [plugin_name for plugin_name in config.exclude_plugins.split(",")]
+    config.exclude_plugins = config.exclude_plugins.split(",")
 
     print(config.__dict__)
 

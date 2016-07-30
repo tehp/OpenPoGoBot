@@ -1,19 +1,20 @@
+import collections
+import imp
+import os
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
 __author__ = "Michael E. Cotterell"
 __email__ = "mepcotterell@gmail.com"
 __copyright__ = "Copyright 2013, Michael E. Cotterell"
 __license__ = "MIT"
 
-import imp
-import os
-import logging
-import collections
-
-logging.basicConfig(level=logging.DEBUG)
 
 class PluginManager(object):
-    '''
+    """
     A simple plugin manager
-    '''
+    """
 
     def __init__(self, plugin_folder, main_module='__init__', log=logging):
         self.logging = log
@@ -22,9 +23,9 @@ class PluginManager(object):
         self.loaded_plugins = collections.OrderedDict()
 
     def get_available_plugins(self):
-        '''
+        """
         Returns a dictionary of plugins available in the plugin folder
-        '''
+        """
         plugins = {}
         for possible in os.listdir(self.plugin_folder):
             location = os.path.join(self.plugin_folder, possible)
@@ -37,15 +38,15 @@ class PluginManager(object):
         return plugins
 
     def get_loaded_plugins(self):
-        '''
+        """
         Returns a dictionary of the loaded plugin modules
-        '''
+        """
         return self.loaded_plugins.copy()
 
     def load_plugin(self, plugin_name):
-        '''
+        """
         Loads a plugin module
-        '''
+        """
         plugins = self.get_available_plugins()
         if plugin_name in plugins:
             if plugin_name not in self.loaded_plugins:
@@ -63,8 +64,8 @@ class PluginManager(object):
             raise Exception('cannot locate plugin "%s"' % plugin_name)
 
     def unload_plugin(self, plugin_name):
-        '''
+        """
         Unloads a plugin module
-        '''
+        """
         del self.loaded_plugins[plugin_name]
         self.logging.log('plugin "%s" unloaded' % plugin_name)

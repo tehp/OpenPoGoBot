@@ -6,27 +6,36 @@ from builtins import bytes, str
 import struct
 import time
 
-from colorama import init
-from geopy.distance import vincenty
+from api.worldmap import PokeStop
+from colorama import init               # type: ignore
+from geopy.distance import vincenty     # type: ignore
+
+# Uncomment to enable type annotations for Python 3
+# from typing import List
+# from api.worldmap import Fort
 
 init()
 
 
 def distance(lat1, lon1, lat2, lon2):
+    # type: (float, float, float, float) -> float
     return vincenty((lat1, lon1), (lat2, lon2)).meters
 
 
 def filtered_forts(lat, lng, forts):
-    #pylint: disable=bad-continuation
-    forts = [(
-        fort, distance(lat, lng, fort['latitude'], fort['longitude']))
-        for fort in forts
-        if fort.get('type', None) == 1 and ("enabled" in fort or "lure_info" in fort) and (fort.get('cooldown_complete_timestamp_ms', -1) < time.time() * 1000)
-    ]
-    return [x[0] for x in sorted(forts, lambda x, y: x[1] < y[1])]
+    # type: (float, float, List[Fort]) -> List[Fort]
+    # pylint: disable=bad-continuation
+    def should_keep(fort):
+        return fort.fort_type == 1 and\
+                isinstance(fort, PokeStop) and\
+                fort.cooldown_complete_timestamp_ms < time.time() * 1000
+
+    filtered_list = [(fort, distance(lat, lng, fort.latitude, fort.longitude)) for fort in forts if should_keep(fort)]
+    return [x[0] for x in sorted(filtered_list, key=lambda y: y[1])]
 
 
 def convert(original_distance, from_unit, to_unit):  # Converts units
+    # type: (float, str, str) -> float
     # Example of converting distance from meters to feet:
     # convert(100.0,"m","ft")
     conversions = {
@@ -84,29 +93,38 @@ def convert(original_distance, from_unit, to_unit):  # Converts units
 
 
 def dist_to_str(original_distance, unit):
+    # type: (float, str) -> str
     return '{:.2f}{}'.format(original_distance, unit)
 
 
 def format_dist(original_distance, unit):
+    # type: (float, str) -> str
     # Assumes that distance is in meters and converts it to the given unit, then a formatted string is returned
     # Ex: format_dist(1500, 'km') returns the string "1.5km"
     return dist_to_str(convert(original_distance, 'm', unit), unit)
 
 
 def format_time(seconds):
+    # type: (float) -> str
     # Return a string displaying the time given as seconds or minutes
     if seconds <= 1.0:
         return '{:.2f} second'.format(seconds)
     elif seconds < 60:
         return '{:.2f} seconds'.format(seconds)
-    elif seconds > 60 and seconds < 3600:
+    elif seconds < 3600:
         minutes = seconds / 60
         return '{:.2f} minutes'.format(minutes)
     return '{:.2f} seconds'.format(seconds)
 
 
 def i2f(input_int):
+    # type: (int) -> float
     return struct.unpack('<d', struct.pack('<Q', input_int))[0]
+
+
+def f2i(input_float):
+    # type: (float) -> int
+    return struct.unpack('<Q', struct.pack('<d', input_float))[0]
 
 
 # pylint: disable=too-many-return-statements

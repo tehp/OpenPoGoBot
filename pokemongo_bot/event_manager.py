@@ -1,8 +1,11 @@
-class Event(object):
+from __future__ import print_function
 
+
+class Event(object):
     def __init__(self, name):
         self.name = name
         self.listeners = set()
+        print("Initialized new event: " + name)
 
     def add_listener(self, listener):
         self.listeners.add(listener)
@@ -14,8 +17,8 @@ class Event(object):
         for listener in self.listeners:
             listener(self.name, *args, **kwargs)
 
-class EventManager(object):
 
+class EventManager(object):
     def __init__(self):
         self.events = {}
 
@@ -31,6 +34,7 @@ class EventManager(object):
             for trigger in trigger_list:
                 self.add_listener(trigger, function)
             return function
+
         return register_handler
 
     # fire an event and call all event handlers
@@ -47,6 +51,7 @@ class EventManager(object):
     def remove_listener(self, name, listener):
         if name in self.events:
             self.events[name].remove_listener(listener)
+
 
 # This will only be loaded once
 # To use, add the following code to plugins:

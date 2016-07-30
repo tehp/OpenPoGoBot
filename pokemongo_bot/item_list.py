@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-#pylint: disable=too-few-public-methods
+# pylint: disable=too-few-public-methods
 class Item(Enum):
     ITEM_UNKNOWN = 0
     ITEM_POKE_BALL = 1

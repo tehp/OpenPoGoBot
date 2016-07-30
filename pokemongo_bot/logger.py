@@ -4,9 +4,13 @@ import time
 from pokemongo_bot.event_manager import manager
 from pokemongo_bot.utils import convert_to_utf8
 
+# Uncomment for type annotations on Python 3
+# from typing import Optional
+
 try:
-    #pylint: disable=import-error
-    import lcd
+    # pylint: disable=import-error
+    import lcd  # type: ignore
+
     LCD = lcd.lcd()
     # Change this to your i2c address
     LCD.set_addr(0x23)
@@ -15,6 +19,7 @@ except ImportError:
 
 
 def log(string, color='black', fire_event=True):
+    # type: (str, Optional[str], Optional[bool]) -> None
     color_hex = {
         'green': '92m',
         'yellow': '93m',

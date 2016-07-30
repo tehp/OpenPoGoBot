@@ -2,9 +2,9 @@ from threading import Thread
 import os
 import logging
 from flask import Flask, request, jsonify, render_template, send_from_directory
-from flask_socketio import SocketIO, send, emit
+from flask_socketio import SocketIO, emit
 
-from pokemongo_bot import logger, event_manager
+from pokemongo_bot import logger
 from pokemongo_bot.event_manager import manager
 
 # pylint: disable=unused-variable, unused-argument
@@ -12,6 +12,7 @@ from pokemongo_bot.event_manager import manager
 logging.getLogger('socketio').disabled = True
 logging.getLogger('engineio').disabled = True
 logging.getLogger('werkzeug').disabled = True
+
 
 def run_flask():
     root_dir = os.path.join(os.getcwd(), 'web')
@@ -47,6 +48,7 @@ def run_flask():
         logger.log("Client disconnected", "yellow", fire_event=False)
 
     socketio.run(app, host="0.0.0.0", port=8000, debug=False, use_reloader=False, log_output=False)
+
 
 WEB_THREAD = Thread(target=run_flask)
 WEB_THREAD.daemon = True
