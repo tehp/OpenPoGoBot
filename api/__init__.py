@@ -1,10 +1,11 @@
 from __future__ import print_function
 import time
 
+from six import integer_types
 from pgoapi import PGoApi                                           # type: ignore
 from pgoapi.exceptions import ServerSideRequestThrottlingException  # type: ignore
-from .state_manager import StateManager
 
+from .state_manager import StateManager
 
 class PoGoApi(object):
     def __init__(self, provider="google", username="", password=""):
@@ -50,7 +51,7 @@ class PoGoApi(object):
         if ticket is False or ticket is None:
             return 0
         for field in ticket:
-            if isinstance(field, int):
+            if isinstance(field, integer_types):
                 return int(field / 1000 - time.time())
         return 0
 

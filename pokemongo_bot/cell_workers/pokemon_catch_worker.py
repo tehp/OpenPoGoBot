@@ -62,6 +62,7 @@ class PokemonCatchWorker(object):
                           name=pokemon_name,
                           combat_power=combat_power,
                           pokemon_potential=pokemon_potential)
+            logger.log('[#] {} has been caught!'.format(pokemon_name), 'green')
             if self.should_transfer(combat_power, pokemon_potential):
                 id_list_after_catching = self.get_pokemon_ids()
 

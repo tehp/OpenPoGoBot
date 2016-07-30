@@ -2,10 +2,11 @@
 
 from __future__ import print_function
 # pylint: disable=redefined-builtin
-from builtins import bytes, str
+from builtins import bytes, str, int
 import struct
 import time
 
+from six import integer_types
 from api.worldmap import PokeStop
 from colorama import init               # type: ignore
 from geopy.distance import vincenty     # type: ignore
@@ -133,7 +134,7 @@ def convert_to_utf8(data):
         return data.decode()
     elif isinstance(data, str):
         return str(data)
-    elif isinstance(data, int):
+    elif isinstance(data, integer_types):
         return int(data)
     elif isinstance(data, float):
         return float(data)

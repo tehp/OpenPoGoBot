@@ -24,20 +24,6 @@ class WalkTowardsFortWorker(object):
         fort_id = self.fort.fort_id
         dist = distance(self.position[0], self.position[1], lat, lng)
 
-        logger.log("[#] Found fort {} at distance {}".format(fort_id, format_dist(dist, unit)))
-
-        if dist > 0:
-            logger.log("[#] Need to move closer to Pokestop")
-            position = (lat, lng, 0.0)
-
-            if self.config.walk > 0:
-                self.stepper.walk_to(self.config.walk, *position)
-            else:
-                self.api_wrapper.set_position(*position)
-            self.api_wrapper.player_update(latitude=lat, longitude=lng)
-            logger.log("[#] Arrived at Pokestop")
-            sleep(2)
-
         self.api_wrapper.fort_details(fort_id=fort_id,
                                       latitude=lat,
                                       longitude=lng)
@@ -46,4 +32,18 @@ class WalkTowardsFortWorker(object):
             return
         fort_details = response_dict["fort"]
         fort_name = fort_details.fort_name
-        logger.log(u"[#] Now at Pokestop: " + fort_name)
+
+        self.bot.fire("fort_found", fort_name=fort_name, fort_distance=format_dist(dist, unit))
+
+        if dist > 0:
+            self.bot.fire("fort_moving", fort_name=fort_name)
+            position = (lat, lng, 0.0)
+
+            if self.config.walk > 0:
+                self.stepper.walk_to(self.config.walk, *position)
+            else:
+                self.api_wrapper.set_position(*position)
+            self.api_wrapper.player_update(latitude=lat, longitude=lng)
+            sleep(2)
+
+        self.bot.fire("fort_arrived", fort_name=fort_name)

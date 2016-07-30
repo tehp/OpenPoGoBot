@@ -57,9 +57,9 @@ class PokemonGoBot(object):
 
     def start(self):
         self._setup_logging()
+        self._init_plugins()
         self._setup_api()
         self._setup_ignored_pokemon()
-        self._init_plugins()
         self.stepper = Stepper(self)
         random.seed()
 
