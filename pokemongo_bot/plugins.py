@@ -1,9 +1,10 @@
+from __future__ import print_function
 import collections
 import imp
 import os
-import logging
+import time
 
-logging.basicConfig(level=logging.DEBUG)
+from colorama import Fore, Style
 
 __author__ = "Michael E. Cotterell"
 __email__ = "mepcotterell@gmail.com"
@@ -11,21 +12,33 @@ __copyright__ = "Copyright 2013, Michael E. Cotterell"
 __license__ = "MIT"
 
 
+def log(text, color=None):
+    # type: (str, Optional[str]) -> None
+
+    # Added because this code needs to run without importing the logger module.
+    color_hex = {
+        'green': Fore.GREEN,
+        'yellow': Fore.YELLOW,
+        'red': Fore.RED
+    }
+    string = str(text)
+    output = u"[" + time.strftime("%Y-%m-%d %H:%M:%S") + u"] [Plugin Manager] {}".format(string)
+    if color in color_hex:
+        output = color_hex[color] + output + Style.RESET_ALL
+    print(output)
+
+
 class PluginManager(object):
     """
     A simple plugin manager
     """
 
-    def __init__(self, plugin_folder, main_module='__init__', log=logging):
-        self.logging = log
+    def __init__(self, plugin_folder, main_module='__init__'):
         self.plugin_folder = plugin_folder
         self.main_module = main_module
         self.loaded_plugins = collections.OrderedDict()
 
     def get_available_plugins(self):
-        """
-        Returns a dictionary of plugins available in the plugin folder
-        """
         plugins = {}
         for possible in os.listdir(self.plugin_folder):
             location = os.path.join(self.plugin_folder, possible)
@@ -38,15 +51,9 @@ class PluginManager(object):
         return plugins
 
     def get_loaded_plugins(self):
-        """
-        Returns a dictionary of the loaded plugin modules
-        """
         return self.loaded_plugins.copy()
 
     def load_plugin(self, plugin_name):
-        """
-        Loads a plugin module
-        """
         plugins = self.get_available_plugins()
         if plugin_name in plugins:
             if plugin_name not in self.loaded_plugins:
@@ -56,16 +63,13 @@ class PluginManager(object):
                     'info': plugins[plugin_name]['info'],
                     'module': module
                 }
-                self.logging.log('plugin "%s" loaded' % plugin_name)
+                log('Loaded plugin "%s".' % plugin_name, color="green")
             else:
-                self.logging.log('plugin "%s" already loaded' % plugin_name)
+                log('Plugin "%s" was already loaded!' % plugin_name, color="yellow")
         else:
-            self.logging.log('cannot locate plugin "%s"' % plugin_name)
-            raise Exception('cannot locate plugin "%s"' % plugin_name)
+            log('Cannot locate plugin "%s"!' % plugin_name, color="red")
+            raise Exception('Cannot locate plugin "%s"' % plugin_name)
 
     def unload_plugin(self, plugin_name):
-        """
-        Unloads a plugin module
-        """
         del self.loaded_plugins[plugin_name]
-        self.logging.log('plugin "%s" unloaded' % plugin_name)
+        log('Unloaded plugin "%s".' % plugin_name, color="green")

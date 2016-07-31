@@ -34,8 +34,10 @@ import argparse
 import ssl
 import logging
 import sys
+
 from pokemongo_bot import logger
 from pokemongo_bot import PokemonGoBot
+import colorama
 
 # Disable HTTPS certificate verification
 if sys.version_info >= (2, 7, 9):
@@ -222,6 +224,8 @@ def main():
     # log settings
     # log format
     # logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(module)10s] [%(levelname)5s] %(message)s')
+
+    colorama.init()
 
     config = init_config()
     if not config:

@@ -32,5 +32,7 @@ class Pokemon(object):
         self.height = data.get("height_m", 0.0)
         self.weight = data.get("weight_kg", 0.0)
 
+        self.deployed_fort_id = data.get("deployed_fort_id", None)
+
     def __repr__(self):
         return str(self.__dict__)

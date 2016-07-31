@@ -13,8 +13,7 @@ from googlemaps.exceptions import ApiError
 
 from pokemongo_bot import logger, cell_workers, human_behaviour, item_list, stepper
 from pokemongo_bot.event_manager import manager
-from pokemongo_bot.cell_workers import PokemonCatchWorker, SeenFortWorker, InitialTransferWorker, WalkTowardsFortWorker, \
-    RecycleItemsWorker
+from pokemongo_bot.cell_workers import PokemonCatchWorker, SeenFortWorker, WalkTowardsFortWorker, RecycleItemsWorker
 from pokemongo_bot.utils import filtered_forts, distance, convert_to_utf8
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.item_list import Item
@@ -46,7 +45,7 @@ class PokemonGoBot(object):
 
     def _init_plugins(self):
         # create a plugin manager
-        self.plugin_manager = PluginManager('./plugins', log=logger)
+        self.plugin_manager = PluginManager('./plugins')
 
         # load all plugin modules
         for plugin in self.plugin_manager.get_available_plugins():
@@ -72,6 +71,8 @@ class PokemonGoBot(object):
 
     def work_on_cell(self, cell, include_fort_on_path):
         # type: (Cell, bool) -> None
+
+        self.fire("pokemon_found", pokemon=cell.catchable_pokemon + cell.wild_pokemon)
 
         self._remove_ignored_pokemon(cell)
 
@@ -118,8 +119,7 @@ class PokemonGoBot(object):
         return_value = catch_worker.work()
 
         if return_value == PokemonCatchWorker.BAG_FULL:
-            transfer_worker = InitialTransferWorker(self)
-            transfer_worker.work()
+            self.fire("pokemon_bag_full")
 
         return return_value
 
@@ -275,8 +275,7 @@ class PokemonGoBot(object):
         # exit(0)
 
         if self.config.initial_transfer:
-            worker = InitialTransferWorker(self)
-            worker.work()
+            self.fire("pokemon_bag_full")
 
         if self.config.recycle_items:
             recycle_worker = RecycleItemsWorker(self)
@@ -284,26 +283,6 @@ class PokemonGoBot(object):
 
         logger.log('[#]')
         self.update_player_and_inventory()
-
-    def print_player_data(self, player):
-        # @@@ TODO: Convert this to d/m/Y H:M:S
-        creation_date = datetime.datetime.fromtimestamp(player['creation_timestamp_ms'] / 1e3)
-
-        balls_stock = self.pokeball_inventory()
-
-        pokecoins = player['currencies'][0].get('amount', '0')
-        stardust = player['currencies'][1].get('amount', '0')
-
-        logger.log('[#]')
-        logger.log('[#] Username: {username}'.format(**player))
-        logger.log('[#] Account Creation: {}'.format(creation_date))
-        logger.log('[#] Bag Storage: {}/{}'.format(self.get_item_count(), player['max_item_storage']))
-        logger.log('[#] Pokemon Storage: {}/{}'.format(self.get_pokemon_count(), player['max_pokemon_storage']))
-        logger.log('[#] Stardust: {}'.format(stardust))
-        logger.log('[#] Pokecoins: {}'.format(pokecoins))
-        logger.log('[#] PokeBalls: {}'.format(balls_stock[1]))
-        logger.log('[#] GreatBalls: {}'.format(balls_stock[2]))
-        logger.log('[#] UltraBalls: {}'.format(balls_stock[3]))
 
     def _setup_ignored_pokemon(self):
         pass

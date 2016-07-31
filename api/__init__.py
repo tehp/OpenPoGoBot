@@ -7,6 +7,7 @@ from pgoapi.exceptions import ServerSideRequestThrottlingException  # type: igno
 
 from .state_manager import StateManager
 
+
 class PoGoApi(object):
     def __init__(self, provider="google", username="", password=""):
         self._api = PGoApi()
@@ -23,8 +24,11 @@ class PoGoApi(object):
         self._pending_calls_keys = []
 
     def login(self):
-        provider, username, password = self.provider, self.username, self.password
-        return self._api.login(provider, username, password, app_simulation=True)
+        try:
+            provider, username, password = self.provider, self.username, self.password
+            return self._api.login(provider, username, password, app_simulation=True)
+        except TypeError:
+            return False
 
     def set_position(self, lat, lng, alt):
         self._api.set_position(lat, lng, alt)
