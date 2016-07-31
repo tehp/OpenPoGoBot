@@ -7,7 +7,7 @@ class Inventory(object):
         self.last_updated = data.get("new_timestamp_ms", 0)
 
         items = data.get("inventory_items", [])
-        self.items = {}
+        self.items = {"count": 0}
         self.candy = {}
         self.pokedex_entries = {}
 
@@ -37,6 +37,8 @@ class Inventory(object):
                     self.items[item_id] = num_item
                 else:
                     self.items[item_id] += num_item
+
+                self.items["count"] += num_item
 
             elif "pokemon_data" in item:
                 current_data = item["pokemon_data"]

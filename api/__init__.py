@@ -96,17 +96,17 @@ class PoGoApi(object):
                 results = request.call()
             except ServerSideRequestThrottlingException:
                 # status code 52: too many requests
-                print("[API] Requesting too fast. Retrying in 15 seconds...")
-                time.sleep(15)
+                print("[API] Requesting too fast. Retrying in 10 seconds...")
+                time.sleep(10)
                 continue
             except TypeError:
-                print("[API] Failed to perform API call (servers might be offline). Retrying in 15 seconds...")
-                time.sleep(15)
+                print("[API] Failed to perform API call (servers might be offline). Retrying in 10 seconds...")
+                time.sleep(10)
                 continue
 
             if results is False or results is None or results.get('status_code', 1) != 1:
-                print("[API] API call failed. Retrying in 5 seconds...")
-                time.sleep(5)
+                print("[API] API call failed. Retrying in 10 seconds...")
+                time.sleep(10)
             else:
                 # status code 1: success
                 with open('api-test.txt', 'w') as outfile:

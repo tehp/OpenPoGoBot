@@ -29,7 +29,8 @@ def filtered_forts(lat, lng, forts):
     def should_keep(fort):
         return fort.fort_type == 1 and\
                 isinstance(fort, PokeStop) and\
-                fort.cooldown_complete_timestamp_ms < time.time() * 1000
+                not fort.is_in_cooldown() and\
+                fort.latitude is not None and fort.longitude is not None
 
     filtered_list = [(fort, distance(lat, lng, fort.latitude, fort.longitude)) for fort in forts if should_keep(fort)]
     return [x[0] for x in sorted(filtered_list, key=lambda y: y[1])]

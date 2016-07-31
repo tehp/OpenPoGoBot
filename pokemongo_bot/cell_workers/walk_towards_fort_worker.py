@@ -5,6 +5,7 @@ from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.utils import distance, format_dist
 
 
+# TODO: turn this into a plugin
 class WalkTowardsFortWorker(object):
     def __init__(self, fort, bot):
         self.fort = fort
@@ -33,10 +34,10 @@ class WalkTowardsFortWorker(object):
         fort_details = response_dict["fort"]
         fort_name = fort_details.fort_name
 
-        self.bot.fire("fort_found", fort_name=fort_name, fort_distance=format_dist(dist, unit))
+        logger.log(u"[#] Found fort {} at distance {}".format(fort_name, format_dist(dist, unit)))
 
         if dist > 0:
-            self.bot.fire("fort_moving", fort_name=fort_name)
+            logger.log(u"[#] Moving closer to {}".format(fort_name))
             position = (lat, lng, 0.0)
 
             if self.config.walk > 0:
@@ -46,4 +47,4 @@ class WalkTowardsFortWorker(object):
             self.api_wrapper.player_update(latitude=lat, longitude=lng)
             sleep(2)
 
-        self.bot.fire("fort_arrived", fort_name=fort_name)
+        logger.log(u"[#] Now at Pokestop: {}".format(fort_name))

@@ -13,7 +13,7 @@ from googlemaps.exceptions import ApiError
 
 from pokemongo_bot import logger, cell_workers, human_behaviour, item_list, stepper
 from pokemongo_bot.event_manager import manager
-from pokemongo_bot.cell_workers import PokemonCatchWorker, SeenFortWorker, WalkTowardsFortWorker, RecycleItemsWorker
+from pokemongo_bot.cell_workers import WalkTowardsFortWorker
 from pokemongo_bot.utils import filtered_forts, distance, convert_to_utf8
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.item_list import Item
@@ -54,6 +54,10 @@ class PokemonGoBot(object):
             else:
                 logger.log("Not loading plugin \"{}\"".format(plugin))
 
+        loaded_plugins = sorted(self.plugin_manager.get_loaded_plugins().keys())
+        logger.log("Plugins loaded: {}".format(loaded_plugins), color="green", prefix="Plugins")
+        logger.log("Events available: {}".format(manager.get_registered_events()), color="green", prefix="Events")
+
     def start(self):
         self._setup_logging()
         self._init_plugins()
@@ -69,119 +73,22 @@ class PokemonGoBot(object):
     def take_step(self):
         self.stepper.take_step()
 
-    def work_on_cell(self, cell, include_fort_on_path):
+    def work_on_cell(self, cell, pokemon_only):
         # type: (Cell, bool) -> None
 
-        self.fire("pokemon_found", pokemon=cell.catchable_pokemon + cell.wild_pokemon)
+        self.fire("pokemon_found", encounters=cell.catchable_pokemon + cell.wild_pokemon)
 
-        self._remove_ignored_pokemon(cell)
+        if not pokemon_only:
+            # TODO: Refactor WalkTowardsFortWorker
+            # self.fire("pokestops_found", pokestops=cell.pokestops)
 
-        if self.config.mode in ["all", "poke"]:
-            pass
+            pokestops = filtered_forts(self.position[0], self.position[1], cell.pokestops)
 
-        if (self.config.mode == "all" or self.config.mode == "poke") and len(cell.catchable_pokemon) > 0:
-            logger.log('[#] Something rustles nearby!')
-            # Sort all by distance from current pos- eventually this should
-            # build graph & A* it
-            cell.catchable_pokemon.sort(key=lambda x: x.get("time_until_hidden_ms", 0))
-            for pokemon in cell.catchable_pokemon:
-                if self.catch_pokemon(pokemon) == PokemonCatchWorker.NO_POKEBALLS:
-                    break
-
-        if (self.config.mode == "all" or self.config.mode == "poke") and len(cell.wild_pokemon) > 0:
-            # Sort all by distance from current pos- eventually this should
-            # build graph & A* it
-            # cell.wild_pokemon.sort(key=lambda x: distance(self.position[0], self.position[1], x['latitude'], x['longitude']))
-            cell.wild_pokemon.sort(key=lambda x: x.get("time_until_hidden_ms", 0))
-            for pokemon in cell.wild_pokemon:
-                if self.catch_pokemon(pokemon) == PokemonCatchWorker.NO_POKEBALLS:
-                    break
-        if include_fort_on_path:
-            # Only include those with a lat/long
-            pokestops = [pokestop for pokestop in cell.pokestops if
-                         pokestop.latitude is not None and pokestop.longitude is not None]
-            # gyms = [gym for gym in cell['forts'] if 'gym_points' in gym]
-
-            # Sort all by distance from current pos- eventually this should
-            # build graph & A* it
-            pokestops.sort(key=lambda x: distance(self.position[0], self.position[1], x.latitude, x.longitude))
             for pokestop in pokestops:
                 walk_worker = WalkTowardsFortWorker(pokestop, self)
                 walk_worker.work()
 
-                if self.config.mode == "all" or self.config.mode == "farm":
-                    spinner_worker = SeenFortWorker(pokestop, self)
-                    spinner_worker.work()
-
-    def catch_pokemon(self, pokemon):
-        # type: (Pokemon) -> str
-        catch_worker = PokemonCatchWorker(pokemon, self)
-        return_value = catch_worker.work()
-
-        if return_value == PokemonCatchWorker.BAG_FULL:
-            self.fire("pokemon_bag_full")
-
-        return return_value
-
-    def _work_on_forts(self, position, map_cells):
-        # type: (Tuple[float, float], List[Cell]) -> None
-        forts = filtered_forts(position[0], position[1], sum([cell.pokestops for cell in map_cells], []))
-        if forts:
-            walk_worker = WalkTowardsFortWorker(forts[0], self)
-            walk_worker.work()
-
-            spinner_worker = SeenFortWorker(forts[0], self)
-            spinner_worker.work()
-
-    def _remove_ignored_pokemon(self, cell):
-        # type: (Cell) -> None
-        if self.process_ignored_pokemon:
-            wild_pokemons = cell.wild_pokemon
-            catchable_pokemons = cell.catchable_pokemon
-            for pokemon in wild_pokemons[:]:
-                pokemon_id = pokemon['pokemon_data']['pokemon_id']
-                pokemon_name = [x for x in self.pokemon_list if int(x.get('Number')) == pokemon_id][0]['Name']
-
-                if pokemon_name in self.ignores:
-                    wild_pokemons.remove(pokemon)
-
-            for pokemon in catchable_pokemons[:]:
-                pokemon_id = pokemon['pokemon_id']
-                pokemon_name = [x for x in self.pokemon_list if int(x.get('Number')) == pokemon_id][0]['Name']
-
-                if pokemon_name in self.ignores:
-                    catchable_pokemons.remove(pokemon)
-
-    def _work_on_catchable_pokemon(self, map_cells):
-        # type: (List[Cell]) -> None
-        for cell in map_cells:
-            catchable_pokemon = cell.catchable_pokemon
-            if len(catchable_pokemon) > 0:
-                logger.log('[#] Something rustles nearby!')
-                # Sort all by distance from current pos- eventually this should
-                # build graph & A* it
-                catchable_pokemon.sort(
-                    key=lambda x: distance(self.position[0], self.position[1], x['latitude'], x['longitude']))
-                for pokemon in catchable_pokemon:
-                    with open('web/catchable-%s.json' % self.config.username, 'w') as outfile:
-                        json.dump(pokemon, outfile)
-                    worker = PokemonCatchWorker(pokemon, self)
-                    if worker.work() == -1:
-                        break
-                    with open('web/catchable-%s.json' % self.config.username, 'w') as outfile:
-                        json.dump({}, outfile)
-
-    def _work_on_wild_pokemon(self, map_cells):
-        for cell in map_cells:
-            if 'wild_pokemons' in cell and len(cell['wild_pokemons']) > 0:
-                # Sort all by distance from current pos- eventually this should
-                # build graph & A* it
-                cell['wild_pokemons'].sort(
-                    key=lambda x: distance(self.position[0], self.position[1], x['latitude'], x['longitude']))
-                for pokemon in cell['wild_pokemons']:
-                    worker = PokemonCatchWorker(pokemon, self)
-                    if worker.work() == -1:
-                        break
+                self.fire("pokestop_arrived", pokestop=pokestop)
 
     def _setup_logging(self):
         self.log = logging.getLogger(__name__)
@@ -258,7 +165,7 @@ class PokemonGoBot(object):
             logger.log('[#]')
             logger.log('[#] Username: {}'.format(player.username))
             logger.log('[#] Acccount Creation: {}'.format(creation_date))
-            logger.log('[#] Bag Storage: {}/{}'.format(len(inventory), player.max_item_storage))
+            logger.log('[#] Bag Storage: {}/{}'.format(inventory["count"], player.max_item_storage))
             logger.log('[#] Pokemon Storage: {}/{}'.format(len(pokemon), player.max_pokemon_storage))
             logger.log('[#] Stardust: {}'.format(stardust))
             logger.log('[#] Pokecoins: {}'.format(pokecoins))
@@ -278,8 +185,7 @@ class PokemonGoBot(object):
             self.fire("pokemon_bag_full")
 
         if self.config.recycle_items:
-            recycle_worker = RecycleItemsWorker(self)
-            recycle_worker.work()
+            self.fire("item_bag_full")
 
         logger.log('[#]')
         self.update_player_and_inventory()
@@ -293,10 +199,6 @@ class PokemonGoBot(object):
         #             self.process_ignored_pokemon = True
         # except Exception:
         #     pass
-
-    def drop_item(self, item_id, count):
-        self.api_wrapper.recycle_inventory_item(item_id=item_id, count=count)
-        self.api_wrapper.call()
 
     def update_player_and_inventory(self):
         # type: () -> Dict[str, object]
@@ -410,4 +312,4 @@ class PokemonGoBot(object):
         response_dict = self.update_player_and_inventory()
         if response_dict is None:
             return 0
-        return len(response_dict["inventory"])
+        return response_dict["inventory"]["count"]

@@ -5,28 +5,28 @@ import time
 from colorama import Fore, Style
 
 
-def log(text, color=None):
-    # type: (str, Optional[str]) -> None
-
-    # Added because this code needs to run without importing the logger module.
-    color_hex = {
-        'green': Fore.GREEN,
-        'yellow': Fore.YELLOW,
-        'red': Fore.RED
-    }
-    string = str(text)
-    output = u"[" + time.strftime("%Y-%m-%d %H:%M:%S") + u"] [Event Manager] {}".format(string)
-    if color in color_hex:
-        output = color_hex[color] + output + Style.RESET_ALL
-    print(output)
-
-
 class Event(object):
+
+    @staticmethod
+    def log(text, color=None):
+        # type: (str, Optional[str]) -> None
+
+        # Added because this code needs to run without importing the logger module.
+        color_hex = {
+            'green': Fore.GREEN,
+            'yellow': Fore.YELLOW,
+            'red': Fore.RED
+        }
+        string = str(text)
+        output = u"[" + time.strftime("%Y-%m-%d %H:%M:%S") + u"] [Events] {}".format(string)
+        if color in color_hex:
+            output = color_hex[color] + output + Style.RESET_ALL
+        print(output)
+
     def __init__(self, name):
         self.name = name
         self.listeners = {}
         self.num_listeners = 0
-        log("Initialized new event \"{}\"".format(self.name), color="green")
 
     def add_listener(self, listener, priority=0):
         self.num_listeners += 1
@@ -41,7 +41,7 @@ class Event(object):
 
     def fire(self, **kwargs):
         if self.num_listeners == 0:
-            log("WARNING: No handler has registered to handle event \"{}\"".format(self.name), color="yellow")
+            self.log("WARNING: No handler has registered to handle event \"{}\"".format(self.name), color="yellow")
 
         # Sort events by priorities from greatest to least
         priorities = sorted(self.listeners, key=lambda event_priority: event_priority)
@@ -109,6 +109,14 @@ class EventManager(object):
     def remove_listener(self, name, listener):
         if name in self.events:
             self.events[name].remove_listener(listener)
+
+    def get_registered_events(self):
+        event_list = []
+        for event_name in self.events:
+            if self.events[event_name].num_listeners > 0:
+                event_list.append(event_name)
+
+        return sorted(event_list)
 
 
 # This will only be loaded once

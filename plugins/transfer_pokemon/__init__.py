@@ -1,14 +1,14 @@
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.event_manager import manager
-
-
-def log(text, color="black"):
-    manager.fire("logging", text=text, color=color, prefix="Transfer")
+from pokemongo_bot import logger
 
 
 @manager.on("pokemon_bag_full", priority=-1000)
-def filter_pokemon(bot=None, transfer_list=None):
+def filter_pokemon(bot, transfer_list=None):
     # type: (PokemonGoBot, Optional[List[Pokemon]]) -> Dict[Str, List[Pokemon]]
+
+    def log(text, color="black"):
+        logger.log(text, color=color, prefix="Transfer")
 
     if transfer_list is None:
         bot.api_wrapper.get_player().get_inventory()
@@ -74,8 +74,11 @@ def filter_pokemon(bot=None, transfer_list=None):
 
 
 @manager.on("pokemon_bag_full", "transfer_pokemon", priority=1000)
-def transfer_pokemon(bot=None, transfer_list=None):
+def transfer_pokemon(bot, transfer_list=None):
     # type: (PokemonGoBot, Optional[List[Pokemon]]) -> None
+
+    def log(text, color="black"):
+        logger.log(text, color=color, prefix="Transfer")
 
     if transfer_list is None or len(transfer_list) == 0:
         log("No Pokemon to transfer.", color="yellow")

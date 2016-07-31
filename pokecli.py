@@ -56,6 +56,15 @@ def init_config():
         "ign_init_trans": "",
         "exclude_plugins": "",
         "recycle_items": False,
+        "item_filter": {
+            1: 100,
+            101: 0,
+            102: 0,
+            103: 10,
+            104: 10,
+            201: 10,
+            202: 10
+        },
         "location_cache": False,
         "initial_transfer": False,
         "debug": False,
@@ -192,11 +201,8 @@ def init_config():
         for key in loaded_config:
             if config.__dict__.get(key) is None:
                 config.__dict__[key] = loaded_config.get(key)
-        for key in config.__dict__:
-            if config.__dict__.get(key) is None and loaded_config.get(key) is not None:
-                config.__dict__[key] = loaded_config.get(key)
 
-    for key in config.__dict__:
+    for key in default_config:
         if config.__dict__.get(key) is None and default_config.get(key) is not None:
             config.__dict__[key] = default_config.get(key)
 

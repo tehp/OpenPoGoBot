@@ -41,11 +41,11 @@ def run_flask():
     @socketio.on("connect", namespace="/event")
     def connect():
         socketio.emit("logging", logging_buffer, namespace="/event")
-        logger.log("Web client connected", "yellow")
+        logger.log("Web client connected", "yellow", fire_event=False)
 
     @socketio.on("disconnect", namespace="/event")
     def disconnect():
-        logger.log("Web client disconnected", "yellow")
+        logger.log("Web client disconnected", "yellow", fire_event=False)
 
     socketio.run(app, host="0.0.0.0", port=8000, debug=False, use_reloader=False, log_output=False)
 

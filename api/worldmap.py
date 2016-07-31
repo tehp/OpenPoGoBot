@@ -1,5 +1,6 @@
 # pylint: disable=redefined-builtin
 from builtins import str
+import time
 
 
 class Fort(object):
@@ -10,8 +11,11 @@ class Fort(object):
         self.longitude = data.get("longitude", None)
         self.enabled = data.get("enabled", 1)
         self.last_modified_timestamp_ms = data.get("last_modified_timestamp_ms", 0)
-        self.complete_cooldown_timestamp_ms = data.get("complete_cooldown_timestamp_ms", 0)
+        self.cooldown_timestamp_ms = data.get("cooldown_complete_timestamp_ms", 0)
         self.fort_type = data.get("type", 0)
+
+    def is_in_cooldown(self):
+        return self.cooldown_timestamp_ms + 1000 > time.time() * 1000
 
 
 class PokeStop(Fort):
