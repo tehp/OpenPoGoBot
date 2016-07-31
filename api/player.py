@@ -22,6 +22,12 @@ class Player(object):
         self.experience = 0
         self.level = 1
 
+    def update_hatched_eggs(self, data):
+        for stardust in data.get("stardust_awarded", []):
+            self.stardust += stardust
+        for xp in data.get("experience_awarded", []):
+            self.experience += xp
+
     def update_get_player(self, data):
         data = data.get("player_data", {})
         self.username = data.get("username", "Unknown")

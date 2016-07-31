@@ -18,6 +18,24 @@ class WalkTowardsFortWorker(object):
         self.stepper = bot.stepper
 
     def work(self):
+
+        if self.config.fill_incubators:
+            self.api_wrapper.get_inventory()
+            response_dict = self.api_wrapper.call()
+
+            eggs = [egg.unique_id for egg in response_dict["eggs"] if egg.egg_incubator_id == ""]
+            incubators = [incu.unique_id for incu in response_dict["egg_incubators"] if incu.pokemon_id == 0 and (
+                self.config.use_all_incubators or incu.item_id == 901)]
+
+            for incubator_unique_id in incubators:
+                if len(eggs) > 0:
+                    self.api_wrapper.use_item_egg_incubator(item_id=incubator_unique_id, pokemon_id=eggs.pop())
+                    self.api_wrapper.call()
+                    logger.log("[+] Put an egg into an incubator", "green")
+                else:
+                    logger.log("[+] No more free incubators", "yellow")
+
+
         lat = self.fort.latitude
         lng = self.fort.longitude
         unit = self.config.distance_unit  # Unit to use when printing formatted distance

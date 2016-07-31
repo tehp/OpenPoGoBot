@@ -187,6 +187,22 @@ def init_config():
         type=str,
         dest="exclude_plugins")
 
+    parser.add_argument(
+        "-fi",
+        "--fill-incubators",
+        help="Fill incubators with eggs",
+        action="store_true",
+        dest="fill_incubators",
+        default=None)
+
+    parser.add_argument(
+        "-ai",
+        "--use-all-incubators",
+        help="Use all incubators or only unlimited one",
+        action="store_true",
+        dest="use_all_incubators",
+        default=None)
+
     config = parser.parse_args()
 
     if config.json:

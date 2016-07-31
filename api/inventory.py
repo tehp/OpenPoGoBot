@@ -1,4 +1,5 @@
 from .pokemon import Egg, Pokemon
+from .item import Incubator
 
 
 class Inventory(object):
@@ -13,6 +14,8 @@ class Inventory(object):
 
         self.pokemon = []
         self.eggs = []
+        self.egg_incubators = []
+
         for item in items:
             item = item.get("inventory_item_data", {})
 
@@ -48,5 +51,8 @@ class Inventory(object):
                     self.pokemon.append(Pokemon(current_data))
 
             elif "egg_incubators" in item:
-                # currently unimplemented
-                pass
+                incubators = item['egg_incubators'].get('egg_incubator', [])
+                if isinstance(incubators, dict):
+                    incubators = [incubators]
+                for incu in incubators:
+                    self.egg_incubators.append(Incubator(incu))

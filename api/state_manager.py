@@ -1,10 +1,12 @@
 # pylint: disable=unused-argument
 from __future__ import print_function
 
+from pokemongo_bot import logger
 from .player import Player
 from .inventory import Inventory
 from .worldmap import WorldMap, Gym, PokeStop
 from .encounter import Encounter
+from .item import Incubator
 
 
 class StateManager(object):
@@ -22,7 +24,9 @@ class StateManager(object):
             "PLAYER_UPDATE": self._noop,
             "FORT_DETAILS": self._parse_fort,
             "FORT_SEARCH": self._identity,
-            "RECYCLE_INVENTORY_ITEM": self._noop
+            "RECYCLE_INVENTORY_ITEM": self._noop,
+            "USE_ITEM_EGG_INCUBATOR": self._parse_use_incubator,
+            "GET_HATCHED_EGGS": self._parse_get_hatched_eggs
         }
 
         # Maps methods to the state objects that they refresh.
@@ -30,9 +34,10 @@ class StateManager(object):
         self.method_returns_states = {
             "GET_PLAYER": ["player"],
             "GET_INVENTORY": ["player", "inventory", "pokemon", "pokedex", "candy", "eggs"],
+            "USE_ITEM_EGG_INCUBATOR":["egg_incubators"],
+            "GET_HATCHED_EGGS":["player"],
             "CHECK_AWARDED_BADGES": [],
             "DOWNLOAD_SETTINGS": [],
-            "GET_HATCHED_EGGS": [],
             "GET_MAP_OBJECTS": ["worldmap"],
             "ENCOUNTER": ["encounter"],
             "RELEASE_POKEMON": [],
@@ -50,9 +55,10 @@ class StateManager(object):
         self.method_mutates_states = {
             "GET_PLAYER": [],
             "GET_INVENTORY": [],
+            "USE_ITEM_EGG_INCUBATOR":["egg_incubators"],
+            "GET_HATCHED_EGGS":["player"],
             "CHECK_AWARDED_BADGES": [],
             "DOWNLOAD_SETTINGS": [],
-            "GET_HATCHED_EGGS": [],
             "GET_MAP_OBJECTS": ["worldmap"],
             "ENCOUNTER": ["encounter", "player", "pokedex"],
             "RELEASE_POKEMON": ["pokemon", "candy"],
@@ -151,7 +157,8 @@ class StateManager(object):
             "pokedex": new_inventory.pokedex_entries,
             "candy": new_inventory.candy,
             "pokemon": new_inventory.pokemon,
-            "eggs": new_inventory.eggs
+            "eggs": new_inventory.eggs,
+            "egg_incubators":new_inventory.egg_incubators
         }
 
         current_player = self.current_state.get("player", None)
@@ -193,6 +200,33 @@ class StateManager(object):
             self._update_state({"fort": Gym(response)})
         else:
             self._update_state({"fort": PokeStop(response)})
+
+
+    def _parse_get_hatched_eggs(self, key, response):
+        if response.get("success", False):
+            current_player = self.current_state.get("player", None)
+            if current_player is None:
+                current_player = Player()
+
+            current_player.update_hatched_eggs(response)
+            self._update_state({"player": current_player})
+            logger.log("[+] Hatched an egg!", "green")
+
+    def _parse_use_incubator(self, key, response):
+        if response["result"] == 1:
+
+            current_egg_incubators = self.current_state.get("egg_incubators", [])
+            new_egg_incubators = []
+
+            for curr_incu in current_egg_incubators:
+                if curr_incu.unique_id == response["egg_incubator"].get("id"):
+                    new_egg_incubators.append(Incubator(response["egg_incubator"]))
+                else:
+                    new_egg_incubators.append(curr_incu)
+
+
+            self._update_state({"egg_incubators": new_egg_incubators})
+
 
     def _identity(self, key, response):
         self._update_state({key: response})

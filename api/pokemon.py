@@ -6,6 +6,7 @@ class Egg(object):
         self.total_distance = data.get("egg_km_walked_target", 0.0)
         self.creation_time_ms = data.get("creation_time_ms", 0)
         self.captured_cell_id = data.get("captured_cell_id", 0)
+        self.egg_incubator_id = data.get("egg_incubator_id", "")
 
     def __repr__(self):
         return str(self.__dict__)

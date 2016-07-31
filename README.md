@@ -84,6 +84,8 @@ pip install -r requirements.txt
       -gd, --google-directions                      Bot will use directions from google maps API to navigate
       -d, --debug                                   Debug Mode
       -t, --test                                    Only parse the specified location
+      -fi, --fill-incubators                        Fill incubators with eggs
+      -ai, --use-all-incubators                     Use all incubators or only unlimited one
 
 ### Command Line Example
     Pokemon Trainer Club (PTC) account:

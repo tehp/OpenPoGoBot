@@ -5,6 +5,8 @@
     "location": "SOME LOCATION",
     "gmapkey": "GOOGLE API KEY",
     "google_directions": true,
+    "fill_incubators":true,
+    "use_all_incubators":false,
     "cp": 100,
     "max_steps": 50,
     "mode": "all",
