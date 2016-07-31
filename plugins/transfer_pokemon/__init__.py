@@ -28,18 +28,31 @@ def filter_pokemon(bot=None, transfer_list=None):
             indexed_pokemon[pokemon_num] = list()
         indexed_pokemon[pokemon_num].append(pokemon)
 
-    if bot.config.cp and False:
+    if bot.config.cp or bot.config.pokemon_potential:
         ignore_list = bot.config.ign_init_trans.split(',')
-        log("Transferring all Pokemon below {} CP, excluding {}.".format(bot.config.cp, ignore_list))
+        log("Transferring all Pokemon below CP NOT above {} and IV NOT above {} and excluding {}.".format(bot.config.cp, bot.config.pokemon_potential, ignore_list))
 
         groups = indexed_pokemon.keys()
         for group in groups:
-            # check if ID or species name is in ignore list
-            if str(group) in ignore_list or bot.pokemon_list[group - 1] in ignore_list:
+            # check if ID or species name is in ignore list or if it's our only pokemon of this type
+            if str(group) in ignore_list or bot.pokemon_list[group - 1] in ignore_list or len(indexed_pokemon[group]) < 2:
                 del indexed_pokemon[group]
             else:
                 # only keep everything below specified CP
-                indexed_pokemon[group] = [pokemon for pokemon in indexed_pokemon[group] if pokemon.combat_power < bot.config.cp]
+                group_transfer_list = []
+                for pokemon in indexed_pokemon[group]:
+                    within_cp = (bot.config.cp == 0 or pokemon.combat_power >= bot.config.cp)
+                    within_potential = (pokemon.potential == 0 or pokemon.potential >= bot.config.pokemon_potential)
+                    if not within_cp and not within_potential:
+                        group_transfer_list.append(pokemon)
+
+                # Check if we are trying to remove all the pokemon in this group.
+                if len(group_transfer_list) == len(indexed_pokemon[group]):
+                    # Sort by CP and keep the best one
+                    indexed_pokemon[group].sort(key=lambda current_pokemon: current_pokemon.combat_power)
+                    indexed_pokemon[group] = indexed_pokemon[group][:-1]
+                else:
+                    indexed_pokemon[group] = group_transfer_list
 
         for group in indexed_pokemon:
             for pokemon in indexed_pokemon[group]:
@@ -71,11 +84,13 @@ def transfer_pokemon(bot=None, transfer_list=None):
         pokemon_num = pokemon.pokemon_id
         pokemon_name = bot.pokemon_list[pokemon_num - 1]["Name"]
         pokemon_cp = pokemon.combat_power
-        log("Transferring {0} (#{1}) with CP {2} ({3}/{4})".format(pokemon_name,
-                                                                   pokemon_num,
-                                                                   pokemon_cp,
-                                                                   index+1,
-                                                                   len(transfer_list)))
+        pokemon_potential = pokemon.potential
+        log("Transferring {0} (#{1}) with CP {2} and IV {3} ({4}/{5})".format(pokemon_name,
+                                                                              pokemon_num,
+                                                                              pokemon_cp,
+                                                                              pokemon_potential,
+                                                                              index+1,
+                                                                              len(transfer_list)))
 
         bot.api_wrapper.release_pokemon(pokemon_id=pokemon.unique_id).call()
         sleep(2)

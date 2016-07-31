@@ -23,6 +23,7 @@ class Pokemon(object):
         self.attack = data.get("individual_attack", 0)
         self.defense = data.get("individual_defense", 0)
         self.stamina = data.get("individual_stamina", 0)
+        self.potential = round(float(self.attack + self.defense + self.stamina) / 45.0, 2)
 
         self.pokeball = data.get("pokeball", 1)
         self.move_1 = data.get("move_1", 0)
