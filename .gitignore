@@ -6,6 +6,7 @@ __pycache__/
 # Virtualenvs
 env/
 venv/
+.env
 
 # Flask stuff:
 instance/
@@ -24,3 +25,7 @@ web/location-*.json
 # Config files
 config.json
 release_config.json
+
+# Sublime files
+*.sublime-project
+*.sublime-workspace
