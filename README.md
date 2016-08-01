@@ -31,7 +31,7 @@ See [CONTRIBUTING.md](https://github.com/OpenPoGo/OpenPoGoBot/blob/master/CONTRI
  * Use superior ball types when necessary
  * When out of normal pokeballs, use the next type of ball unless there are less than 10 of that type, in which case start automatically farming pokestops
  * Bot Navigation via Google Directions API
-
+* Incubate eggs
 
 ## Installation
 
