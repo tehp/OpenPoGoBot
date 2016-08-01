@@ -224,6 +224,12 @@ def init_config():
 
     config.exclude_plugins = config.exclude_plugins.split(",")
 
+    str_item_filter = config.__dict__.get("item_filter", {})
+    int_item_filter = {}
+    for item_id in str_item_filter:
+        int_item_filter[int(item_id)] = str_item_filter[item_id]
+    config.item_filter = int_item_filter
+
     print(config.__dict__)
 
     if config.auth_service not in ['ptc', 'google']:
