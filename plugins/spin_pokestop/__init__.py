@@ -6,7 +6,7 @@ from math import ceil
 
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.event_manager import manager
-from pokemongo_bot.utils import format_time, filtered_forts, distance
+from pokemongo_bot.utils import format_time, filtered_forts, distance, format_dist
 from pokemongo_bot import logger
 from api.worldmap import PokeStop
 
@@ -32,17 +32,21 @@ def visit_near_pokestops(bot, pokestops=None):
     if pokestops is None:
         return
 
-    pokestops = filtered_forts(bot.stepper.current_lat, bot.stepper.current_lng, pokestops)
+    # If we're debugging, don't filter pokestops so we can test if they are on cooldown
+    if not bot.config.debug:
+        pokestops = filtered_forts(bot.stepper.current_lat, bot.stepper.current_lng, pokestops)
+
     now = int(time.time()) * 1000
     for pokestop in pokestops:
         dist = distance(bot.stepper.current_lat, bot.stepper.current_lng, pokestop.latitude, pokestop.longitude)
 
         if dist < 15:
             if pokestop.cooldown_timestamp_ms < now:
-                log("Nearby fort found ({}m away)".format(ceil(dist)), color="yellow")
                 manager.fire_with_context('pokestop_arrived', bot, pokestop=pokestop)
-            else:
-                log("Nearby fort found not is in cooldown ({}m away)".format(ceil(dist)), color="yellow")
+            elif bot.config.debug:
+                log("Nearby fort found is in cooldown for {} ({}m away)".format(format_time((pokestop.cooldown_timestamp_ms - now) / 1000),
+                                                                                ceil(dist)), color="yellow")
+
 
 @manager.on("pokestop_arrived", priority=1000)
 def spin_pokestop(bot, pokestop=None):
@@ -59,6 +63,14 @@ def spin_pokestop(bot, pokestop=None):
     longitude = pokestop.longitude
     player_latitude = bot.stepper.current_lat
     player_longitude = bot.stepper.current_lng
+
+    fort_details = bot.api_wrapper.fort_details(fort_id=pokestop.fort_id,
+                                                latitude=pokestop.latitude,
+                                                longitude=pokestop.longitude).call()
+    dist = distance(bot.stepper.current_lat, bot.stepper.current_lng, pokestop.latitude, pokestop.longitude)
+    log("Nearby PokeStop found \"{}\" ({} away)".format(fort_details["fort"].fort_name,
+                                                        format_dist(dist, bot.config.distance_unit)), color="yellow")
+
     log("Spinning...", color="yellow")
     sleep(3)
     bot.api_wrapper.fort_search(fort_id=fort_id,

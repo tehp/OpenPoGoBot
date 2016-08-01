@@ -28,22 +28,22 @@ class FortNavigator(Navigator):
                 fort_id = fort.fort_id
                 dist = distance(self.stepper.current_lat, self.stepper.current_lng, lat, lng)
 
-                logger.log("[#] Found fort {} at distance {}".format(fort_id, format_dist(dist, unit)))
+                self.api_wrapper.fort_details(fort_id=fort_id,
+                                              latitude=lat,
+                                              longitude=lng)
+                response_dict = self.api_wrapper.call()
+                if response_dict is None:
+                    fort_name = fort_id
+                else:
+                    fort_name = response_dict["fort"].fort_name
+
+                logger.log("[#] Walking towards PokeStop \"{}\" ({} away)".format(fort_name, format_dist(dist, unit)))
 
                 if dist > 0:
-                    logger.log("[#] Need to move closer to Pokestop")
                     position = (lat, lng, 0.0)
 
                     self.stepper.walk_to(*position)
                     self.api_wrapper.player_update(latitude=lat, longitude=lng)
                     sleep(2)
 
-                self.api_wrapper.fort_details(fort_id=fort_id,
-                                              latitude=lat,
-                                              longitude=lng)
-                response_dict = self.api_wrapper.call()
-                if response_dict is None:
-                    return
-                fort_details = response_dict["fort"]
-                fort_name = fort_details.fort_name
-                logger.log("[#] Now at Pokestop: " + fort_name)
+                logger.log("[#] Now at PokeStop \"{}\"".format(fort_name))
