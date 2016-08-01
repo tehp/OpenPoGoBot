@@ -85,6 +85,15 @@ def init_config():
         "navigator_waypoints": [],
         "navigator_campsite": None,
         "path_finder": "google",
+
+        # incubation settings
+        "incubation_fill": False,
+        "incubation_use_all": False,
+        "incubation_priority": ["10km", "5km", "2km"],
+        "incubation_restrict": {
+            "2km": 901
+        },
+
         "debug": False,
         "test": False
     }
@@ -225,20 +234,31 @@ def init_config():
         dest="exclude_plugins")
 
     parser.add_argument(
-        "-fi",
-        "--fill-incubators",
+        "-if",
+        "--incubation-fill",
         help="Fill incubators with eggs",
         action="store_true",
-        dest="fill_incubators",
+        dest="incubation_fill",
         default=None)
-
     parser.add_argument(
-        "-ai",
-        "--use-all-incubators",
+        "-ia",
+        "--incubation-use-all",
         help="Use all incubators or only unlimited one",
         action="store_true",
-        dest="use_all_incubators",
+        dest="incubation_use_all",
         default=None)
+    parser.add_argument(
+        "-ip",
+        "--incubation-priority",
+        help="Priority of eggs to be incubated. Comma separated list of -ip=\"10km,5km,2km\"",
+        type=str,
+        dest="incubation_priority")
+    parser.add_argument(
+        "-ir",
+        "--incubation-restrict",
+        help="Restrict an egg to an incubator. List of <distance=incubator_id>. E.g. -ir=\"10km=901,5km=902\"",
+        type=str,
+        dest="incubation_restrict")
 
     config = parser.parse_args()
 
@@ -266,6 +286,17 @@ def init_config():
     for item_id in str_item_filter:
         int_item_filter[int(item_id)] = str_item_filter[item_id]
     config.item_filter = int_item_filter
+
+    if isinstance(config.incubation_priority, str):
+        config.incubation_priority = config.incubation_priority.split(',')
+
+    if isinstance(config.incubation_restrict, str):
+        incubation_restrict_dict = {}
+        for key_value in config.incubation_restrict.split(','):
+            distance, incubator_id = key_value.split('=')
+            incubation_restrict_dict[distance] = incubator_id
+
+        config.incubation_restrict = incubation_restrict_dict
 
     print(config.__dict__)
 

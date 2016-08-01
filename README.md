@@ -88,8 +88,10 @@ $ python pokecli.py [flags]
 | --google-directions           | -gd                | Bot will use directions from google maps API to navigate                                                                                                                    |
 | --debug                       | -d                 | Debug Mode                                                                                                                                                                  |
 | --test                        | -t                 | Only parse the specified location                                                                                                                                           |
-| --fill-incubators             | -fi                | Fill incubators with eggs                                                                                                                                                   |
-| --use-all-incubators          | -ai                | Use all incubators or only unlimited one                                                                                                                                    |
+| --incubators-fill             | -fi                | Fill incubators with eggs                                                                                                                                                   |
+| --incubators-use-all          | -ia                | Use all incubators or only unlimited one                                                                                                                                    |
+| --incubators-priority         | -ip                | Priority of eggs to be incubated. Comma separated list of -ip="10km,5km,2km"                                                                                                |
+| --incubators-restrict         | -ir                | Restrict an egg to an incubator. List of <distance=incubator_id>. E.g. -ir=\10km=901,5km=902"                                                                               |
 
 
 ### Command Line Example
@@ -186,6 +188,7 @@ Here are the available plugins:
 |     **Plugins**    |
 |:------------------:|
 | `catch_pokemon`    |
+| `egg_incubator`    |
 | `recycle_items`    |
 | `spin_pokestop`    |
 | `transfer_pokemon` |

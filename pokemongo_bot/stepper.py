@@ -53,12 +53,15 @@ class Stepper(object):
         self.current_lng = position_lng
         self.current_alt = position_alt
 
+        self.bot.fire("walking_started", coords=(lat, lng, alt))
+
         # ask the path finder how to get there
         steps = self.path_finder.path(position_lat, position_lng, lat, lng)
         for step in steps:
             to_lat, to_lng = step
             self._walk_to(to_lat, to_lng, alt)
 
+        self.bot.fire("walking_finished", coords=(lat, lng, alt))
         logger.log("[#] Walking Finished")
 
     def _walk_to(self, to_lat, to_lng, to_alt):
