@@ -11,14 +11,15 @@ import time
 import googlemaps
 from googlemaps.exceptions import ApiError
 
-from pokemongo_bot import logger, cell_workers, human_behaviour, item_list, stepper
+from pokemongo_bot import logger, human_behaviour, item_list
 from pokemongo_bot.event_manager import manager
-from pokemongo_bot.cell_workers import WalkTowardsFortWorker
 from pokemongo_bot.utils import filtered_forts, distance, convert_to_utf8
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.item_list import Item
+from pokemongo_bot.mapper import Mapper
 from pokemongo_bot.stepper import Stepper
 from pokemongo_bot.plugins import PluginManager
+from pokemongo_bot.navigation import FortNavigator, WaypointNavigator, CamperNavigator
 from api import PoGoApi
 from geopy.geocoders import GoogleV3  # type: ignore
 # Uncomment for type annotations on Python 3
@@ -38,12 +39,14 @@ class PokemonGoBot(object):
             self.item_list[int(item_id)] = item_name
 
         self.log = None
-        self.stepper = None
         self.api_wrapper = None
         self.ignores = []
         self.position = (0, 0, 0)
         self.plugin_manager = None
         self.last_session_check = time.gmtime()
+        self.stepper = None
+        self.navigator = None
+        self.mapper = None
 
     def _init_plugins(self):
         # create a plugin manager
@@ -57,6 +60,7 @@ class PokemonGoBot(object):
                 logger.log("Not loading plugin \"{}\"".format(plugin))
 
         loaded_plugins = sorted(self.plugin_manager.get_loaded_plugins().keys())
+        sleep(2)
         logger.log("Plugins loaded: {}".format(loaded_plugins), color="green", prefix="Plugins")
         logger.log("Events available: {}".format(manager.get_registered_events()), color="green", prefix="Events")
 
@@ -64,32 +68,34 @@ class PokemonGoBot(object):
         self._setup_logging()
         self._init_plugins()
         self._setup_api()
-        self._setup_ignored_pokemon()
-        self.stepper = Stepper(self)
         random.seed()
+
+        self.stepper = Stepper(self)
+        self.mapper = Mapper(self)
+
+        if self.config.navigator == 'fort':
+            self.navigator = FortNavigator(self)  # pylint: disable=redefined-variable-type
+        elif self.config.navigator == 'waypoint':
+            self.navigator = WaypointNavigator(self)  # pylint: disable=redefined-variable-type
+        elif self.config.navigator == 'camper':
+            self.navigator = CamperNavigator(self)  # pylint: disable=redefined-variable-type
 
     def fire(self, event, *args, **kwargs):
         # type: (str, *Any, **Any) -> None
         manager.fire_with_context(event, self, *args, **kwargs)
 
-    def take_step(self):
-        self.stepper.take_step()
+    def run(self):
+        map_cells = self.mapper.get_cells_at_current_position()
 
-    def work_on_cell(self, cell):
+        # Work on all the initial cells
+        self.work_on_cells(map_cells)
+        self.navigator.navigate(map_cells)
+
+    def work_on_cells(self, map_cells):
         # type: (Cell, bool) -> None
-
-        self.fire("pokemon_found", encounters=cell.catchable_pokemon + cell.wild_pokemon)
-
-        # TODO: Refactor WalkTowardsFortWorker
-        # self.fire("pokestops_found", pokestops=cell.pokestops)
-
-        pokestops = filtered_forts(self.position[0], self.position[1], cell.pokestops)
-
-        for pokestop in pokestops:
-            walk_worker = WalkTowardsFortWorker(pokestop, self)
-            walk_worker.work()
-
-            self.fire("pokestop_arrived", pokestop=pokestop)
+        for cell in map_cells:
+            self.fire("pokemon_found", encounters=cell.catchable_pokemon + cell.wild_pokemon)
+            self.fire("pokestops_found", pokestops=cell.pokestops)
 
     def _setup_logging(self):
         self.log = logging.getLogger(__name__)
@@ -107,29 +113,6 @@ class PokemonGoBot(object):
             logging.getLogger("requests").setLevel(logging.ERROR)
             logging.getLogger("pgoapi").setLevel(logging.ERROR)
             logging.getLogger("rpc_api").setLevel(logging.ERROR)
-
-    @staticmethod
-    def same_minute(current_time, last_time):
-
-        # Time Structure
-        # (tm_year=2016, tm_mon=7, tm_mday=28, tm_hour=9, tm_min=26, tm_sec=57, tm_wday=3, tm_yday=210, tm_isdst=0)
-
-        current_time_list = [
-            current_time.tm_year,
-            current_time.tm_mon,
-            current_time.tm_mday,
-            current_time.tm_hour,
-            current_time.tm_min
-        ]
-
-        last_time_list = [
-            last_time.tm_year,
-            last_time.tm_mon,
-            last_time.tm_mday,
-            last_time.tm_hour,
-            last_time.tm_min
-        ]
-        return bool(current_time_list == last_time_list)
 
     def _setup_api(self):
         # instantiate api
@@ -190,16 +173,6 @@ class PokemonGoBot(object):
 
         logger.log('[#]')
         self.update_player_and_inventory()
-
-    def _setup_ignored_pokemon(self):
-        pass
-        # try:
-        #     with open("./data/catch-ignore.yml", 'r') as ignore_file:
-        #         self.ignores = yaml.load(ignore_file)['ignore']
-        #         if len(self.ignores) > 0:
-        #             self.process_ignored_pokemon = True
-        # except Exception:
-        #     pass
 
     def update_player_and_inventory(self):
         # type: () -> Dict[str, object]
