@@ -9,7 +9,9 @@ class GooglePathFinder(PathFinder):
 
     def path(self, from_lat, form_lng, to_lat, to_lng):
         # type: (float, float, float, float) -> List[(float, float)]
-        logger.log("[#] Asking google for directions")
+        if self.config.debug:
+            logger.log("[#] Asking google for directions")
+
         gmaps = googlemaps.Client(key=self.config.gmapkey)
 
         now = datetime.now()

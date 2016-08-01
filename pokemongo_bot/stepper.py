@@ -66,13 +66,15 @@ class Stepper(object):
         dist = distance(self.current_lat, self.current_lng, to_lat, to_lng)
         steps = (dist / (self.AVERAGE_STRIDE_LENGTH_IN_METRES * self.speed))
 
-        logger.log("[#] Walking from " + str((self.current_lat, self.current_lng)) + " to " + str(
-            str((to_lat, to_lng))) + " for approx. " + str(format_time(ceil(steps))))
+        if self.config.debug:
+            logger.log("[#] Walking from " + str((self.current_lat, self.current_lng)) + " to " + str(
+                str((to_lat, to_lng))) + " for approx. " + str(format_time(ceil(steps))))
+
         if steps != 0:
             d_lat = (to_lat - self.current_lat) / steps
             d_long = (to_lng - self.current_lng) / steps
 
-            for _ in range(int(steps)):
+            for _ in range(int(ceil(steps))):
                 c_lat = self.current_lat + d_lat + random_lat_long_delta(10)
                 c_long = self.current_lng + d_long + random_lat_long_delta(10)
                 self._jump_to(c_lat, c_long, to_alt)
