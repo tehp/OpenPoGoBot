@@ -43,6 +43,6 @@ def _log(text="", color="black", prefix=None):
     output += string
     if color in color_hex:
         output = color_hex[color] + output + Style.RESET_ALL
-    print(output)
+    print(output.encode('utf-8'))
     if LCD is not None and string is not None:
         LCD.message(string)
