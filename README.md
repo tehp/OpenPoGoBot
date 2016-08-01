@@ -15,6 +15,7 @@
 - [Installation](#installation)
 - [Usage](#usage)
 - [FAQ](#faq)
+- [Plugins](#plugins)
 
 ## Contributing
 See [CONTRIBUTING.md](https://github.com/OpenPoGo/OpenPoGoBot/blob/master/CONTRIBUTING.md)
@@ -120,7 +121,8 @@ Edit this file however you want, but keep in mind:
 
 1. Pokemon names should always be capitalized and are case-sensitive
 2. The ``any`` configuration effects every pokemon
-    
+   
+
 ## FAQ
 
 ### What's IV ?
@@ -143,9 +145,10 @@ The status code "3" corresponds to "Flee" - meaning your Pokemon has ran away.
    {"responses": { "CATCH_POKEMON": { "status": 3 } }
 ### Why aren't my pokemon showing up in my Pokedex?
 Finish the tutorial on a smartphone. This will then allow everything to be visible.
+### Where's `--mode`/`-m`?
+Now, instead of using `--mode` you need to exclude plugins. If you don't want to catch pokemon, exclude the `catch_pokemon` plugin  (`-ep catch_pokemon`), and if you don't want to farm pokestops just exclude the `spin_pokestop` plugin (`-ep spin_pokestop`). Alternatively, you can modify your configuration JSON file to do the same thing.
 
-
-
+### How can I have the bot ignore certain pokemon?
 Create the following filter
 ```
 ./data/catch-ignore.yml
@@ -177,6 +180,16 @@ var users = ["username1","username2"];
 
 ---------
 
+## Plugins
+Here are the available plugins:
+
+|     **Plugins**    |
+|:------------------:|
+| `catch_pokemon`    |
+| `recycle_items`    |
+| `spin_pokestop`    |
+| `transfer_pokemon` |
+| `web`              |
 
 
 ## Credits
