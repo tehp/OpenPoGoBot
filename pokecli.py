@@ -81,6 +81,10 @@ def init_config():
         },
         "location_cache": False,
         "initial_transfer": False,
+        "navigator": "fort",
+        "navigator_waypoints": [],
+        "navigator_campsite": None,
+        "path_finder": "google",
         "debug": False,
         "test": False
     }
@@ -110,17 +114,36 @@ def init_config():
         dest="location_cache",
         default=None)
     parser.add_argument(
-        "-m",
-        "--mode",
-        help="Set farming Mode for the bot ('all', 'poke', 'farm')",
-        type=str,
-        dest="mode")
-    parser.add_argument(
         "-w",
         "--walk",
         help="Walk instead of teleport with given speed (meters per second max 4.16 because of walking end on 15km/h)",
         type=float,
         dest="walk")
+    parser.add_argument(
+        "-n",
+        "--navigator",
+        help="Navigator to use to create a destination. <fort|waypoint|campsite> (default fort)",
+        type=str,
+        dest="navigator")
+    parser.add_argument(
+        "-pf",
+        "--path-finder",
+        help="Path Finder to use to find a path to a point. <google|direct> (default google)",
+        type=str,
+        dest="walk")
+    parser.add_argument(
+        "-wp",
+        "--waypoint",
+        help="Waypoint to visit in coordinates. Only valid if navigator is waypoint",
+        type=str,
+        dest="walk",
+        nargs='*')
+    parser.add_argument(
+        "-camp",
+        "--campsite",
+        help="Waypoint to visit in coordinates. Only valid if navigator is campsite",
+        type=str,
+        dest="navigator_campsite")
     parser.add_argument(
         "-du",
         "--distance-unit",
@@ -283,7 +306,7 @@ def main():
         logger.log('[x] Starting PokemonGo Bot....', 'green')
 
         while True:
-            bot.take_step()
+            bot.run()
 
     except KeyboardInterrupt:
         logger.log('[x] Exiting PokemonGo Bot', 'red')

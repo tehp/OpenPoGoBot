@@ -38,6 +38,16 @@ def run_flask():
         logging_buffer.append(line)
         socketio.emit("logging", [line], namespace="/event")
 
+    @manager.on("position_updated")
+    def position_update(bot, coords=None):
+        if coords is None:
+            return
+
+        socketio.emit("position", {
+            "user": bot.config.username,
+            "coords": coords
+        }, namespace="/event")
+
     @socketio.on("connect", namespace="/event")
     def connect():
         socketio.emit("logging", logging_buffer, namespace="/event")

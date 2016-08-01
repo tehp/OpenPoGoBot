@@ -2,15 +2,15 @@
 
 from __future__ import print_function
 import time
+from math import ceil
 
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.event_manager import manager
-from pokemongo_bot.utils import format_time
+from pokemongo_bot.utils import format_time, filtered_forts, distance
 from pokemongo_bot import logger
 from api.worldmap import PokeStop
 
-
-@manager.on("pokestop_found", priority=-1000)
+@manager.on("pokestops_found", priority=-1000)
 def filter_pokestops(pokestops=None):
     # type: (Optional[List[Fort]]) -> Dict[Str, List[PokeStop]]
 
@@ -21,6 +21,28 @@ def filter_pokestops(pokestops=None):
     pokestops = [pokestop for pokestop in pokestops if isinstance(pokestop, PokeStop) and pokestop.latitude is not None and pokestop.longitude is not None]
     return {"pokestops": pokestops}
 
+
+@manager.on("pokestops_found", priority=1000)
+def visit_near_pokestops(bot, pokestops=None):
+    # type: (PokemonGoBot, Optional[List[Fort]]) -> Dict[Str, List[PokeStop]]
+
+    def log(text, color="black"):
+        logger.log(text, color=color, prefix="PokeStop")
+
+    if pokestops is None:
+        return
+
+    pokestops = filtered_forts(bot.stepper.current_lat, bot.stepper.current_lng, pokestops)
+    now = int(time.time()) * 1000
+    for pokestop in pokestops:
+        dist = distance(bot.stepper.current_lat, bot.stepper.current_lng, pokestop.latitude, pokestop.longitude)
+
+        if dist < 15:
+            if pokestop.cooldown_timestamp_ms < now:
+                log("Nearby fort found ({}m away)".format(ceil(dist)), color="yellow")
+                manager.fire_with_context('pokestop_arrived', bot, pokestop=pokestop)
+            else:
+                log("Nearby fort found not is in cooldown ({}m away)".format(ceil(dist)), color="yellow")
 
 @manager.on("pokestop_arrived", priority=1000)
 def spin_pokestop(bot, pokestop=None):
@@ -35,8 +57,8 @@ def spin_pokestop(bot, pokestop=None):
     fort_id = pokestop.fort_id
     latitude = pokestop.latitude
     longitude = pokestop.longitude
-    player_latitude = bot.position[0]
-    player_longitude = bot.position[1]
+    player_latitude = bot.stepper.current_lat
+    player_longitude = bot.stepper.current_lng
     log("Spinning...", color="yellow")
     sleep(3)
     bot.api_wrapper.fort_search(fort_id=fort_id,
@@ -81,6 +103,9 @@ def spin_pokestop(bot, pokestop=None):
             seconds_since_epoch = time.time()
             cooldown_time = str(format_time((pokestop_cooldown / 1000) - seconds_since_epoch))
             log("PokeStop is on cooldown for {}.".format(cooldown_time))
+
+            # Update the cooldown manually
+            pokestop.cooldown_timestamp_ms = pokestop_cooldown
 
         if not items_awarded and not experience_awarded and not pokestop_cooldown:
             log("Might be softbanned, try again later.", "red")
