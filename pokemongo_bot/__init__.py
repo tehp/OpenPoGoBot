@@ -34,7 +34,7 @@ class PokemonGoBot(object):
         self.config = config
         self.pokemon_list = json.load(open('data/pokemon.json'))
         self.item_list = {}
-        for item_id, item_name in json.load(open('data/items.json')).iteritems():
+        for item_id, item_name in json.load(open('data/items.json')).items():
             self.item_list[int(item_id)] = item_name
 
         self.log = None
@@ -75,22 +75,21 @@ class PokemonGoBot(object):
     def take_step(self):
         self.stepper.take_step()
 
-    def work_on_cell(self, cell, pokemon_only):
+    def work_on_cell(self, cell):
         # type: (Cell, bool) -> None
 
         self.fire("pokemon_found", encounters=cell.catchable_pokemon + cell.wild_pokemon)
 
-        if not pokemon_only:
-            # TODO: Refactor WalkTowardsFortWorker
-            # self.fire("pokestops_found", pokestops=cell.pokestops)
+        # TODO: Refactor WalkTowardsFortWorker
+        # self.fire("pokestops_found", pokestops=cell.pokestops)
 
-            pokestops = filtered_forts(self.position[0], self.position[1], cell.pokestops)
+        pokestops = filtered_forts(self.position[0], self.position[1], cell.pokestops)
 
-            for pokestop in pokestops:
-                walk_worker = WalkTowardsFortWorker(pokestop, self)
-                walk_worker.work()
+        for pokestop in pokestops:
+            walk_worker = WalkTowardsFortWorker(pokestop, self)
+            walk_worker.work()
 
-                self.fire("pokestop_arrived", pokestop=pokestop)
+            self.fire("pokestop_arrived", pokestop=pokestop)
 
     def _setup_logging(self):
         self.log = logging.getLogger(__name__)

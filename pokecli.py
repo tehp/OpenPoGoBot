@@ -57,13 +57,27 @@ def init_config():
         "exclude_plugins": "",
         "recycle_items": False,
         "item_filter": {
-            1: 100,
-            101: 0,
-            102: 0,
-            103: 10,
-            104: 10,
-            201: 10,
-            202: 10
+            1: {
+                "keep": 100
+            },
+            101: {
+                "keep": 0
+            },
+            102: {
+                "keep": 0
+            },
+            103: {
+                "keep": 10
+            },
+            104: {
+                "keep": 10
+            },
+            201: {
+                "keep": 10
+            },
+            202: {
+                "keep": 10
+            }
         },
         "location_cache": False,
         "initial_transfer": False,

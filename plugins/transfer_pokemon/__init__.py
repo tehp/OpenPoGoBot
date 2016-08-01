@@ -32,7 +32,7 @@ def filter_pokemon(bot, transfer_list=None):
         ignore_list = bot.config.ign_init_trans.split(',')
         log("Transferring all Pokemon below CP NOT above {} and IV NOT above {} and excluding {}.".format(bot.config.cp, bot.config.pokemon_potential, ignore_list))
 
-        groups = indexed_pokemon.keys()
+        groups = list(indexed_pokemon.keys())
         for group in groups:
             # check if ID or species name is in ignore list or if it's our only pokemon of this type
             if str(group) in ignore_list or bot.pokemon_list[group - 1] in ignore_list or len(indexed_pokemon[group]) < 2:

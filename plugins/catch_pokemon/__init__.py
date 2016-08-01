@@ -53,9 +53,6 @@ def pokemon_found(bot, encounters=None):
 
             balls_stock = bot.pokeball_inventory()
             total_pokeballs = sum([balls_stock[ball_type] for ball_type in balls_stock])
-            if total_pokeballs == 0:
-                log("No Pokeballs in inventory; cannot catch.", color="red")
-                return
 
             # Simulate app
             sleep(3)
@@ -63,6 +60,10 @@ def pokemon_found(bot, encounters=None):
             # TODO: This should probably be cleaned up
             should_continue_throwing = True
             while should_continue_throwing:
+                if total_pokeballs == 0:
+                    log("No Pokeballs in inventory; cannot catch.", color="red")
+                    return
+
                 pokeball = 0
 
                 if balls_stock[1] > 0:
@@ -80,11 +81,11 @@ def pokemon_found(bot, encounters=None):
                     elif combat_power > 700 or pokeball is 0:
                         pokeball = 3
 
-                if total_pokeballs == 0:
-                    log("No Pokeballs in inventory; cannot catch.", color="red")
+                if pokeball == 0:
+                    log("No ball selected as all balls are low in stock. Saving for better Pokemon.", color="red")
                     return
 
-                log("Using {}... ({} left!)".format(bot.item_list[str(pokeball)], balls_stock[pokeball]-1))
+                log("Using {}... ({} left!)".format(bot.item_list[pokeball], balls_stock[pokeball]-1))
 
                 balls_stock[pokeball] -= 1
                 total_pokeballs -= 1

@@ -70,7 +70,6 @@ def spin_pokestop(bot, pokestop=None):
                     tmp_count_items[item_id] += item["item_count"]
 
             for item_id, item_count in tmp_count_items.items():
-                item_id = str(item_id)
                 item_name = bot.item_list[item_id]
 
                 log("+ {} {}{}".format(item_count, item_name, "s" if item_count > 1 else ""), "green")

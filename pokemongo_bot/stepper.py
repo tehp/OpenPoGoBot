@@ -38,7 +38,7 @@ class Stepper(object):
             position = (position_lat, position_lng, 0.0)
 
         self.api_wrapper.set_position(*position)
-        self._work_at_position(position[0], position[1], True)
+        self._work_at_position(position[0], position[1])
         sleep(5)
 
     def walk_to(self, speed, lat, lng, alt):
@@ -91,7 +91,7 @@ class Stepper(object):
                 sleep(1)  # sleep one second plus a random delta
 
                 position_lat, position_lng, _ = self.api_wrapper.get_position()
-                self._work_at_position(position_lat, position_lng, False)
+                self._work_at_position(position_lat, position_lng)
 
             self.bot.heartbeat()
 
@@ -111,7 +111,7 @@ class Stepper(object):
             prev_cell = prev_cell.prev()
         return sorted(walk)
 
-    def _work_at_position(self, lat, lng, pokemon_only=False):
+    def _work_at_position(self, lat, lng):
         # type: (float, float, Optional[bool]) -> None
         cell_id = self._get_cell_id_from_latlong()
         timestamp = [0, ] * len(cell_id)
@@ -134,4 +134,4 @@ class Stepper(object):
         map_cells.sort(key=lambda x: distance(lat, lng, x.pokestops[0].latitude, x.pokestops[0].longitude) if len(
             x.pokestops) > 0 else 1e6)
         for cell in map_cells:
-            self.bot.work_on_cell(cell, pokemon_only)
+            self.bot.work_on_cell(cell)

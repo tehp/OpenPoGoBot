@@ -9,7 +9,6 @@
     "use_all_incubators":false,
     "cp": 100,
     "max_steps": 50,
-    "mode": "all",
     "walk": 4.16,
     "initial_transfer": false,
     "recycle_items": false,

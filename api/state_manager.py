@@ -34,8 +34,8 @@ class StateManager(object):
         self.method_returns_states = {
             "GET_PLAYER": ["player"],
             "GET_INVENTORY": ["player", "inventory", "pokemon", "pokedex", "candy", "eggs"],
-            "USE_ITEM_EGG_INCUBATOR":["egg_incubators"],
-            "GET_HATCHED_EGGS":["player"],
+            "USE_ITEM_EGG_INCUBATOR": ["egg_incubators"],
+            "GET_HATCHED_EGGS": [],
             "CHECK_AWARDED_BADGES": [],
             "DOWNLOAD_SETTINGS": [],
             "GET_MAP_OBJECTS": ["worldmap"],
@@ -55,8 +55,8 @@ class StateManager(object):
         self.method_mutates_states = {
             "GET_PLAYER": [],
             "GET_INVENTORY": [],
-            "USE_ITEM_EGG_INCUBATOR":["egg_incubators"],
-            "GET_HATCHED_EGGS":["player"],
+            "USE_ITEM_EGG_INCUBATOR": ["egg_incubators"],
+            "GET_HATCHED_EGGS": [],
             "CHECK_AWARDED_BADGES": [],
             "DOWNLOAD_SETTINGS": [],
             "GET_MAP_OBJECTS": ["worldmap"],
@@ -90,7 +90,7 @@ class StateManager(object):
     # Filter the list of methods so that only uncached methods (or methods that will become
     # uncached) and state-invalidating methods will be called. Note that the order is
     # important - calling GET_INVENTORY before FORT_SEARCH, for example, will return the cached
-    # and now invalidated inventory  object. To fix, call FORT_SEARCH and then GET_INVENTORY.
+    # and now invalidated inventory object. To fix, call FORT_SEARCH and then GET_INVENTORY.
     def filter_cached_methods(self, method_keys):
         will_be_stale = {}
         uncached_methods = []
@@ -130,8 +130,13 @@ class StateManager(object):
     # Mark the states affected by the given methods as invalid/stale.
     def mark_stale(self, methods):
         for method in methods:
-            # for state in self.method_mutates_states.get(method, []):
             for state in self.method_mutates_states[method]:
+                self.staleness[state] = True
+
+    # Mark the states returned by the given methods as invalid/stale.
+    def mark_returned_stale(self, methods):
+        for method in methods:
+            for state in self.method_returns_states[method]:
                 self.staleness[state] = True
 
     # Transform the returned data from the server into data objects and
@@ -201,7 +206,6 @@ class StateManager(object):
         else:
             self._update_state({"fort": PokeStop(response)})
 
-
     def _parse_get_hatched_eggs(self, key, response):
         if response.get("success", False):
             current_player = self.current_state.get("player", None)
@@ -210,7 +214,10 @@ class StateManager(object):
 
             current_player.update_hatched_eggs(response)
             self._update_state({"player": current_player})
-            logger.log("[+] Hatched an egg!", "green")
+
+            if len(response.get("pokemon_id", [])) > 0:
+                logger.log("[Egg] Hatched an egg!", "green")
+                self.mark_returned_stale("GET_INVENTORY")
 
     def _parse_use_incubator(self, key, response):
         if response["result"] == 1:
@@ -223,7 +230,6 @@ class StateManager(object):
                     new_egg_incubators.append(Incubator(response["egg_incubator"]))
                 else:
                     new_egg_incubators.append(curr_incu)
-
 
             self._update_state({"egg_incubators": new_egg_incubators})
 
