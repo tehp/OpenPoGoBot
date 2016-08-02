@@ -139,13 +139,13 @@ def init_config():
         "--path-finder",
         help="Path Finder to use to find a path to a point. <google|direct> (default google)",
         type=str,
-        dest="walk")
+        dest="path_finder")
     parser.add_argument(
         "-wp",
         "--waypoint",
         help="Waypoint to visit in coordinates. Only valid if navigator is waypoint",
         type=str,
-        dest="walk",
+        dest="navigator_waypoint",
         nargs='*')
     parser.add_argument(
         "-camp",
