@@ -5,8 +5,12 @@
     "location": "SOME LOCATION",
     "gmapkey": "GOOGLE API KEY",
     "google_directions": true,
-    "fill_incubators":true,
-    "use_all_incubators":false,
+    "incubation_fill": false,
+    "incubation_use_all": false,
+    "incubation_priority": ["10km", "5km", "2km"],
+    "incubation_restrict": {
+        "2km": 901
+    },
     "cp": 100,
     "max_steps": 50,
     "walk": 4.16,
