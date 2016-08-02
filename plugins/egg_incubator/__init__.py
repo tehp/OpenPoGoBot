@@ -33,24 +33,27 @@ def incubate_eggs(bot, coords=None):
 
         for egg_distance in bot.config.incubation_priority:
             try:
-                egg_restrictions = bot.config.incubation_restrict[egg_distance]
+                egg_restriction = int(bot.config.incubation_restrict[egg_distance])
             except KeyError:
-                egg_restrictions = None
+                egg_restriction = None
 
             for egg in eggs_by_distance:
                 if len(incubators) == 0:
                     log("No more free incubators ({}/{} in use)".format(in_use_count, len(inventory["egg_incubators"])), "yellow")
                     return
 
-                if egg_restrictions is None:
+                if egg_restriction is None:
                     incubator = incubators.pop()
-                    bot.fire("incubate_egg", incubatior=incubator, egg=egg)
+                    bot.fire("incubate_egg", incubator=incubator, egg=egg)
                     in_use_count += 1
                 else:
                     for incubator in incubators:
-                        if incubator.item_id in egg_restrictions:
-                            bot.fire("incubate_egg", incubatior=incubator, egg=egg)
+                        if incubator.item_id == egg_restriction:
+                            bot.fire("incubate_egg", incubator=incubator, egg=egg)
                             in_use_count += 1
+                            incubators.remove(incubator)
+                            break
+
 
 
 @manager.on("incubate_egg")
