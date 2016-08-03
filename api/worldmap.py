@@ -6,7 +6,8 @@ import time
 class Fort(object):
     def __init__(self, data):
         self.fort_id = data.get("id", "")
-        self.fort_name = str(data.get("name", "Unknown"))
+        self.fort_name = data.get("name", "Unknown").encode('ascii', 'replace')
+                            # TODO: Make this proper unicode  ^^
         self.latitude = data.get("latitude", None)
         self.longitude = data.get("longitude", None)
         self.enabled = data.get("enabled", 1)
