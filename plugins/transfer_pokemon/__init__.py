@@ -1,11 +1,12 @@
+from api.pokemon import Pokemon
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.event_manager import manager
 from pokemongo_bot import logger
 
 
-@manager.on("pokemon_bag_full", priority=-1000)
-def filter_pokemon(bot, transfer_list=None):
-    # type: (PokemonGoBot, Optional[List[Pokemon]]) -> Dict[Str, List[Pokemon]]
+@manager.on("pokemon_bag_full", "pokemon_caught", priority=-1000)
+def filter_pokemon(bot, transfer_list=None, pokemon=None):
+    # type: (PokemonGoBot, Optional[List[Pokemon]], Pokemon) -> Dict[Str, List[Pokemon]]
 
     def log(text, color="black"):
         logger.log(text, color=color, prefix="Transfer")
@@ -17,34 +18,47 @@ def filter_pokemon(bot, transfer_list=None):
 
     new_transfer_list = []
     indexed_pokemon = dict()
-    for pokemon in transfer_list:
+    for deck_pokemon in transfer_list:
 
         # ignore deployed pokemon
-        if pokemon.deployed_fort_id is not None:
+        if deck_pokemon.deployed_fort_id is not None:
             continue
 
-        pokemon_num = pokemon.pokemon_id
+        pokemon_num = deck_pokemon.pokemon_id
         if pokemon_num not in indexed_pokemon:
             indexed_pokemon[pokemon_num] = list()
-        indexed_pokemon[pokemon_num].append(pokemon)
+        indexed_pokemon[pokemon_num].append(deck_pokemon)
 
     if bot.config.cp or bot.config.pokemon_potential:
         ignore_list = bot.config.ign_init_trans.split(',')
-        log("Transferring all Pokemon below CP NOT above {} and IV NOT above {} and excluding {}.".format(bot.config.cp, bot.config.pokemon_potential, ignore_list))
+        log(
+            "Transferring {} Pokemon with CP NOT above {} and IV NOT above {} and excluding {}.".format(
+                ("caught" if isinstance(pokemon, Pokemon) else "all"),
+                bot.config.cp,
+                bot.config.pokemon_potential,
+                ignore_list
+            )
+        )
 
         groups = list(indexed_pokemon.keys())
         for group in groups:
+
+            # If we've been given a caught pokemon, only process that group
+            if isinstance(pokemon, Pokemon) and group != pokemon.pokemon_id:
+                del indexed_pokemon[group]
+                continue
+
             # check if ID or species name is in ignore list or if it's our only pokemon of this type
             if str(group) in ignore_list or bot.pokemon_list[group - 1] in ignore_list or len(indexed_pokemon[group]) < 2:
                 del indexed_pokemon[group]
             else:
                 # only keep everything below specified CP
                 group_transfer_list = []
-                for pokemon in indexed_pokemon[group]:
-                    within_cp = (bot.config.cp == 0 or pokemon.combat_power >= bot.config.cp)
-                    within_potential = (pokemon.potential == 0 or pokemon.potential >= bot.config.pokemon_potential)
+                for deck_pokemon in indexed_pokemon[group]:
+                    within_cp = (bot.config.cp == 0 or deck_pokemon.combat_power >= bot.config.cp)
+                    within_potential = (bot.config.pokemon_potential == 0 or deck_pokemon.potential >= bot.config.pokemon_potential)
                     if not within_cp and not within_potential:
-                        group_transfer_list.append(pokemon)
+                        group_transfer_list.append(deck_pokemon)
 
                 # Check if we are trying to remove all the pokemon in this group.
                 if len(group_transfer_list) == len(indexed_pokemon[group]):
@@ -55,8 +69,8 @@ def filter_pokemon(bot, transfer_list=None):
                     indexed_pokemon[group] = group_transfer_list
 
         for group in indexed_pokemon:
-            for pokemon in indexed_pokemon[group]:
-                new_transfer_list.append(pokemon)
+            for deck_pokemon in indexed_pokemon[group]:
+                new_transfer_list.append(deck_pokemon)
 
     else:
         log("Transferring all duplicate Pokemon, keeping the highest CP for each.")
@@ -73,7 +87,7 @@ def filter_pokemon(bot, transfer_list=None):
     return {"transfer_list": new_transfer_list}
 
 
-@manager.on("pokemon_bag_full", "transfer_pokemon", priority=1000)
+@manager.on("pokemon_bag_full", "transfer_pokemon", "pokemon_caught", priority=1000)
 def transfer_pokemon(bot, transfer_list=None):
     # type: (PokemonGoBot, Optional[List[Pokemon]]) -> None
 

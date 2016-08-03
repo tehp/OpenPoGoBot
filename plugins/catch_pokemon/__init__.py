@@ -89,8 +89,7 @@ def pokemon_found(bot, encounters=None):
 
                 balls_stock[pokeball] -= 1
                 total_pokeballs -= 1
-                should_continue_throwing = throw_pokeball(bot, encounter_id, pokeball, spawn_point_id,
-                                                          combat_power, pokemon_potential, pokemon_name)
+                should_continue_throwing = throw_pokeball(bot, encounter_id, pokeball, spawn_point_id, pokemon)
 
             time.sleep(5)
         elif status is 6:
@@ -100,8 +99,8 @@ def pokemon_found(bot, encounters=None):
             return
 
 
-def throw_pokeball(bot, encounter_id, pokeball, spawn_point_id, combat_power, pokemon_potential, pokemon_name):
-    # type: (PokemonGoBot, int, int, str, int, float, str) -> bool
+def throw_pokeball(bot, encounter_id, pokeball, spawn_point_id, pokemon):
+    # type: (PokemonGoBot, int, int, str, Pokemon) -> bool
 
     def log(text, color="black"):
         logger.log(text, color=color, prefix="Catch")
@@ -118,17 +117,21 @@ def throw_pokeball(bot, encounter_id, pokeball, spawn_point_id, combat_power, po
         return False, None
     pokemon_catch_response = response["encounter"]
     status = pokemon_catch_response.status
+    pokemon_name = bot.pokemon_list[pokemon.pokemon_id]["Name"]
     if status is 2:
         log('Failed to capture {}. Trying again!'.format(pokemon_name), 'yellow')
+        bot.fire("pokemon_catch_failed", pokemon=pokemon)
         sleep(2)
         return True
     elif status is 3:
         log('Oh no! {} fled! :('.format(pokemon_name), 'red')
+        bot.fire("pokemon_fled", pokemon=pokemon)
         return False
     elif status is 1:
-        log('{} has been caught! (CP {}, IV {})'.format(pokemon_name, combat_power, pokemon_potential), 'green')
+        log('{} has been caught! (CP {}, IV {})'.format(pokemon_name, pokemon.combat_power, pokemon.potential), 'green')
         xp = pokemon_catch_response.xp
         stardust = pokemon_catch_response.stardust
         candy = pokemon_catch_response.candy
         log("Rewards: {} XP, {} Stardust, {} Candy".format(xp, stardust, candy), "green")
+        bot.fire("pokemon_caught", pokemon=pokemon)
         return False
