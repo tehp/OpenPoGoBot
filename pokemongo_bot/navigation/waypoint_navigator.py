@@ -1,6 +1,5 @@
-from pokemongo_bot import logger
+from pokemongo_bot.navigation.destination import Destination
 from pokemongo_bot.navigation.navigator import Navigator
-from pokemongo_bot.utils import distance, format_dist
 from pokemongo_bot.event_manager import manager
 
 
@@ -22,16 +21,11 @@ class WaypointNavigator(Navigator):
                 self.pointer += 1
                 continue
 
-            lat, lng = waypoint
-            position = (lat, lng, 0.0)
+            if len(waypoint) == 2:
+                waypoint.append(0.0)
 
-            unit = self.config.distance_unit  # Unit to use when printing formatted distance
-
-            dist = distance(self.stepper.current_lat, self.stepper.current_lng, lat, lng)
-
-            logger.log("[#] Moving to waypoint at {},{} at distance {}".format(lat, lng, format_dist(dist, unit)))
-
-            self.stepper.walk_to(*position)
+            lat, lng, alt = waypoint
+            yield Destination(lat, lng, alt, name="waypoint at {},{}".format(lat, lng))
 
             self.pointer += 1
 

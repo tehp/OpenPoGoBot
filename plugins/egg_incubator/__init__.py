@@ -18,10 +18,6 @@ def incubate_eggs(bot, coords=None):
 
         inventory = bot.update_player_and_inventory()
 
-        # Hatch any eggs that need to be hatched
-        bot.api_wrapper.get_hatched_eggs().call()
-        sleep(3)
-
         eggs = [egg for egg in inventory["eggs"] if egg.egg_incubator_id == ""]
         incubators = [incu for incu in inventory["egg_incubators"] if incu.pokemon_id == 0 and (
             bot.config.incubation_use_all or incu.item_id == 901)]

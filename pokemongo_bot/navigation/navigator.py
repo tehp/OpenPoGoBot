@@ -1,4 +1,3 @@
-
 class Navigator(object):
     """
         Abstract class for a navigator

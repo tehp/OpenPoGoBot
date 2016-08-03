@@ -1,9 +1,7 @@
-from math import floor
-
 from pokemongo_bot import logger
 from pokemongo_bot import sleep
+from pokemongo_bot.navigation.destination import Destination
 from pokemongo_bot.navigation.navigator import Navigator
-from pokemongo_bot.utils import distance, format_dist
 from pokemongo_bot.event_manager import manager
 
 
@@ -28,20 +26,7 @@ class CamperNavigator(Navigator):
             lat, lng = camp_site
             position = (lat, lng, 0.0)
 
-            unit = self.config.distance_unit  # Unit to use when printing formatted distance
-            dist = floor(distance(self.stepper.current_lat, self.stepper.current_lng, lat, lng))
-
-            # Given the random delta we add to the
-            if dist > 0:
-                logger.log(
-                    "[#] Moving to camping position at {},{} at distance {}".format(lat, lng, format_dist(dist, unit)))
-                self.stepper.walk_to(*position)
-                self.stepper.snap_to(*position)
-            else:
-                # fire any events on these cells
-                logger.log("[#] Camping on {},{}".format(lat, lng))
-                position_map_cells = self.bot.mapper.get_cells(lat, lng)
-                self.bot.work_on_cells(position_map_cells)
+            yield Destination(*position, name="camping position at {},{}".format(lat, lng), exact_location=True)
 
             sleep(5)
 

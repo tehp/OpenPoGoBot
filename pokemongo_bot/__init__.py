@@ -89,13 +89,35 @@ class PokemonGoBot(object):
 
         # Work on all the initial cells
         self.work_on_cells(map_cells)
-        self.navigator.navigate(map_cells)
+
+        position_lat = self.stepper.current_lat
+        position_lng = self.stepper.current_lng
+
+        for destination in self.navigator.navigate(map_cells):
+            destination.set_steps(
+                self.stepper.get_route_between(position_lat, position_lng, destination.target_lat, destination.target_lng, destination.target_alt)
+            )
+
+            for _ in self.stepper.step(destination):
+                self.work_on_cells(
+                    self.mapper.get_cells_at_current_position()
+                )
+
+            position_lat = destination.target_lat
+            position_lng = destination.target_lng
 
     def work_on_cells(self, map_cells):
         # type: (Cell, bool) -> None
+        encounters = []
+        pokestops = []
         for cell in map_cells:
-            self.fire("pokemon_found", encounters=cell.catchable_pokemon + cell.wild_pokemon)
-            self.fire("pokestops_found", pokestops=cell.pokestops)
+            encounters += cell.catchable_pokemon + cell.wild_pokemon
+            pokestops += cell.pokestops
+
+        if len(encounters):
+            self.fire("pokemon_found", encounters=encounters)
+        if len(pokestops):
+            self.fire("pokestops_found", pokestops=pokestops)
 
     def _setup_logging(self):
         self.log = logging.getLogger(__name__)
