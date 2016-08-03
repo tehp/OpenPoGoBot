@@ -97,8 +97,10 @@ class Stepper(object):
 
             total_steps = int(ceil(steps))
             for _ in range(total_steps):
-                c_lat = from_lat + d_lat + random_lat_long_delta(10)
-                c_long = from_lng + d_long + random_lat_long_delta(10)
+                from_lat += d_lat
+                from_lng += d_long
+                c_lat = from_lat + random_lat_long_delta(10)
+                c_long = from_lng + random_lat_long_delta(10)
                 step_locations.append((c_lat, c_long, alt))
 
         return step_locations
