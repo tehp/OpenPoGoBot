@@ -1,5 +1,3 @@
-Issues currently disabled while we work to understand Niantic's API changes. All bots are currently broken, and we are working to solve this as fast as we can. Thanks for your patience!
-
 # OpenPoGoBot
 [![Build Status](https://travis-ci.org/OpenPoGo/OpenPoGoBot.svg?branch=master)](https://travis-ci.org/OpenPoGo/OpenPoGoBot)
 
