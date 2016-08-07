@@ -49,6 +49,7 @@ See [CONTRIBUTING.md](https://github.com/OpenPoGo/OpenPoGoBot/blob/master/CONTRI
 With the changes to the API on 3 August 2016, API map requests are required to have a `Signature` field in the request body. This requires that the `encrypt` shared library is in the bot directory, as it is needed to encrypt one of the fields.
 
 You will need to either find `encrypt.c` or the appropriate shared library for your system. The bot will automatically attempt to load the following filenames; another filename can be specified using config options as described below.
+We can not distribute `encrypt.c` for legal reasons. Check [pgoapi.com](http://pgoapi.com/).
 
 - OS X: `libencrypt-darwin.so`
 - Windows: `encrypt.dll`
