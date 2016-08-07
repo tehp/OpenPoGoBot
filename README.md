@@ -41,7 +41,24 @@ See [CONTRIBUTING.md](https://github.com/OpenPoGo/OpenPoGoBot/blob/master/CONTRI
 - [pip](https://pip.pypa.io/en/stable/installing/)
 - [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
 - [virtualenv](https://virtualenv.pypa.io/en/stable/installation/) (Optional)
+- `encrypt` shared library (OS Dependent, see below)
 - [protobuf 3](https://github.com/google/protobuf) (OS Dependent, see below)
+
+### `Encrypt` shared library
+
+With the changes to the API on 3 August 2016, API map requests are required to have a `Signature` field in the request body. This requires that the `encrypt` shared library is in the bot directory, as it is needed to encrypt one of the fields.
+
+You will need to either find `encrypt.c` or the appropriate shared library for your system. The bot will automatically attempt to load the following filenames; another filename can be specified using config options as described below.
+
+- OS X: `libencrypt-darwin.so`
+- Windows: `encrypt.dll`
+- Linux: `libencrypt.so`
+
+To build the shared library for Windows, run `lib/build_dll.bat`, rename the resulting binary to `encrypt.dll` and move to the bot folder.
+
+To build the shared library for OS X or Linux, in the `lib` folder run `make`, rename the resulting binary as needed and move to the bot folder.
+
+Note that if you are running a 32-bit version of Python, you must have a 32-bit version of the library, and vice versa for 64-bit. On Windows, failure to do so will result in `WindowsError: [Error 193] %1 is not a valid Win32 application`.
 
 ### Protobuf 3 installation
 
@@ -92,6 +109,7 @@ $ python pokecli.py [flags]
 | `--incubation-use-all`          | `-ia`                | Use all incubators (instead of only the unlimited one)                                                                                                                                      |
 | `--incubation-priority`         | `-ip`                | Priority of eggs to be incubated. Comma separated list of `-ip='10km,5km,2km'`                                                                                                              |
 | `--incubation-restrict`         | `-ir`                | Restrict an egg to an incubator. List of <distance=incubator_id>. E.g. `-ir='10km=901,5km=902'`                                                                                             |
+| `--load-library [LIB]`          | `-lib [LIB]`         | Load the `encrypt` shared library for signing Signature fields in requests from the specified path.                                                                                         |
 
 
 ### Command Line Example
@@ -202,3 +220,4 @@ Here are the available plugins:
 - [AeonLucid](https://github.com/AeonLucid/POGOProtos) for improved protos
 - [AHAAAAAAA](https://github.com/AHAAAAAAA/PokemonGo-Map) for parts of the s2sphere stuff
 - [PokemonGoF](https://github.com/PokemonGoF/PokemonGo-bot) and all contributors for the original bot this fork is based on
+- [/r/PokemonGoDev](https://github.com/keyphact/pgoapi) and all reverse engineering contributors for fixes for the new API changes

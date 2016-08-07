@@ -9,7 +9,7 @@ from .state_manager import StateManager
 
 
 class PoGoApi(object):
-    def __init__(self, provider="google", username="", password=""):
+    def __init__(self, provider="google", username="", password="", shared_lib="encrypt.dll"):
         self._api = PGoApi()
 
         self.provider = provider
@@ -22,6 +22,8 @@ class PoGoApi(object):
 
         self._pending_calls = {}
         self._pending_calls_keys = []
+
+        self._api.activate_signature(shared_lib)
 
     def login(self):
         try:

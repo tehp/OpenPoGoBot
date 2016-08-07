@@ -29,3 +29,9 @@ release_config.json
 # Sublime files
 *.sublime-project
 *.sublime-workspace
+
+# Shared libraries
+encrypt.dll
+libencrypt.so
+libencrypt-darwin.so
+encrypt.c

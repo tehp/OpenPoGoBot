@@ -34,6 +34,7 @@ import argparse
 import ssl
 import logging
 import sys
+import platform
 
 from pokemongo_bot import logger
 from pokemongo_bot import PokemonGoBot
@@ -97,6 +98,13 @@ def init_config():
         "debug": False,
         "test": False
     }
+
+    if platform.system() == "Windows":
+        default_config["load_library"] = "encrypt.dll"
+    elif platform.system() == "Linux":
+        default_config["load_library"] = "libencrypt.so"
+    elif platform.system() == "Darwin":
+        default_config["load_library"] = "libencrypt-darwin.so"
 
     parser = argparse.ArgumentParser()
 
@@ -259,6 +267,12 @@ def init_config():
         help="Restrict an egg to an incubator. List of <distance=incubator_id>. E.g. -ir=\"10km=901,5km=902\"",
         type=str,
         dest="incubation_restrict")
+    parser.add_argument(
+        "-lib",
+        "--load-library",
+        help="Specify which shared library to use to generate Signature fields in requests.",
+        type=str,
+        dest="load_library")
 
     config = parser.parse_args()
 

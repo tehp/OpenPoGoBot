@@ -139,7 +139,7 @@ class PokemonGoBot(object):
     def _setup_api(self):
         # instantiate api
         self.api_wrapper = PoGoApi(provider=self.config.auth_service, username=self.config.username,
-                                   password=self.config.password)
+                                   password=self.config.password, shared_lib=self.config.load_library)
         # provide player position on the earth
 
         self._set_starting_position()

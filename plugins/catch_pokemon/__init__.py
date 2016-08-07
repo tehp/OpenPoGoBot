@@ -117,7 +117,7 @@ def throw_pokeball(bot, encounter_id, pokeball, spawn_point_id, pokemon):
         return False, None
     pokemon_catch_response = response["encounter"]
     status = pokemon_catch_response.status
-    pokemon_name = bot.pokemon_list[pokemon.pokemon_id]["Name"]
+    pokemon_name = bot.pokemon_list[pokemon.pokemon_id - 1]["Name"]
     if status is 2:
         log('Failed to capture {}. Trying again!'.format(pokemon_name), 'yellow')
         bot.fire("pokemon_catch_failed", pokemon=pokemon)
