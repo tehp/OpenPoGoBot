@@ -80,6 +80,17 @@ class PokemonGoBot(object):
         elif self.config.navigator == 'camper':
             self.navigator = CamperNavigator(self)  # pylint: disable=redefined-variable-type
 
+        self.fire('bot_initialized')
+
+        if self.config.initial_transfer:
+            self.fire("pokemon_bag_full")
+
+        if self.config.recycle_items:
+            self.fire("item_bag_full")
+
+        logger.log('[#]')
+        self.update_player_and_inventory()
+
     def fire(self, event, *args, **kwargs):
         # type: (str, *Any, **Any) -> None
         manager.fire_with_context(event, self, *args, **kwargs)
@@ -186,15 +197,6 @@ class PokemonGoBot(object):
         # Testing
         # self.drop_item(Item.ITEM_POTION.value,1)
         # exit(0)
-
-        if self.config.initial_transfer:
-            self.fire("pokemon_bag_full")
-
-        if self.config.recycle_items:
-            self.fire("item_bag_full")
-
-        logger.log('[#]')
-        self.update_player_and_inventory()
 
     def update_player_and_inventory(self):
         # type: () -> Dict[str, object]
@@ -309,3 +311,13 @@ class PokemonGoBot(object):
         if response_dict is None:
             return 0
         return response_dict["inventory"]["count"]
+
+    def get_username(self):
+        # type: () -> str
+        response_dict = self.update_player_and_inventory()
+        if response_dict is None:
+            return "Unknown"
+        return response_dict["player"].username
+
+    def get_position(self):
+        return self.position

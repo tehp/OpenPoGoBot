@@ -129,7 +129,7 @@ class Stepper(object):
         self.current_lng = new_lng
         self.current_alt = new_alt
 
-        self.bot.fire("position_updated", coords=(new_lat, new_lng, new_alt))
+        self.bot.fire("position_updated", coordinates=(new_lat, new_lng, new_alt))
 
         self.bot.heartbeat()
         sleep(1)  # sleep one second plus a random delta

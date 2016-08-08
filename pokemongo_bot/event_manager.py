@@ -46,7 +46,7 @@ class Event(object):
         # Sort events by priorities from greatest to least
         priorities = sorted(self.listeners, key=lambda event_priority: event_priority)
         for priority in priorities:
-            for listener in self.listeners[priority]:
+            for listener in list(self.listeners[priority]):
 
                 # Pass in the event name to the handler
                 kwargs["event_name"] = self.name
@@ -62,6 +62,10 @@ class Event(object):
                     for key in argspec.args:
                         listener_args[key] = kwargs.get(key)
                     return_dict = listener(**listener_args)
+
+                # If a handler returns False, this means that the event should be cancelled.
+                if return_dict is False:
+                    return False
 
                 # Update the list of arguments to be used for the next function
                 # This enables "pipeline"-like functionality - if arguments to an event handler

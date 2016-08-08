@@ -3,7 +3,7 @@ import time
 
 from six import integer_types
 from pgoapi import PGoApi                                           # type: ignore
-from pgoapi.exceptions import ServerSideRequestThrottlingException  # type: ignore
+from pgoapi.exceptions import ServerSideRequestThrottlingException, ServerSideAccessForbiddenException, UnexpectedResponseException  # type: ignore
 
 from .state_manager import StateManager
 
@@ -99,6 +99,14 @@ class PoGoApi(object):
             except ServerSideRequestThrottlingException:
                 # status code 52: too many requests
                 print("[API] Requesting too fast. Retrying in 10 seconds...")
+                time.sleep(10)
+                continue
+            except ServerSideAccessForbiddenException:
+                # 403 Forbidden
+                print("[API] Your IP address is most likely banned. Try on a different IP/machine.")
+                exit(1)
+            except UnexpectedResponseException:
+                print("[API] Got a non-200 HTTP response from API. Retrying in 10 seconds...")
                 time.sleep(10)
                 continue
             except TypeError:

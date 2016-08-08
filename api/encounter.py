@@ -1,7 +1,8 @@
+from api.json_encodable import JSONEncodable
 from .pokemon import Pokemon
 
 
-class Encounter(object):
+class Encounter(JSONEncodable):
     def __init__(self):
         self.status = 0
         self.latitude = 0.0

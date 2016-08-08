@@ -1,13 +1,14 @@
+from .json_encodable import JSONEncodable
 from .pokemon import Egg, Pokemon
 from .item import Incubator
 
 
-class Inventory(object):
+class InventoryParser(JSONEncodable):
     def __init__(self, data):
         data = data.get("inventory_delta", {})
         self.last_updated = data.get("new_timestamp_ms", 0)
 
-        items = data.get("inventory_items", [])
+        items = data.get("inventory_items", 0)
         self.items = {"count": 0}
         self.candy = {}
         self.pokedex_entries = {}
@@ -29,10 +30,16 @@ class Inventory(object):
                 else:
                     self.candy[family_id] += num_candy
 
+            elif "egg_incubators" in item:
+                incubators = item['egg_incubators'].get('egg_incubator', [])
+                if isinstance(incubators, dict):
+                    incubators = [incubators]
+                for incu in incubators:
+                    self.egg_incubators.append(Incubator(incu))
+
             elif "item" in item:
                 num_item = item["item"].get("count", 0)
                 item_id = item["item"].get("item_id", 0)
-                # unseen = item["item"].get("unseen", False)
                 if num_item == 0 or item_id == 0:
                     continue
 
@@ -49,10 +56,3 @@ class Inventory(object):
                     self.eggs.append(Egg(current_data))
                 else:
                     self.pokemon.append(Pokemon(current_data))
-
-            elif "egg_incubators" in item:
-                incubators = item['egg_incubators'].get('egg_incubator', [])
-                if isinstance(incubators, dict):
-                    incubators = [incubators]
-                for incu in incubators:
-                    self.egg_incubators.append(Incubator(incu))

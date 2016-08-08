@@ -1,7 +1,9 @@
 import datetime
 
+from api.json_encodable import JSONEncodable
 
-class Player(object):
+
+class Player(JSONEncodable):
 
     def __init__(self):
         self.username = "Unknown"
@@ -13,7 +15,7 @@ class Player(object):
         self.km_walked = 0.0
         self.pokeballs_thrown = 0
         self.unique_pokedex_entries = 0
-        self.pokemon_caught_by_type = b""
+        self.pokemon_caught_by_type = []
         self.pokemons_captured = 0
         self.pokemons_encountered = 0
         self.poke_stop_visits = 0
@@ -45,7 +47,7 @@ class Player(object):
                 self.km_walked = item.get("km_walked", 0.0)
                 self.pokeballs_thrown = item.get("pokeballs_thrown", 0)
                 self.unique_pokedex_entries = item.get("unique_pokedex_entries", 0)
-                self.pokemon_caught_by_type = item.get("pokemon_caught_by_type", b"")
+                self.pokemon_caught_by_type = list(item.get("pokemon_caught_by_type", b""))
                 self.pokemons_captured = item.get("pokemons_captured", 0)
                 self.pokemons_encountered = item.get("pokemons_encountered", 0)
                 self.poke_stop_visits = item.get("poke_stop_visits", 0)
@@ -62,6 +64,3 @@ class Player(object):
 
     def get_creation_date(self):
         return datetime.datetime.fromtimestamp(self.creation_timestamp_ms / 1e3)
-
-    def __repr__(self):
-        return str(self.__dict__)

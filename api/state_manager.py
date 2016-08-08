@@ -1,9 +1,10 @@
 # pylint: disable=unused-argument
 from __future__ import print_function
 
+from api.evolution_result import EvolutionResult
 from pokemongo_bot import logger
 from .player import Player
-from .inventory import Inventory
+from .inventory_parser import InventoryParser
 from .worldmap import WorldMap, Gym, PokeStop
 from .encounter import Encounter
 from .item import Incubator
@@ -26,7 +27,8 @@ class StateManager(object):
             "FORT_SEARCH": self._identity,
             "RECYCLE_INVENTORY_ITEM": self._noop,
             "USE_ITEM_EGG_INCUBATOR": self._parse_use_incubator,
-            "GET_HATCHED_EGGS": self._parse_get_hatched_eggs
+            "GET_HATCHED_EGGS": self._parse_get_hatched_eggs,
+            "EVOLVE_POKEMON": self._parse_evolution
         }
 
         # Maps methods to the state objects that they refresh.
@@ -44,7 +46,8 @@ class StateManager(object):
             "PLAYER_UPDATE": [],
             "FORT_DETAILS": ["fort"],
             "FORT_SEARCH": [],
-            "RECYCLE_INVENTORY_ITEM": []
+            "RECYCLE_INVENTORY_ITEM": [],
+            "EVOLVE_POKEMON": ["evolution"]
         }
 
         # Maps methods to the state objects that they invalidate.
@@ -66,7 +69,8 @@ class StateManager(object):
             "PLAYER_UPDATE": ["player", "inventory"],
             "FORT_DETAILS": ["fort"],
             "FORT_SEARCH": ["player", "inventory", "eggs"],
-            "RECYCLE_INVENTORY_ITEM": ["inventory"]
+            "RECYCLE_INVENTORY_ITEM": ["inventory"],
+            "EVOLVE_POKEMON": ["player", "inventory", "pokemon", "pokedex", "candy"]
         }
 
         self.current_state = {}
@@ -155,7 +159,7 @@ class StateManager(object):
         self._update_state({"player": current_player})
 
     def _parse_inventory(self, key, response):
-        new_inventory = Inventory(response)
+        new_inventory = InventoryParser(response)
 
         new_state = {
             "inventory": new_inventory.items,
@@ -163,7 +167,7 @@ class StateManager(object):
             "candy": new_inventory.candy,
             "pokemon": new_inventory.pokemon,
             "eggs": new_inventory.eggs,
-            "egg_incubators":new_inventory.egg_incubators
+            "egg_incubators": new_inventory.egg_incubators
         }
 
         current_player = self.current_state.get("player", None)
@@ -220,7 +224,7 @@ class StateManager(object):
                 self.mark_returned_stale("GET_INVENTORY")
 
     def _parse_use_incubator(self, key, response):
-        if response["result"] == 1:
+        if response.get("result", 0) == 1:
 
             current_egg_incubators = self.current_state.get("egg_incubators", [])
             new_egg_incubators = []
@@ -233,6 +237,8 @@ class StateManager(object):
 
             self._update_state({"egg_incubators": new_egg_incubators})
 
+    def _parse_evolution(self, key, response):
+        self._update_state({"evolution": EvolutionResult(response)})
 
     def _identity(self, key, response):
         self._update_state({key: response})

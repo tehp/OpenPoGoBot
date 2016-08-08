@@ -2,48 +2,56 @@
 from builtins import str
 import time
 
+from api.json_encodable import JSONEncodable
 
-class Fort(object):
+
+class Fort(JSONEncodable):
     def __init__(self, data):
         self.fort_id = data.get("id", "")
         self.fort_name = data.get("name", "Unknown").encode('ascii', 'replace')
                             # TODO: Make this proper unicode  ^^
         self.latitude = data.get("latitude", None)
         self.longitude = data.get("longitude", None)
-        self.enabled = data.get("enabled", 1)
+        self.enabled = data.get("enabled", True)
         self.last_modified_timestamp_ms = data.get("last_modified_timestamp_ms", 0)
-        self.cooldown_timestamp_ms = data.get("cooldown_complete_timestamp_ms", 0)
         self.fort_type = data.get("type", 0)
-
-    def is_in_cooldown(self):
-        return self.cooldown_timestamp_ms + 1000 > time.time() * 1000
 
 
 class PokeStop(Fort):
     def __init__(self, data):
         super(PokeStop, self).__init__(data)
-        self.active_fort_modifier = data.get("active_fort_modifier", "")
+        self.active_fort_modifier = data.get("active_fort_modifier", None)
+        self.cooldown_timestamp_ms = data.get("cooldown_complete_timestamp_ms", None)
 
         lure_info = data.get("lure_info", {})
-        self.lure_expires_timestamp_ms = lure_info.get("lure_expires_timestamp_ms", 0)
-        self.lure_encounter_id = lure_info.get("encounter_id", 0)
-        self.lure_encounter_id = lure_info.get("active_pokemon_id", 0)
+        self.lure_expires_timestamp_ms = lure_info.get("lure_expires_timestamp_ms", None)
+        self.lure_encounter_id = lure_info.get("encounter_id", None)
+        self.lure_pokemon_id = lure_info.get("active_pokemon_id", None)
         self.fort_type = 1
+
+    def is_lure_active(self):
+        if self.lure_expires_timestamp_ms is None:
+            return False
+        return self.lure_expires_timestamp_ms + 1000 > time.time() * 1000
+
+    def is_in_cooldown(self):
+        if self.cooldown_timestamp_ms is None:
+            return False
+        return self.cooldown_timestamp_ms + 1000 > time.time() * 1000
 
 
 class Gym(Fort):
     def __init__(self, data):
         super(Gym, self).__init__(data)
 
-        self.is_in_battle = data.get("is_in_battle", 0)
-        self.is_in_battle = True if self.is_in_battle == 1 else False
+        self.is_in_battle = True if data.get("is_in_battle", 0) == 1 else False
 
-        self.guard_pokemon_id = data.get("guard_pokemon_id", 0)
+        self.guard_pokemon_id = data.get("guard_pokemon_id", None)
         self.owned_by_team = data.get("owned_by_team", 0)
         self.gym_points = data.get("gym_points", 0)
 
 
-class Cell(object):
+class Cell(JSONEncodable):
     def __init__(self, data):
         self.spawn_points = []
         self.gyms = []
@@ -61,13 +69,16 @@ class Cell(object):
 
         forts = data.get("forts", [])
         for fort in forts:
-            if fort.get("type", 2) == 1:
+            if fort.get("type", 0) == 1:
                 self.pokestops.append(PokeStop(fort))
-            else:
+            elif fort.get("type", 0) == 2:
                 self.gyms.append(Gym(fort))
+            else:
+                # Some unknown kind of fort or invalid data
+                pass
 
 
-class WorldMap(object):
+class WorldMap(JSONEncodable):
     def __init__(self):
         self.cells = []
 
