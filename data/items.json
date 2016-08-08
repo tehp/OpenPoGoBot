@@ -1,10 +1,10 @@
 {
     "0": "Unknown",
 
-    "1": "Pokeball",
-    "2": "Greatball",
-    "3": "Ultraball",
-    "4": "Masterball",
+    "1": "Poke Ball",
+    "2": "Great Ball",
+    "3": "Ultra Ball",
+    "4": "Master Ball",
 
     "101": "Potion",
     "102": "Super Potion",
@@ -21,7 +21,7 @@
     "403": "Cool Incense",
     "404": "Floral Incense",
 
-    "501": "Troy Disk",
+    "501": "Lure Module",
 
     "602": "X Attack",
     "603": "X Defense",
