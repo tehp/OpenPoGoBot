@@ -8,6 +8,6 @@ class PathFinder(object):
         self.stepper = stepper
         self.config = stepper.config
 
-    def path(self, from_lat, form_lng, to_lat, to_lng):
+    def path(self, from_lat, form_lng, to_lat, to_lng):  # pragma: no cover
         # type: (float, float, float, float) -> List[(float, float)]
         raise NotImplementedError

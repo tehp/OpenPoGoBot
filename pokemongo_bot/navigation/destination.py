@@ -5,20 +5,18 @@ class Destination(object):
         self.target_alt = alt
         self.name = name
         self.exact_location = exact_location
-        self.steps = []
-        self.pointer = 0
+        self._steps = []
 
     def set_steps(self, step_list):
-        self.steps = step_list
+        self._steps = step_list
 
-    def walk(self):
-        try:
+    def get_step_count(self):
+        return len(self._steps)
+
+    def step(self):
+        for step in self._steps:
             # If the pointer has reached the end, check if we need to move to the exact location
-            if self.pointer == len(self.steps):
-                yield self.exact_location
-                self.pointer += 1
+            yield step
 
-            yield self.steps[self.pointer]
-            self.pointer += 1
-        except KeyError:
-            pass
+        if self.exact_location:
+            yield (self.target_lat, self.target_lng, self.target_alt)

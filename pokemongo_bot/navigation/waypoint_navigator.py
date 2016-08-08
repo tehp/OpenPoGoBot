@@ -13,8 +13,8 @@ class WaypointNavigator(Navigator):
         self.pointer = 0
 
     def navigate(self, map_cells):
-        # type: (List[Cell]) -> None
-        while self.pointer < len(self.waypoints)-1:
+        # type: (List[Cell]) -> List[Destination]
+        while self.pointer < len(self.waypoints):
             waypoint = self.waypoints[self.pointer]
 
             if waypoint is None:
@@ -25,7 +25,7 @@ class WaypointNavigator(Navigator):
                 waypoint.append(0.0)
 
             lat, lng, alt = waypoint
-            yield Destination(lat, lng, alt, name="waypoint at {},{}".format(lat, lng))
+            yield Destination(lat, lng, alt, name="Waypoint at {},{}".format(lat, lng))
 
             self.pointer += 1
 
@@ -34,12 +34,12 @@ class WaypointNavigator(Navigator):
     @manager.on("waypoint_add", priority=0)
     def waypoint_add(self, longitude, latitude):
         # type: (float, float) -> None
-        self.waypoints.append((longitude, latitude))
+        self.waypoints.append([longitude, latitude])
 
     @manager.on("waypoint_remove", priority=0)
     def waypoint_remove(self, index):
         # type: (float, float) -> None
         try:
             self.waypoints[index] = None
-        except KeyError:
+        except IndexError:
             pass

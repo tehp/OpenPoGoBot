@@ -19,18 +19,18 @@ class CamperNavigator(Navigator):
         self.pointer = 0
 
     def navigate(self, map_cells):
-        # type: (List[Cell]) -> None
+        # type: (List[Cell]) -> List[Direction]
         try:
             camp_site = self.camping_sites[self.pointer]
 
             lat, lng = camp_site
             position = (lat, lng, 0.0)
 
-            yield Destination(*position, name="camping position at {},{}".format(lat, lng), exact_location=True)
+            yield Destination(*position, name="Camping position at {},{}".format(lat, lng), exact_location=True)
 
             sleep(5)
 
-        except KeyError:
+        except IndexError:
             logger.log("[#] No campsite location found", color="red")
 
     @manager.on("set_campsite", priority=0)

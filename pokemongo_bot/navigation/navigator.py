@@ -12,6 +12,6 @@ class Navigator(object):
         self.mapper = bot.mapper
         self.stepper = bot.stepper
 
-    def navigate(self, map_cells):
-        # type: (List[Cell]) -> None
+    def navigate(self, map_cells):  # pragma: no cover
+        # type: (List[Cell]) -> List[Direction]
         raise NotImplementedError

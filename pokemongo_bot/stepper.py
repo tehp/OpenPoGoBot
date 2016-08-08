@@ -58,7 +58,7 @@ class Stepper(object):
                                                                      format_time(len(destination.steps))),
                        prefix="Navigation")
 
-        for step in destination.steps:
+        for step in destination.step():
             self._step_to(*step)
             yield step
 

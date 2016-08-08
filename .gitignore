@@ -26,6 +26,10 @@ web/location-*.json
 config.json
 release_config.json
 
+# Test files
+.coverage
+api-test.txt
+
 # Sublime files
 *.sublime-project
 *.sublime-workspace

@@ -9,8 +9,13 @@ from .state_manager import StateManager
 
 
 class PoGoApi(object):
-    def __init__(self, provider="google", username="", password="", shared_lib="encrypt.dll"):
-        self._api = PGoApi()
+    def __init__(self, api=None, provider="google", username="", password="", shared_lib="encrypt.dll"):
+
+        # Allow Dependency Injection
+        if isinstance(api, PGoApi):
+            self._api = api
+        else:
+            self._api = PGoApi()
 
         self.provider = provider
         self.username = username
