@@ -82,6 +82,8 @@ def init_config():
         },
         "location_cache": False,
         "initial_transfer": False,
+        "evolve_pokemon": False,
+        "evolve_filter":[],
         "navigator": "fort",
         "navigator_waypoints": [],
         "navigator_campsite": None,
@@ -240,6 +242,14 @@ def init_config():
         help="Pass a list of plugins to exclude from the loading process (e.g, logger,web).",
         type=str,
         dest="exclude_plugins")
+
+    parser.add_argument(
+        "-ev",
+        "--evolve-pokemon",
+        help="Bot will evolve pokemon whenever enough candies are acquired.",
+        dest="evolve_pokemon",
+        default=None
+    )
 
     parser.add_argument(
         "-if",

@@ -19,6 +19,13 @@
     "pokemon_potential": 0.70,
     "location_cache": true,
     "distance_unit": "km",
+    "evolve_pokemon": true,
+    "evolve_filter": [
+        "Pidgey",
+        "Rattata",
+        "Spearow",
+        "Weedle"
+    ],
     "item_filter": {
         "1": { "keep": 50 },
         "101": { "keep": 10 },

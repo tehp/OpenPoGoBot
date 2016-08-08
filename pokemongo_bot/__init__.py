@@ -40,6 +40,8 @@ class PokemonGoBot(object):
 
         self.log = None
         self.api_wrapper = None
+        self.inventory = []
+        self.candies = {}
         self.ignores = []
         self.position = (0, 0, 0)
         self.plugin_manager = None
@@ -171,6 +173,7 @@ class PokemonGoBot(object):
         if response_dict is not None:
             player = response_dict['player']
             inventory = response_dict['inventory']
+            self.candies = response_dict['candy']
             pokemon = response_dict['pokemon']
             creation_date = player.get_creation_date()
 
@@ -202,6 +205,25 @@ class PokemonGoBot(object):
         # type: () -> Dict[str, object]
         self.api_wrapper.get_player().get_inventory()
         return self.api_wrapper.call()
+
+    def add_candies(self, name=None, pokemon_candies=None):
+        for pokemon in self.pokemon_list:
+            if pokemon['Name'] is not name:
+                continue
+            else:
+                previous_evolutions = pokemon.get("Previous evolution(s)", [])
+                if previous_evolutions:
+                    candy_name = previous_evolutions[0]['Number']
+                else:
+                    candy_name = pokemon.get("Number")
+
+                if self.candies.get(candy_name, None) is not None:
+                    self.candies[candy_name] += pokemon_candies
+                else:
+                    self.candies[candy_name] = pokemon_candies
+                logger.log("[#] Added {} candies for {}".format(pokemon_candies,
+                                                                self.pokemon_list[int(candy_name) - 1]['Name']), 'green')
+                break
 
     def pokeball_inventory(self):
         balls_stock = {Item.ITEM_POKE_BALL.value: 0,

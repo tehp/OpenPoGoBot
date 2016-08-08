@@ -111,5 +111,7 @@ def transfer_pokemon(bot, transfer_list=None):
 
         bot.api_wrapper.release_pokemon(pokemon_id=pokemon.unique_id).call()
         sleep(2)
+        bot.add_candies(name=pokemon_name, pokemon_candies=1)
+        bot.fire('after_transfer_pokemon', pokemon=pokemon)
 
     log("Transferred {} Pokemon.".format(len(transfer_list)))

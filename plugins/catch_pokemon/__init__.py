@@ -83,6 +83,7 @@ def pokemon_found(bot, encounters=None):
 
                 if pokeball == 0:
                     log("No ball selected as all balls are low in stock. Saving for better Pokemon.", color="red")
+                    bot.fire('no_balls')
                     return
 
                 log("Using {}... ({} left!)".format(bot.item_list[pokeball], balls_stock[pokeball]-1))
@@ -132,6 +133,7 @@ def throw_pokeball(bot, encounter_id, pokeball, spawn_point_id, pokemon):
         xp = pokemon_catch_response.xp
         stardust = pokemon_catch_response.stardust
         candy = pokemon_catch_response.candy
+        bot.add_candies(name=pokemon_name, pokemon_candies=candy)
         log("Rewards: {} XP, {} Stardust, {} Candy".format(xp, stardust, candy), "green")
         bot.fire("pokemon_caught", pokemon=pokemon)
         return False
