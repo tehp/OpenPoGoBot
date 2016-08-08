@@ -55,7 +55,7 @@ class Stepper(object):
         if destination.name:
             logger.log("Walking towards {} ({} away, eta {})".format(destination.name,
                                                                      format_dist(dist, self.config.distance_unit),
-                                                                     format_time(len(destination.steps))),
+                                                                     format_time(destination.get_step_count())),
                        prefix="Navigation")
 
         for step in destination.step():
