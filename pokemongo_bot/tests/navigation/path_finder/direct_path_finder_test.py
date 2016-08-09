@@ -5,7 +5,7 @@ from pokemongo_bot.tests import create_mock_bot
 
 
 class DirectPathFinderTest(unittest.TestCase):
-    def test_path(self): # pylint: disable=no-self-use
+    def test_path(self):  # pylint: disable=no-self-use
         bot = create_mock_bot(None)
 
         stepper = bot.stepper

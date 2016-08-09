@@ -8,59 +8,84 @@ import pgoapi
 import api
 
 
-def create_mock_api_wrapper():
-    pgoapi_instance = pgoapi.PGoApi()
-    positions = []
-    calls = []
-    call_responses = []
+# pylint: disable=super-init-not-called
+class PGoApiMock(pgoapi.PGoApi):
+    def __init__(self):
+        self.positions = list()
+        self.call_responses = list()
 
-    def _set_position(lat, lng, alt):
-        positions.append((lat, lng, alt))
+    # pylint: disable=unused-argument
+    def activate_signature(self, shared_lib):
         return None
 
-    def _get_position():
-        return positions[len(positions) - 1]
+    # pylint: disable=unused-argument
+    def login(self, provider, username, password, lat=None, lng=None, alt=None, app_simulation=True):
+        return None
 
-    def _add_request(func):
+    def set_position(self, lat, lng, alt):
+        self.positions.append((lat, lng, alt))
+        return None
+
+    def get_position(self):
+        return self.positions[len(self.positions) - 1]
+
+    # pylint: disable=no-self-use
+    def list_curr_methods(self):
+        return list()
+
+    def set_response(self, call_type, response):
+        self.call_responses.append((call_type, response))
+
+    def create_request(self):
+        return PGoApiRequestMock(self)
+
+    def call_stack_size(self):
+        return len(self.call_responses)
+
+
+# pylint: disable=super-init-not-called
+class PGoApiRequestMock(pgoapi.pgoapi.PGoApiRequest):
+    def __init__(self, pgo):
+        self.pgoapi = pgo
+        self.calls = list()
+
+    def call(self):
+        return_values = dict()
+
+        for call in self.calls:
+            call_name, _, _ = call
+            if len(self.pgoapi.call_responses) == 0:
+                raise RuntimeError("Response for \"{}\" expected, but none was set".format(call_name))
+
+            call_response_name, call_response_data = self.pgoapi.call_responses.pop(0)
+
+            if call_name.upper() != call_response_name.upper():
+                raise RuntimeError("Response expected for \"{}\", but the next response was for \"{}\"".format(call_name, call_response_name))
+
+            if call_response_data is not None:
+                return_values[call_response_name.upper()] = call_response_data
+
+        if len(return_values) > 0:
+            return {
+                'responses': return_values
+            }
+        else:
+            return None
+
+    def __getattr__(self, func):
+
         def function(*args, **kwargs):
             func_name = str(func).upper()
-            calls.append((func_name, args, kwargs))
-            return pgoapi_instance
+            self.calls.append((func_name, args, kwargs))
+            return self
 
-        return function()
+        return function
 
-    def _set_request(call_type, response):
-        call_responses.append((call_type, response))
 
-    def _create_request():
-        request = Mock()
-        call_type, call_response = call_responses.pop(0)
-        if call_response is None:
-            request.call = MagicMock(return_value=None)
-        else:
-            request.call = MagicMock(return_value={
-                "responses": {
-                    call_type.upper(): call_response
-                }
-            })
-
-        # print("creating request for {} ({})...".format(call_type, call_response))
-        setattr(request, call_type, call_response)
-
-        return request
-
-    pgoapi_instance.activate_signature = MagicMock(return_value=None)
-    pgoapi_instance.login = MagicMock(return_value=True)
-    pgoapi_instance.set_position = _set_position
-    pgoapi_instance.get_position = _get_position
-    pgoapi_instance.list_curr_methods = MagicMock(return_value=[])
-    pgoapi_instance.create_request = _create_request
-    pgoapi_instance.__getattr__ = _add_request
-    pgoapi_instance.set_response = _set_request
-
+def create_mock_api_wrapper():
+    pgoapi_instance = PGoApiMock()
     api_wrapper = api.PoGoApi(api=pgoapi_instance)
     api_wrapper.get_expiration_time = MagicMock(return_value=1000000)
-
     return api_wrapper
 
 

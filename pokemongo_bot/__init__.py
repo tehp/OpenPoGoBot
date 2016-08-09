@@ -187,24 +187,25 @@ class PokemonGoBot(object):
             logger.log('[#] Acccount creation: {}'.format(creation_date))
             logger.log('[#] Bag storage: {}/{}'.format(inventory["count"], player.max_item_storage))
             logger.log('[#] Pokemon storage: {}/{}'.format(len(pokemon), player.max_pokemon_storage))
-            logger.log('[#] Stardust: {}'.format(stardust))
+            logger.log('[#] Stardust: {:,}'.format(stardust))
             logger.log('[#] Pokecoins: {}'.format(pokecoins))
             logger.log('[#] Poke Balls: {}'.format(balls_stock[1]))
             logger.log('[#] Great Balls: {}'.format(balls_stock[2]))
             logger.log('[#] Ultra Balls: {}'.format(balls_stock[3]))
             logger.log('[#] -- Level: {}'.format(player.level))
-            logger.log('[#] -- Experience: {}'.format(player.experience))
-            logger.log('[#] -- Experience until next level: {}'.format(player.next_level_xp - player.experience))
-            logger.log('[#] -- Pokemon captured: {}'.format(player.pokemons_captured))
-            logger.log('[#] -- Pokestops visited: {}'.format(player.poke_stop_visits))
+            logger.log('[#] -- Experience: {:,}'.format(player.experience))
+            logger.log('[#] -- Experience until next level: {:,}'.format(player.next_level_xp - player.experience))
+            logger.log('[#] -- Pokemon captured: {:,}'.format(player.pokemons_captured))
+            logger.log('[#] -- Pokestops visited: {:,}'.format(player.poke_stop_visits))
         # Testing
         # self.drop_item(Item.ITEM_POTION.value,1)
         # exit(0)
 
     def update_player_and_inventory(self):
         # type: () -> Dict[str, object]
-        self.api_wrapper.get_player().get_inventory()
-        return self.api_wrapper.call()
+        response_dict = self.api_wrapper.get_player().get_inventory().call()
+        self.candies = response_dict['candy']
+        return response_dict
 
     def add_candies(self, name=None, pokemon_candies=None):
         for pokemon in self.pokemon_list:

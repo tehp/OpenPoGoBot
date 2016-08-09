@@ -1,2 +1,4 @@
 [run]
-omit = pokemongo_bot/tests/*
+omit=
+    pokemongo_bot/tests/*
+    plugins/*/tests/*
