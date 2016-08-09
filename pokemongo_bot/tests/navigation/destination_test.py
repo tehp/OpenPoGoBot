@@ -1,7 +1,6 @@
 import unittest
 
 from pokemongo_bot.navigation.destination import Destination
-from pokemongo_bot.tests import create_mock_bot
 
 
 class DestinationNavigatorTest(unittest.TestCase):

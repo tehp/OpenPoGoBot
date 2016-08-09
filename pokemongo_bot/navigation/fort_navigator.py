@@ -35,6 +35,3 @@ class FortNavigator(Navigator):
                     fort_name = fort_name.decode()
 
                 yield Destination(fort.latitude, fort.longitude, 0.0, name="PokeStop \"{}\"".format(fort_name))
-
-                self.api_wrapper.player_update(latitude=fort.latitude, longitude=fort.longitude)
-                sleep(2)

@@ -203,8 +203,9 @@ class PokemonGoBot(object):
 
     def update_player_and_inventory(self):
         # type: () -> Dict[str, object]
-        self.api_wrapper.get_player().get_inventory()
-        return self.api_wrapper.call()
+        response_dict = self.api_wrapper.get_player().get_inventory().call()
+        self.candies = response_dict['candy']
+        return response_dict
 
     def add_candies(self, name=None, pokemon_candies=None):
         for pokemon in self.pokemon_list:

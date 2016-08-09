@@ -40,6 +40,7 @@ class FortNavigatorTest(unittest.TestCase):
             destinations.append(destination)
 
         assert len(destinations) == 2
+        assert pgoapi.call_stack_size() == 0
 
     def test_navigate_pokestops_unknown(self):
         bot = create_mock_bot({
@@ -48,6 +49,7 @@ class FortNavigatorTest(unittest.TestCase):
         })
         api_wrapper = bot.api_wrapper
         api_wrapper.call = MagicMock(return_value=None)
+        pgoapi = api_wrapper._api  # pylint: disable=protected-access
 
         navigator = FortNavigator(bot)
         map_cells = self._create_map_cells()
@@ -68,6 +70,7 @@ class FortNavigatorTest(unittest.TestCase):
             destinations.append(destination)
 
         assert len(destinations) == 2
+        assert pgoapi.call_stack_size() == 0
 
     def _create_map_cells(self):
         return [

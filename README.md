@@ -226,6 +226,9 @@ Here are the available plugins:
 | `socket`           |
 
 
+## Testing
+Please see the [testing documentation](docs/testing.md) on how to run and write the tests.
+
 ## Credits
 - [tejado](https://github.com/tejado) for the API
 - [Mila432](https://github.com/Mila432/Pokemon_Go_API) for the login secrets

@@ -16,6 +16,7 @@ instance/
 .DS_Store
 Thumbs.db
 .idea
+.cache
 *.swp
 data/last-location-*.json
 web/catchable-*.json
