@@ -35,6 +35,7 @@ import ssl
 import logging
 import sys
 import platform
+import re
 
 from pokemongo_bot import logger
 from pokemongo_bot import PokemonGoBot
@@ -303,7 +304,7 @@ def init_config():
         if config.__dict__.get(key) is None and default_config.get(key) is not None:
             config.__dict__[key] = default_config.get(key)
 
-    config.exclude_plugins = config.exclude_plugins.split(",")
+    config.exclude_plugins = re.split(r",\s*", config.exclude_plugins)
 
     str_item_filter = config.__dict__.get("item_filter", {})
     int_item_filter = {}
