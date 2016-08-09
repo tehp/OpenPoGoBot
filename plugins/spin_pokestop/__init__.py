@@ -89,6 +89,9 @@ def spin_pokestop(bot, pokestop=None):
     spin_result = spin_details.get("result")
     if spin_result == 1:
         log("Loot: ", "green")
+
+        manager.fire_with_context('pokestop_visited', bot, pokestop=pokestop)
+
         experience_awarded = spin_details.get("experience_awarded", False)
         if experience_awarded:
             log("+ {} XP".format(experience_awarded), "green")

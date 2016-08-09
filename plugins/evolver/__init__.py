@@ -43,6 +43,9 @@ def _do_evolve(bot, name):
                     num_evolved += 1
                     evolved_id = response['evolution'].get_pokemon().pokemon_id
                     _log('Evolved {} into {}'.format(base_name, bot.pokemon_list[evolved_id - 1]['Name']))
+
+                    manager.fire_with_context('pokemon_evolved', bot, pokemon=pokemon_evolve[0])
+
                     sleep(2)
                 else:
                     _log('Evolving {} failed'.format(base_name), color='red')

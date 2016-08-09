@@ -2,6 +2,8 @@
 from builtins import bytes
 import json
 
+from six import integer_types
+
 
 class JSONEncodable(object):
 
@@ -22,6 +24,25 @@ class JSONEncodable(object):
             elif isinstance(json_encodable_dict[key], JSONEncodable):
                 json_encodable_dict[key] = json_encodable_dict[key].to_json_encodable()
         return json_encodable_dict
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        for obj in state:
+            if isinstance(state[obj], JSONEncodable):
+                state[obj] = state[obj].__getstate__()
+            elif isinstance(state[obj], integer_types):
+                state[obj] = str(state[obj])
+        return state
+
+    def __setstate__(self, state):
+        for obj in state:
+            try:
+                original_value = state[obj]
+                state[obj] = float(original_value)
+                state[obj] = int(original_value)
+            except ValueError:
+                pass
+        self.__dict__.update(state)
 
     @staticmethod
     def encode_list(input_list):

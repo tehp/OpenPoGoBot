@@ -186,6 +186,16 @@ ignore:
 ```
 ### How do I use the map?
 
+There are currently two plugins while we are refactoring. Choose only one.  
+
+#### Socket Plugin
+
+The socket plugin expose a server on port `8000` that allow communication to your browser.  
+Once launched, just to to [http://openpogoui.nicontoso.eu](http://openpogoui.nicontoso.eu) to show progress on a map.  
+You can then click on settings (lower right) to modify map settings.  
+
+#### Web Plugin
+
 The web plugin uses `Flask` to open a server on port `8000`. Before visiting the site, you will need to set your username(s) in the `userdata.js` file:
 
 1. Copy `userdata.js.example` to `userdata.js` 
@@ -199,9 +209,10 @@ If you are using multiple usernames, the format is like this:
 var users = ["username1","username2"];
 ```
 
+
 ---------
 
-## Plugins
+### Plugins
 Here are the available plugins:
 
 |     **Plugins**    |
@@ -212,6 +223,7 @@ Here are the available plugins:
 | `spin_pokestop`    |
 | `transfer_pokemon` |
 | `web`              |
+| `socket`           |
 
 
 ## Credits
