@@ -90,7 +90,8 @@ def pokemon_found(bot, encounters=None):
 
                 balls_stock[pokeball] -= 1
                 total_pokeballs -= 1
-                should_continue_throwing = throw_pokeball(bot, encounter_id, pokeball, spawn_point_id, pokemon)
+                pos = {"latitude": encounter_data.latitude, "longitude": encounter_data.longitude}
+                should_continue_throwing = throw_pokeball(bot, encounter_id, pokeball, spawn_point_id, pokemon, pos)
 
             time.sleep(5)
         elif status is 6:
@@ -100,7 +101,7 @@ def pokemon_found(bot, encounters=None):
             return
 
 
-def throw_pokeball(bot, encounter_id, pokeball, spawn_point_id, pokemon):
+def throw_pokeball(bot, encounter_id, pokeball, spawn_point_id, pokemon, pos):
     # type: (PokemonGoBot, int, int, str, Pokemon) -> bool
 
     def log(text, color="black"):
@@ -135,5 +136,5 @@ def throw_pokeball(bot, encounter_id, pokeball, spawn_point_id, pokemon):
         candy = pokemon_catch_response.candy
         bot.add_candies(name=pokemon_name, pokemon_candies=candy)
         log("Rewards: {} XP, {} Stardust, {} Candy".format(xp, stardust, candy), "green")
-        bot.fire("pokemon_caught", pokemon=pokemon)
+        bot.fire("pokemon_caught", pokemon=pokemon, position=pos)
         return False
