@@ -30,7 +30,8 @@ def register_ui_events(socketio, state):
 
             emit_object = {
                 "pokemon": inventory["pokemon"],
-                "candy": inventory["candy"]
+                "candy": inventory["candy"],
+                "eggs_count": len(inventory["eggs"])
             }
             socketio.emit("pokemon_list", emit_object, namespace="/event", room=request.sid)
 
