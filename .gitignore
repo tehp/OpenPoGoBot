@@ -36,6 +36,6 @@ api-test.txt
 
 # Shared libraries
 encrypt.dll
-libencrypt.so
-libencrypt-darwin.so
+*.so
+*.o
 encrypt.c
