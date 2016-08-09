@@ -29,6 +29,8 @@ def run_socket_server():
 
     socketio.run(app, host="0.0.0.0", port=8000, debug=False, use_reloader=False, log_output=False)
 
-WEB_THREAD = Thread(target=run_socket_server)
-WEB_THREAD.daemon = True
-WEB_THREAD.start()
+# prevent starting the thread already on imports
+if __name__ == "__init__":
+    SOCKET_THREAD = Thread(target=run_socket_server)
+    SOCKET_THREAD.daemon = True
+    SOCKET_THREAD.start()
