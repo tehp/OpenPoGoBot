@@ -12,7 +12,7 @@ itsdangerous==0.24
 Jinja2==2.8
 MarkupSafe==0.23
 mock==2.0.0
--e git+https://github.com/keyphact/pgoapi.git@06eaef1e0353d17f775f2d1765d6281a05be7654#egg=pgoapi-dev
+-e git+https://github.com/keyphact/pgoapi.git@8b1dca3fdbd26a46ec4b260ba4c9d5273ea7fbed#egg=pgoapi-dev
 protobuf==3.0.0b4
 protobuf-to-dict==0.1.0
 pycryptodomex==3.4.2
