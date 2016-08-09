@@ -33,13 +33,11 @@ class Mapper(object):
 
         response_dict = self.api_wrapper.call()
         if response_dict is None:
-            return
+            return []
+
         # Passing data through last-location and location
         map_objects = response_dict["worldmap"]
 
-        with open("web/location-{}.json".format(self.config.username), "w") as outfile:
-            outfile.truncate()
-            json.dump({"lat": lat, "lng": lng, "cells": convert_to_utf8(map_objects.cells)}, outfile)
         with open("data/last-location-{}.json".format(self.config.username), "w") as outfile:
             outfile.truncate()
             json.dump({"lat": lat, "lng": lng}, outfile)

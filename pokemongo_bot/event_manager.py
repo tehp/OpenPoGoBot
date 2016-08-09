@@ -31,12 +31,13 @@ class Event(object):
     def add_listener(self, listener, priority=0):
         self.num_listeners += 1
         if priority not in self.listeners:
-            self.listeners[priority] = set()
-        self.listeners[priority].add(listener)
+            self.listeners[priority] = list()
+        self.listeners[priority].append(listener)
 
     def remove_listener(self, listener):
         for priority in self.listeners:
-            self.listeners[priority].discard(listener)
+            print(self.listeners[priority])
+            self.listeners[priority].remove(listener)
         self.num_listeners -= 1
 
     def fire(self, **kwargs):

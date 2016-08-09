@@ -47,10 +47,10 @@ class PGoApiMock(pgoapi.PGoApi):
 class PGoApiRequestMock(pgoapi.pgoapi.PGoApiRequest):
     def __init__(self, pgo):
         self.pgoapi = pgo
-        self.calls = list()
+        self.calls = []
 
     def call(self):
-        return_values = dict()
+        return_values = {}
 
         for call in self.calls:
             call_name, _, _ = call
