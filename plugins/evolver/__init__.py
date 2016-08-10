@@ -34,17 +34,18 @@ def _do_evolve(bot, name):
             pokemon_evolve.sort(key=lambda p: p.combat_power, reverse=True)
 
             num_evolved = 0
-            while num_evolve < pokemon_candies and pokemon_evolve:
-                bot.api_wrapper.evolve_pokemon(pokemon_id=pokemon_evolve[0].unique_id)
+            for pokemon in pokemon_evolve:
+                if num_evolve < pokemon_candies:
+                    break
+                bot.api_wrapper.evolve_pokemon(pokemon_id=pokemon.unique_id)
                 response = bot.api_wrapper.call()
                 if response['evolution'].success:
-                    del pokemon_evolve[0]
                     pokemon_candies -= (num_evolve - 1)
                     num_evolved += 1
                     evolved_id = response['evolution'].get_pokemon().pokemon_id
                     _log('Evolved {} into {}'.format(base_name, bot.pokemon_list[evolved_id - 1]['Name']))
 
-                    manager.fire_with_context('pokemon_evolved', bot, pokemon=pokemon_evolve[0])
+                    manager.fire_with_context('pokemon_evolved', bot, pokemon=pokemon, evolution=evolved_id)
 
                     sleep(2)
                 else:
@@ -53,7 +54,7 @@ def _do_evolve(bot, name):
 
             if num_evolve > pokemon_candies and num_evolved is 0:
                 _log('Not enough candies for {} to evolve'.format(base_name), color='yellow')
-            elif pokemon_evolve:
+            elif len(pokemon_evolve) > num_evolved:
                 _log('Stopped evolving due to error', color='red')
             else:
                 _log('Evolved {} {}(s)'.format(num_evolved, base_name))
