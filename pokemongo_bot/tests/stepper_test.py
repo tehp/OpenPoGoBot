@@ -179,11 +179,11 @@ class StepperTest(unittest.TestCase):
         bot.fire = Mock(return_value=None)
         bot.heartbeat = Mock(return_value=None)
 
-        destination = Destination(51.50436, -0.07616, 11, name="Test Destination", exact_location=False)
+        destination = Destination(51.506000, -0.075049, 11, name="Test Destination", exact_location=False)
         steps = [
-            (51.50442, -0.07612, 10),
-            (51.50448, -0.07609, 11),
-            (51.50436, -0.07616, 11)
+            (51.504778, -0.075838, 10),
+            (51.505092, -0.075650, 11),
+            (51.505436, -0.075446, 11)
         ]
         destination.set_steps(steps)
 
@@ -192,8 +192,8 @@ class StepperTest(unittest.TestCase):
 
         pgo = bot.api_wrapper._api  # pylint: disable=protected-access
 
-        calls.append(call("walking_started", coords=(51.50436, -0.07616, 11)))
-        # pre-calculated distance is 17.8 meters
+        # This route is being walked: http://www.darrinward.com/lat-long/?id=2163411
+        calls.append(call("walking_started", coords=(51.506000, -0.075049, 11)))
         pointer = 0
         for step in stepper.step(destination):
             calls.append(call("position_updated", coordinates=step))
@@ -210,9 +210,57 @@ class StepperTest(unittest.TestCase):
 
             pointer += 1
 
-        calls.append(call("walking_finished", coords=(51.50436, -0.07616, 11)))
+        calls.append(call("walking_finished", coords=(51.506000, -0.075049, 11)))
 
         assert bot.fire.call_count == 5
         bot.fire.assert_has_calls(calls, any_order=False)
 
         assert bot.heartbeat.call_count == 3
+
+    @staticmethod
+    def test_step_already_near_fort():
+        calls = []
+        bot = create_mock_bot({
+            "walk": 5,
+            "path_finder": "direct",
+            "distance_unit": "m"
+        })
+        bot.position = (51.50451, -0.07607, 10)
+        bot.fire = Mock(return_value=None)
+        bot.heartbeat = Mock(return_value=None)
+
+        destination = Destination(51.50436, -0.07616, 11, name="Test Destination", exact_location=False)
+        steps = [
+            (51.50442, -0.07612, 10),
+            (51.50448, -0.07609, 11),
+            (51.50436, -0.07616, 11)
+        ]
+        destination.set_steps(steps)
+
+        stepper = Stepper(bot)
+        stepper.start()
+
+        pgo = bot.api_wrapper._api  # pylint: disable=protected-access
+
+        # This route is being walked: http://www.darrinward.com/lat-long/?id=2163408
+        calls.append(call("walking_started", coords=(51.50436, -0.07616, 11)))
+        pointer = 0
+        for _ in stepper.step(destination):
+            pointer += 1
+
+        assert pointer == 0
+
+        bot_lat, bot_lng, bot_alt = pgo.get_position()
+        assert bot_lat == 51.50451
+        assert bot_lng == -0.07607
+        assert bot_alt == 10
+        assert stepper.current_lat == 51.50451
+        assert stepper.current_lng == -0.07607
+        assert stepper.current_alt == 10
+
+        calls.append(call("walking_finished", coords=(51.50436, -0.07616, 11)))
+
+        assert bot.fire.call_count == 2
+        bot.fire.assert_has_calls(calls, any_order=False)
+
+        assert bot.heartbeat.call_count == 0
