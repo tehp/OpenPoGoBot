@@ -40,7 +40,7 @@ def visit_near_pokestops(bot, pokestops=None):
     for pokestop in pokestops:
         dist = distance(bot.stepper.current_lat, bot.stepper.current_lng, pokestop.latitude, pokestop.longitude)
 
-        if dist < 15:
+        if dist < 35:
             if pokestop.is_in_cooldown() is False:
                 manager.fire_with_context('pokestop_arrived', bot, pokestop=pokestop)
             elif bot.config.debug:

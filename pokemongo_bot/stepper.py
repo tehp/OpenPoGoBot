@@ -56,6 +56,8 @@ class Stepper(object):
                        prefix="Navigation")
 
         for step in destination.step():
+            if distance(self.current_lat, self.current_lng, destination.target_lat, destination.target_lng) < 30:
+                break
             self._step_to(*step)
             yield step
 

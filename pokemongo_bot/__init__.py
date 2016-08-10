@@ -103,21 +103,24 @@ class PokemonGoBot(object):
         # Work on all the initial cells
         self.work_on_cells(map_cells)
 
-        position_lat = self.stepper.current_lat
-        position_lng = self.stepper.current_lng
-
         for destination in self.navigator.navigate(map_cells):
+            position_lat = self.stepper.current_lat
+            position_lng = self.stepper.current_lng
+
             destination.set_steps(
-                self.stepper.get_route_between(position_lat, position_lng, destination.target_lat, destination.target_lng, destination.target_alt)
+                self.stepper.get_route_between(
+                    position_lat,
+                    position_lng,
+                    destination.target_lat,
+                    destination.target_lng,
+                    destination.target_alt
+                )
             )
 
             for _ in self.stepper.step(destination):
                 self.work_on_cells(
                     self.mapper.get_cells_at_current_position()
                 )
-
-            position_lat = destination.target_lat
-            position_lng = destination.target_lng
 
     def work_on_cells(self, map_cells):
         # type: (Cell, bool) -> None
