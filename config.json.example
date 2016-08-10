@@ -37,5 +37,6 @@
     "path_finder": "google",
     "navigator": "fort",
     "navigator_waypoints": [],
-    "navigator_campsite": null
+    "navigator_campsite": null,
+    "exclude_plugins": "web"
 }
