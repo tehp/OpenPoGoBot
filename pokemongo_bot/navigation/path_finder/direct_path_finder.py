@@ -1,6 +1,6 @@
 from pokemongo_bot.navigation.path_finder.path_finder import PathFinder
 
-# pylint: disable=unused-argument,no-self-use,unused-argument
+# pylint: disable=unused-argument,no-self-use
 
 
 class DirectPathFinder(PathFinder):

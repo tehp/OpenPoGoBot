@@ -1,10 +1,7 @@
 import unittest
-import os
-import pytest
 from mock import Mock
 
 from pokemongo_bot.event_manager import EventManager, Event
-from pokemongo_bot.plugins import PluginManager
 
 
 class EventManagerTest(unittest.TestCase):

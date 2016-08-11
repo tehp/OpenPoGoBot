@@ -2,7 +2,7 @@ import unittest
 from mock import patch, Mock, MagicMock
 
 from pokemongo_bot.navigation.path_finder import GooglePathFinder
-from pokemongo_bot.tests import create_mock_bot
+from pokemongo_bot.tests import create_test_config
 
 
 class GooglePathFinderTest(unittest.TestCase):
@@ -45,12 +45,11 @@ class GooglePathFinderTest(unittest.TestCase):
                 }
             ])
             GoogleMapsClient.return_value = client
-            bot = create_mock_bot({
-                "gmapkey": "abc123"
-            })
-            stepper = bot.stepper
 
-            path_finder = GooglePathFinder(stepper)
+            path_finder = GooglePathFinder(create_test_config({
+                "gmapkey": "abc123"
+            }))
+
             path = path_finder.path(51.5043872, -0.0741802, 51.5060435, -0.073983)
 
             assert len(path) == 4
@@ -78,12 +77,10 @@ class GooglePathFinderTest(unittest.TestCase):
             client = Mock()
             client.directions = MagicMock(return_value=[])
             GoogleMapsClient.return_value = client
-            bot = create_mock_bot({
-                "gmapkey": "abc123"
-            })
-            stepper = bot.stepper
 
-            path_finder = GooglePathFinder(stepper)
+            path_finder = GooglePathFinder(create_test_config({
+                "gmapkey": "abc123"
+            }))
             path = path_finder.path(51.5043872, -0.0741802, 51.5060435, -0.073983)
 
             assert len(path) == 1
@@ -103,13 +100,9 @@ class GooglePathFinderTest(unittest.TestCase):
             with patch('pokemongo_bot.logger') as logger:
                 logger.log = MagicMock(return_value=None)
 
-                bot = create_mock_bot({
-                    "gmapkey": "abc123",
-                    "debug": True
-                })
-                stepper = bot.stepper
-
-                path_finder = GooglePathFinder(stepper)
+                path_finder = GooglePathFinder(create_test_config({
+                    "gmapkey": "abc123"
+                }))
                 path = path_finder.path(51.5043872, -0.0741802, 51.5060435, -0.073983)
 
                 assert len(path) == 1

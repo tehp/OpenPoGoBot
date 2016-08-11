@@ -3,13 +3,14 @@ import unittest
 from api.worldmap import Cell
 from pokemongo_bot import WaypointNavigator
 from pokemongo_bot.navigation.destination import Destination
-from pokemongo_bot.tests import create_mock_bot
+from pokemongo_bot.tests import create_mock_api_wrapper, create_test_config
 
 
 class WaypointNavigatorTest(unittest.TestCase):
 
     def test_navigate_waypoint(self):
-        bot = create_mock_bot({
+        api_wrapper = create_mock_api_wrapper()
+        config = create_test_config({
             "walk": 5,
             "max_steps": 2,
             "navigator_waypoints": [
@@ -18,7 +19,7 @@ class WaypointNavigatorTest(unittest.TestCase):
             ]
         })
 
-        navigator = WaypointNavigator(bot)
+        navigator = WaypointNavigator(config, api_wrapper)
         map_cells = self._create_map_cells()
 
         destinations = list()
@@ -39,7 +40,8 @@ class WaypointNavigatorTest(unittest.TestCase):
         assert len(destinations) == 2
 
     def test_navigate_waypoint_add(self):
-        bot = create_mock_bot({
+        api_wrapper = create_mock_api_wrapper()
+        config = create_test_config({
             "walk": 5,
             "max_steps": 2,
             "navigator_waypoints": [
@@ -48,7 +50,7 @@ class WaypointNavigatorTest(unittest.TestCase):
             ]
         })
 
-        navigator = WaypointNavigator(bot)
+        navigator = WaypointNavigator(config, api_wrapper)
         map_cells = self._create_map_cells()
 
         navigator.waypoint_add(51.5087667, -0.0732307)
@@ -75,7 +77,8 @@ class WaypointNavigatorTest(unittest.TestCase):
         assert len(destinations) == 3
 
     def test_navigate_waypoint_add_runtime(self):
-        bot = create_mock_bot({
+        api_wrapper = create_mock_api_wrapper()
+        config = create_test_config({
             "walk": 5,
             "max_steps": 2,
             "navigator_waypoints": [
@@ -84,7 +87,7 @@ class WaypointNavigatorTest(unittest.TestCase):
             ]
         })
 
-        navigator = WaypointNavigator(bot)
+        navigator = WaypointNavigator(config, api_wrapper)
         map_cells = self._create_map_cells()
 
         waypoint_add = True
@@ -115,7 +118,8 @@ class WaypointNavigatorTest(unittest.TestCase):
         assert len(destinations) == 3
 
     def test_navigate_waypoint_remove(self):
-        bot = create_mock_bot({
+        api_wrapper = create_mock_api_wrapper()
+        config = create_test_config({
             "walk": 5,
             "max_steps": 2,
             "navigator_waypoints": [
@@ -124,7 +128,7 @@ class WaypointNavigatorTest(unittest.TestCase):
             ]
         })
 
-        navigator = WaypointNavigator(bot)
+        navigator = WaypointNavigator(config, api_wrapper)
         map_cells = self._create_map_cells()
 
         navigator.waypoint_remove(0)
@@ -142,7 +146,8 @@ class WaypointNavigatorTest(unittest.TestCase):
         assert len(destinations) == 1
 
     def test_navigate_waypoint_remove_runtime(self):
-        bot = create_mock_bot({
+        api_wrapper = create_mock_api_wrapper()
+        config = create_test_config({
             "walk": 5,
             "max_steps": 2,
             "navigator_waypoints": [
@@ -151,7 +156,7 @@ class WaypointNavigatorTest(unittest.TestCase):
             ]
         })
 
-        navigator = WaypointNavigator(bot)
+        navigator = WaypointNavigator(config, api_wrapper)
         map_cells = self._create_map_cells()
 
         waypoint_remove = True
@@ -174,7 +179,8 @@ class WaypointNavigatorTest(unittest.TestCase):
 
     @staticmethod
     def test_navigate_waypoint_remove_not_exists():
-        bot = create_mock_bot({
+        api_wrapper = create_mock_api_wrapper()
+        config = create_test_config({
             "walk": 5,
             "max_steps": 2,
             "navigator_waypoints": [
@@ -183,7 +189,7 @@ class WaypointNavigatorTest(unittest.TestCase):
             ]
         })
 
-        navigator = WaypointNavigator(bot)
+        navigator = WaypointNavigator(config, api_wrapper)
 
         navigator.waypoint_remove(100)
 

@@ -2,51 +2,45 @@
 
 from math import ceil
 
-from pokemongo_bot.event_manager import manager
 from pokemongo_bot.human_behaviour import sleep, random_lat_long_delta
 from pokemongo_bot.utils import distance, format_time, format_dist
-from pokemongo_bot.navigation.path_finder import GooglePathFinder, DirectPathFinder
 import pokemongo_bot.logger as logger
-
-# Uncomment to enable type annotations for Python 3
-# from typing import Optional, List
 
 
 class Stepper(object):
     AVERAGE_STRIDE_LENGTH_IN_METRES = 0.60
 
-    def __init__(self, bot):
-        # type: (PokemonGoBot) -> None
-        self.bot = bot
-        self.api_wrapper = bot.api_wrapper
-        self.config = bot.config
+    def __init__(self, config, api_wrapper, path_finder):
+        # type: (Namespace, PoGpApi, PathFinder) -> None
+        self.config = config
+        self.api_wrapper = api_wrapper
+        self.path_finder = path_finder
+
+        self.origin_lat = None
+        self.origin_lng = None
+        self.origin_alt = None
+
+        self.current_lat = None
+        self.current_lng = None
+        self.current_alt = None
 
         self.speed = 4.16 if self.config["movement"]["walk_speed"] <= 0 else self.config["movement"]["walk_speed"]
-        self.path_finder = None
 
-        self.origin_lat = self.bot.position[0]
-        self.origin_lng = self.bot.position[1]
-        self.origin_alt = self.bot.position[2]
+    def start(self, origin_lat, origin_lng, origin_alt):
+        # type: (float, float, float) -> None
+        self.origin_lat = origin_lat
+        self.origin_lng = origin_lng
+        self.origin_alt = origin_alt
+        self.current_lat = origin_lat
+        self.current_lng = origin_lng
+        self.current_alt = origin_alt
 
-        self.current_lat = self.origin_lat
-        self.current_lng = self.origin_lng
-        self.current_alt = self.origin_alt
-
-        if self.config["movement"]["path_finder"] == 'google':
-            self.path_finder = GooglePathFinder(self)  # pylint: disable=redefined-variable-type
-        elif self.config["movement"]["path_finder"] == 'direct':
-            self.path_finder = DirectPathFinder(self)  # pylint: disable=redefined-variable-type
-
-    def start(self):
-        # type: () -> None
-        position = (self.origin_lat, self.origin_lng, self.origin_alt)
+        position = (origin_lat, origin_lng, origin_alt)
 
         self.api_wrapper.set_position(*position)
 
     def step(self, destination):
         # type: (Destination) -> List[(float, float, float)]
-        self.bot.fire("walking_started", coords=(destination.target_lat, destination.target_lng, destination.target_alt))
-
         dist = distance(self.current_lat, self.current_lng, destination.target_lat, destination.target_lng)
 
         if destination.name:
@@ -63,8 +57,6 @@ class Stepper(object):
 
         if destination.name:
             logger.log("Arrived at {} ({} away)".format(destination.name, format_dist(dist, self.config["mapping"]["distance_unit"])), prefix="Navigation")
-
-        self.bot.fire("walking_finished", coords=(destination.target_lat, destination.target_lng, destination.target_alt))
 
     def get_route_between(self, from_lat, from_lng, to_lat, to_lng, alt):
         # type: (float, float, float) -> List[(float, float, float)]
@@ -128,7 +120,4 @@ class Stepper(object):
         self.current_lng = lng
         self.current_alt = alt
 
-        self.bot.fire("position_updated", coordinates=(lat, lng, alt))
-
-        self.bot.heartbeat()
         sleep(1)  # sleep one second plus a random delta

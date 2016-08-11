@@ -16,7 +16,8 @@ class FortNavigator(Navigator):
 
             # Sort all by distance from current pos- eventually this should
             # build graph & A* it
-            pokestops.sort(key=lambda x: distance(self.stepper.current_lat, self.stepper.current_lng, x.latitude, x.longitude))
+            current_lat, current_lng, _ = self.api_wrapper.get_position()
+            pokestops.sort(key=lambda x: distance(current_lat, current_lng, x.latitude, x.longitude))
 
             for fort in pokestops:
 

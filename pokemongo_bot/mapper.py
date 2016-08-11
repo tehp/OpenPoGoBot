@@ -1,26 +1,16 @@
 # -*- coding: utf-8 -*-
 
-from math import ceil
 import json
 
 from s2sphere import CellId, LatLng  # type: ignore
-from pokemongo_bot.human_behaviour import sleep, random_lat_long_delta
-from pokemongo_bot.utils import distance, format_time
-from pokemongo_bot.navigation import FortNavigator
-import pokemongo_bot.logger as logger
-
-
-# Uncomment to enable type annotations for Python 3
-# from typing import Optional, List
+from pokemongo_bot.utils import distance
 
 
 class Mapper(object):
-    def __init__(self, bot):
-        # type: (PokemonGoBot) -> None
-        self.bot = bot
-        self.stepper = bot.stepper
-        self.api_wrapper = bot.api_wrapper
-        self.config = bot.config
+    def __init__(self, config, api_wrapper):
+        # type: (Namespace, PoGoApi, Stepper) -> None
+        self.config = config
+        self.api_wrapper = api_wrapper
 
     def get_cells(self, lat, lng):
         # type: (float, float) -> List[Cell]
@@ -48,13 +38,6 @@ class Mapper(object):
             x.pokestops) > 0 else 1e6)
 
         return map_cells
-
-    def get_cells_at_current_position(self):
-        # type: () -> List[Cell]
-        return self.get_cells(
-            self.stepper.current_lat,
-            self.stepper.current_lng
-        )
 
     def _get_cell_id_from_latlong(self, radius=10):
         # type: (Optional[int]) -> List[str]

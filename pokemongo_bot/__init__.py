@@ -11,16 +11,14 @@ import googlemaps
 from googlemaps.exceptions import ApiError
 
 from pokemongo_bot import logger, human_behaviour, item_list
-from pokemongo_bot.event_manager import manager
 from pokemongo_bot.utils import filtered_forts, distance
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.item_list import Item
-from pokemongo_bot.mapper import Mapper
-from pokemongo_bot.stepper import Stepper
 from pokemongo_bot.plugins import PluginManager
 from pokemongo_bot.navigation import FortNavigator, WaypointNavigator, CamperNavigator
 from api import PoGoApi
-from geopy.geocoders import GoogleV3  # type: ignore
+from geopy import geocoders
+#import geopy
 # Uncomment for type annotations on Python 3
 # from typing import Any, List, Dict, Union, Tuple
 # from api.pokemon import Pokemon
@@ -30,109 +28,40 @@ from geopy.geocoders import GoogleV3  # type: ignore
 class PokemonGoBot(object):
     process_ignored_pokemon = False
 
-    def __init__(self, config):
+    def __init__(self, config, api_wrapper, plugin_manager, event_manager, mapper, stepper, navigator, log):
+        # type: (Namespace, PoGoApi, PluginManager, EventManager, Mapper, Stepper, Navigator, logging) -> None
         self.config = config
+        self.api_wrapper = api_wrapper
+        self.plugin_manager = plugin_manager
+        self.event_manager = event_manager
+        self.mapper = mapper
+        self.stepper = stepper
+        self.navigator = navigator
+        self.log = log
+
         self.pokemon_list = json.load(open('data/pokemon.json'))
         self.item_list = {}
         for item_id, item_name in json.load(open('data/items.json')).items():
             self.item_list[int(item_id)] = item_name
 
-        self.log = None
-        self.api_wrapper = None
+        self.position = (0, 0, 0)
+        self.last_session_check = time.gmtime()
         self.inventory = []
         self.candies = {}
         self.ignores = []
-        self.position = (0, 0, 0)
-        self.plugin_manager = None
-        self.last_session_check = time.gmtime()
-        self.stepper = None
-        self.navigator = None
-        self.mapper = None
-
-    def _init_plugins(self):
-        # create a plugin manager
-        self.plugin_manager = PluginManager('./plugins')
-
-        # load all plugin modules
-        for plugin in self.plugin_manager.get_available_plugins():
-            if plugin not in self.config["plugins"]["exclude"]:
-                self.plugin_manager.load_plugin(plugin)
-            else:
-                logger.log("Not loading plugin \"{}\"".format(plugin), color="red", prefix="Plugins")
-
-        loaded_plugins = sorted(self.plugin_manager.get_loaded_plugins().keys())
-        sleep(2)
-        logger.log("Plugins loaded: {}".format(loaded_plugins), color="green", prefix="Plugins")
-        if self.config["debug"]:
-            logger.log("Events available: {}".format(manager.get_registered_events()), color="green", prefix="Events")
-            manager.print_all_event_pipelines()
 
     def start(self):
         self._setup_logging()
-        self._init_plugins()
+        self._setup_plugins()
         self._setup_api()
         random.seed()
-
-        self.stepper = Stepper(self)
-        self.mapper = Mapper(self)
-
-        navigator = self.config["movement"]["navigator"]
-        if navigator == 'fort':
-            self.navigator = FortNavigator(self)  # pylint: disable=redefined-variable-type
-        elif navigator == 'waypoint':
-            self.navigator = WaypointNavigator(self)  # pylint: disable=redefined-variable-type
-        elif navigator == 'camper':
-            self.navigator = CamperNavigator(self)  # pylint: disable=redefined-variable-type
 
         self.fire('bot_initialized')
 
         logger.log('[#]')
         self.update_player_and_inventory()
 
-    def fire(self, event, *args, **kwargs):
-        # type: (str, *Any, **Any) -> None
-        manager.fire_with_context(event, self, *args, **kwargs)
-
-    def run(self):
-        map_cells = self.mapper.get_cells_at_current_position()
-
-        # Work on all the initial cells
-        self.work_on_cells(map_cells)
-
-        for destination in self.navigator.navigate(map_cells):
-            position_lat = self.stepper.current_lat
-            position_lng = self.stepper.current_lng
-
-            destination.set_steps(
-                self.stepper.get_route_between(
-                    position_lat,
-                    position_lng,
-                    destination.target_lat,
-                    destination.target_lng,
-                    destination.target_alt
-                )
-            )
-
-            for _ in self.stepper.step(destination):
-                self.work_on_cells(
-                    self.mapper.get_cells_at_current_position()
-                )
-
-    def work_on_cells(self, map_cells):
-        # type: (Cell, bool) -> None
-        encounters = []
-        pokestops = []
-        for cell in map_cells:
-            encounters += cell.catchable_pokemon + cell.wild_pokemon
-            pokestops += cell.pokestops
-
-        if len(encounters):
-            self.fire("pokemon_found", encounters=encounters)
-        if len(pokestops):
-            self.fire("pokestops_found", pokestops=pokestops)
-
     def _setup_logging(self):
-        self.log = logging.getLogger(__name__)
         # log settings
         # log format
         logging.basicConfig(
@@ -148,16 +77,27 @@ class PokemonGoBot(object):
             logging.getLogger("pgoapi").setLevel(logging.ERROR)
             logging.getLogger("rpc_api").setLevel(logging.ERROR)
 
-    def _setup_api(self):
-        # instantiate api
-        login_info = self.config["login"]
-        self.api_wrapper = PoGoApi(provider=login_info["auth_service"], username=login_info["username"],
-                                   password=login_info["password"], shared_lib=self.config["load_library"])
-        # provide player position on the earth
+    def _setup_plugins(self):
+        # load all plugin modules
+        for plugin in self.plugin_manager.get_available_plugins():
+            if plugin not in self.config["plugins"]["exclude"]:
+                self.plugin_manager.load_plugin(plugin)
+            else:
+                logger.log("Not loading plugin \"{}\"".format(plugin), color="red", prefix="Plugins")
 
+        loaded_plugins = sorted(self.plugin_manager.get_loaded_plugins().keys())
+        sleep(2)
+        logger.log("Plugins loaded: {}".format(loaded_plugins), color="green", prefix="Plugins")
+        if self.config["debug"]:
+            logger.log("Events available: {}".format(self.event_manager.get_registered_events()), color="green", prefix="Events")
+            self.event_manager.print_all_event_pipelines()
+
+    def _setup_api(self):
+        # provide player position on the earth
         self._set_starting_position()
 
         while not self.api_wrapper.login():
+            sys.exit("end")
             logger.log('Login Error, server busy', 'red')
             logger.log('Waiting 15 seconds before trying again...')
             time.sleep(15)
@@ -185,7 +125,7 @@ class PokemonGoBot(object):
 
             logger.log('[#]')
             logger.log('[#] Username: {}'.format(player.username))
-            logger.log('[#] Acccount creation: {}'.format(creation_date))
+            logger.log('[#] Account creation: {}'.format(creation_date))
             logger.log('[#] Bag storage: {}/{}'.format(inventory["count"], player.max_item_storage))
             logger.log('[#] Pokemon storage: {}/{}'.format(len(pokemon) + len(eggs), player.max_pokemon_storage))
             logger.log('[#] Stardust: {:,}'.format(stardust))
@@ -201,6 +141,55 @@ class PokemonGoBot(object):
         # Testing
         # self.drop_item(Item.ITEM_POTION.value,1)
         # exit(0)
+
+    def run(self):
+        map_cells = self.mapper.get_cells_at_current_position()
+
+        # Work on all the initial cells
+        self.work_on_cells(map_cells)
+
+        for destination in self.navigator.navigate(map_cells):
+            position_lat = self.stepper.current_lat
+            position_lng = self.stepper.current_lng
+
+            destination.set_steps(
+                self.stepper.get_route_between(
+                    position_lat,
+                    position_lng,
+                    destination.target_lat,
+                    destination.target_lng,
+                    destination.target_alt
+                )
+            )
+
+            self.fire("walking_started", coords=(destination.target_lat, destination.target_lng, destination.target_alt))
+
+            for step in self.stepper.step(destination):
+                self.fire("position_updated", coordinates=step)
+                self.heartbeat()
+
+                self.work_on_cells(
+                    self.mapper.get_cells_at_current_position()
+                )
+
+            self.fire("walking_finished", coords=(destination.target_lat, destination.target_lng, destination.target_alt))
+
+    def work_on_cells(self, map_cells):
+        # type: (Cell, bool) -> None
+        encounters = []
+        pokestops = []
+        for cell in map_cells:
+            encounters += cell.catchable_pokemon + cell.wild_pokemon
+            pokestops += cell.pokestops
+
+        if len(encounters):
+            self.fire("pokemon_found", encounters=encounters)
+        if len(pokestops):
+            self.fire("pokestops_found", pokestops=pokestops)
+
+    def fire(self, event, *args, **kwargs):
+        # type: (str, *Any, **Any) -> None
+        self.event_manager.fire_with_context(event, self, *args, **kwargs)
 
     def update_player_and_inventory(self):
         # type: () -> Dict[str, object]
@@ -304,7 +293,7 @@ class PokemonGoBot(object):
                 logger.log("[x] Location was not Lat/Lng.")
 
         # Fallback to geolocation if no Lat/Lng can be found
-        geolocator = GoogleV3(api_key=self.config["mapping"]["gmapkey"])
+        geolocator = geocoders.GoogleV3(api_key=self.config["mapping"]["gmapkey"])
         loc = geolocator.geocode(location_name, timeout=10)
 
         # self.log.info('Your given location: %s', loc.address.encode('utf-8'))

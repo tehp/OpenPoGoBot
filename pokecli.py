@@ -28,13 +28,22 @@ Author: tjado <https://github.com/tejado>
 from __future__ import print_function
 from getpass import getpass
 # pylint: disable=redefined-builtin
-import argparse
+import logging
 import os
 import ssl
 import sys
 
+from pgoapi import PGoApi
+
+from api import PoGoApi
 from pokemongo_bot import logger
 from pokemongo_bot import PokemonGoBot
+from pokemongo_bot.event_manager import manager
+from pokemongo_bot.mapper import Mapper
+from pokemongo_bot.navigation import *
+from pokemongo_bot.navigation.path_finder import *
+from pokemongo_bot.plugins import PluginManager
+from pokemongo_bot.stepper import Stepper
 import colorama
 import ruamel.yaml
 
@@ -77,7 +86,42 @@ def main():
     logger.log('[x] Configuration initialized', 'yellow')
 
     try:
-        bot = PokemonGoBot(config)
+        pgo = PGoApi()
+        api_wrapper = PoGoApi(
+            pgo,
+            provider=config.provider,
+            username=config.username,
+            password=config.password,
+            shared_lib=config.shared_lib
+        )
+
+        plugin_manager = PluginManager('./plugins')
+
+        event_manager = manager
+
+        mapper = Mapper(config, api_wrapper)
+
+        if config.path_finder == 'google':
+            path_finder = GooglePathFinder(config)  # pylint: disable=redefined-variable-type
+        elif config.path_finder == 'direct':
+            path_finder = DirectPathFinder(config)  # pylint: disable=redefined-variable-type
+        else:
+            raise Exception('You must provide a path finder')
+
+        stepper = Stepper(config, api_wrapper, path_finder)
+
+        if config.navigator == 'fort':
+            navigator = FortNavigator(config, api_wrapper)  # pylint: disable=redefined-variable-type
+        elif config.navigator == 'waypoint':
+            navigator = WaypointNavigator(config, api_wrapper)  # pylint: disable=redefined-variable-type
+        elif config.navigator == 'camper':
+            navigator = CamperNavigator(config, api_wrapper)  # pylint: disable=redefined-variable-type
+        else:
+            raise Exception('You must provide a navigator')
+
+        log = logging.getLogger(__name__)
+
+        bot = PokemonGoBot(config, api_wrapper, plugin_manager, event_manager, mapper, stepper, navigator, log)
         bot.start()
 
         logger.log('[x] Starting PokemonGo Bot....', 'green')

@@ -2,8 +2,7 @@ from __future__ import print_function
 import time
 import random
 
-from six import integer_types
-from pgoapi import PGoApi                                           # type: ignore
+from six import integer_types                                   # type: ignore
 from pgoapi.exceptions import ServerSideRequestThrottlingException, ServerSideAccessForbiddenException, UnexpectedResponseException  # type: ignore
 
 from .state_manager import StateManager
@@ -11,14 +10,9 @@ from .exceptions import AccountBannedException
 
 
 class PoGoApi(object):
-    def __init__(self, api=None, provider="google", username="", password="", shared_lib="encrypt.dll"):
+    def __init__(self, api, provider="google", username="", password="", shared_lib="encrypt.dll"):
 
-        # Allow Dependency Injection
-        if isinstance(api, PGoApi):
-            self._api = api
-        else:
-            self._api = PGoApi()
-
+        self._api = api
         self.provider = provider
         self.username = username
         self.password = password

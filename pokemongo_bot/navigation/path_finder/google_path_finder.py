@@ -1,7 +1,6 @@
 from datetime import datetime
 import googlemaps
 
-from pokemongo_bot import logger
 from pokemongo_bot.navigation.path_finder.path_finder import PathFinder
 
 
@@ -9,9 +8,6 @@ class GooglePathFinder(PathFinder):
 
     def path(self, from_lat, form_lng, to_lat, to_lng):
         # type: (float, float, float, float) -> List[(float, float)]
-
-        if self.config["debug"]:
-            logger.log("[#] Asking google for directions")
 
         gmaps = googlemaps.Client(key=self.config["mapping"]["gmapkey"])
 

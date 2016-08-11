@@ -4,12 +4,11 @@ from pokemongo_bot.event_manager import manager
 
 
 class WaypointNavigator(Navigator):
+    def __init__(self, config, api_wrapper):
+        # type: (Namespace, PoGoApi) -> None
+        super(WaypointNavigator, self).__init__(config, api_wrapper)
 
-    def __init__(self, bot):
-        # type: (PokemonGoBot) -> None
-        super(WaypointNavigator, self).__init__(bot)
-
-        self.waypoints = bot.config.navigator_waypoints
+        self.waypoints = config.navigator_waypoints
         self.pointer = 0
 
     def navigate(self, map_cells):

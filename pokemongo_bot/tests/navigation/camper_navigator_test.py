@@ -3,19 +3,19 @@ import unittest
 from api.worldmap import Cell
 from pokemongo_bot import CamperNavigator
 from pokemongo_bot.navigation.destination import Destination
-from pokemongo_bot.tests import create_mock_bot
+from pokemongo_bot.tests import create_test_config, create_mock_api_wrapper
 
 
 class CamperNavigatorTest(unittest.TestCase):
-
     def test_navigate_campsite(self):
-        bot = create_mock_bot({
+        api_wrapper = create_mock_api_wrapper()
+        config = create_test_config({
             "walk": 5,
             "max_steps": 2,
             "navigator_campsite": "{},{}".format(51.5043872, -0.0741802)
         })
 
-        navigator = CamperNavigator(bot)
+        navigator = CamperNavigator(config, api_wrapper)
         map_cells = self._create_map_cells()
 
         destinations = list()
@@ -31,13 +31,15 @@ class CamperNavigatorTest(unittest.TestCase):
         assert len(destinations) == 1
 
     def test_navigate_campsite_last_position(self):
-        bot = create_mock_bot({
+        api_wrapper = create_mock_api_wrapper()
+        api_wrapper.set_position(0, 0, 0)
+        config = create_test_config({
             "walk": 5,
             "max_steps": 2,
             "navigator_campsite": None
         })
 
-        navigator = CamperNavigator(bot)
+        navigator = CamperNavigator(config, api_wrapper)
         map_cells = self._create_map_cells()
 
         destinations = list()
@@ -53,13 +55,14 @@ class CamperNavigatorTest(unittest.TestCase):
         assert len(destinations) == 1
 
     def test_navigate_campsite_invalid_index(self):
-        bot = create_mock_bot({
+        api_wrapper = create_mock_api_wrapper()
+        config = create_test_config({
             "walk": 5,
             "max_steps": 2,
             "navigator_campsite": "{},{}".format(51.5043872, -0.0741802)
         })
 
-        navigator = CamperNavigator(bot)
+        navigator = CamperNavigator(config, api_wrapper)
         navigator.pointer = 100
         map_cells = self._create_map_cells()
 
@@ -70,13 +73,14 @@ class CamperNavigatorTest(unittest.TestCase):
         assert len(destinations) == 0
 
     def test_navigate_campsite_add_before_start(self):
-        bot = create_mock_bot({
+        api_wrapper = create_mock_api_wrapper()
+        config = create_test_config({
             "walk": 5,
             "max_steps": 2,
             "navigator_campsite": "{},{}".format(51.5043872, -0.0741802)
         })
 
-        navigator = CamperNavigator(bot)
+        navigator = CamperNavigator(config, api_wrapper)
         map_cells = self._create_map_cells()
 
         navigator.set_campsite(51.5060435, -0.073983)

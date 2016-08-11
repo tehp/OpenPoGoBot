@@ -5,39 +5,36 @@ import unittest
 from mock import Mock, call
 
 from api.worldmap import Cell
-from pokemongo_bot import Mapper
-from pokemongo_bot import Stepper
+from pokemongo_bot.mapper import Mapper
+from pokemongo_bot.stepper import Stepper
 from pokemongo_bot.navigation.destination import Destination
 from pokemongo_bot.navigation.path_finder import DirectPathFinder
 from pokemongo_bot.navigation.path_finder import GooglePathFinder
-from pokemongo_bot.tests import create_mock_bot
+from pokemongo_bot.tests import create_mock_bot, create_test_config, create_mock_api_wrapper
 
 
 class MapperTest(unittest.TestCase):
     @staticmethod
     def test_init():
-        bot = create_mock_bot({
+        api_wrapper = create_mock_api_wrapper()
+        config = create_test_config({
             "walk": 13.37,
         })
+        mapper = Mapper(config, api_wrapper)
 
-        bot.position = (51.5044524, -0.0752479, 10)
-        mapper = Mapper(bot)
-
-        assert mapper.bot == bot
-        assert mapper.stepper == bot.stepper
-        assert mapper.api_wrapper == bot.api_wrapper
-        assert mapper.config == bot.config
+        assert mapper.config == config
+        assert mapper.api_wrapper == api_wrapper
 
     def test_get_cells(self):
-        bot = create_mock_bot({
-            "username": "testaccount1"
+        api_wrapper = create_mock_api_wrapper()
+        config = create_test_config({
+            "username": "testaccount1337"
         })
-        bot.position = (51.5044524, -0.0752479, 10)
-        bot.stepper = Stepper(bot)
-        bot.stepper.start()
+        mapper = Mapper(config, api_wrapper)
 
-        pgo = bot.api_wrapper._api  # pylint: disable=protected-access
+        api_wrapper.set_position(51.5044524, -0.0752479, 10)
 
+        pgo = api_wrapper._api
         pgo.set_response("get_map_objects", {
             "map_cells": [
                 self._create_map_cell(1),
@@ -52,8 +49,6 @@ class MapperTest(unittest.TestCase):
         if os.path.isfile('data/last-location-testaccount1.json'):
             os.unlink('data/last-location-testaccount1.json')
 
-        mapper = Mapper(bot)
-
         cells = mapper.get_cells(51.5044524, -0.0752479)
 
         assert len(cells) == 5
@@ -66,63 +61,23 @@ class MapperTest(unittest.TestCase):
 
         os.unlink('data/last-location-testaccount1.json')
 
-    def test_get_cells_at_current_position(self):
-        bot = create_mock_bot({
-            "username": "testaccount2"
-        })
-        bot.position = (51.5044524, -0.0752479, 10)
-        bot.stepper = Stepper(bot)
-        bot.stepper.start()
-
-        pgo = bot.api_wrapper._api  # pylint: disable=protected-access
-
-        pgo.set_response("get_map_objects", {
-            "map_cells": [
-                self._create_map_cell(1),
-                self._create_map_cell(2),
-                self._create_map_cell(3),
-                self._create_map_cell(4),
-                self._create_map_cell(5)
-            ]
-        })
-
-        # Clean up any old location logs
-        if os.path.isfile('data/last-location-testaccount2.json'):
-            os.unlink('data/last-location-testaccount2.json')
-
-        mapper = Mapper(bot)
-
-        cells = mapper.get_cells_at_current_position()
-
-        assert len(cells) == 5
-
-        assert os.path.isfile('data/last-location-testaccount2.json') is True
-        with open('data/last-location-testaccount2.json') as data_file:
-            data = json.load(data_file)
-            assert data["lat"] == 51.5044524
-            assert data["lng"] == -0.0752479
-
-        os.unlink('data/last-location-testaccount2.json')
-
     @staticmethod
     def test_get_cells_no_response():
-        bot = create_mock_bot({
-            "username": "testaccount3"
+        api_wrapper = create_mock_api_wrapper()
+        config = create_test_config({
+            "username": "testaccount1337"
         })
-        bot.position = (51.5044524, -0.0752479, 10)
-        bot.stepper = Stepper(bot)
-        bot.stepper.start()
+        mapper = Mapper(config, api_wrapper)
 
-        pgo = bot.api_wrapper._api  # pylint: disable=protected-access
+        api_wrapper.set_position(51.5044524, -0.0752479, 10)
 
+        pgo = api_wrapper._api  # pylint: disable=protected-access
         pgo.set_response("get_map_objects", {})
-        bot.api_wrapper.call = Mock(return_value=None)
+        api_wrapper.call = Mock(return_value=None)
 
         # Clean up any old location logs
         if os.path.isfile('data/last-location-testaccount3.json'):
             os.unlink('data/last-location-testaccount3.json')
-
-        mapper = Mapper(bot)
 
         cells = mapper.get_cells(51.5044524, -0.0752479)
 
