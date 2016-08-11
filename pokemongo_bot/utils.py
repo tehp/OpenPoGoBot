@@ -119,16 +119,6 @@ def format_time(seconds):
     return '{:.2f} seconds'.format(seconds)
 
 
-def i2f(input_int):
-    # type: (int) -> float
-    return struct.unpack('<d', struct.pack('<Q', input_int))[0]
-
-
-def f2i(input_float):
-    # type: (float) -> int
-    return struct.unpack('<Q', struct.pack('<d', input_float))[0]
-
-
 # pylint: disable=too-many-return-statements
 def convert_to_utf8(data):
     if isinstance(data, bytes):

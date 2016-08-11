@@ -5,7 +5,7 @@ import json
 
 from s2sphere import CellId, LatLng  # type: ignore
 from pokemongo_bot.human_behaviour import sleep, random_lat_long_delta
-from pokemongo_bot.utils import distance, format_time, f2i, convert_to_utf8
+from pokemongo_bot.utils import distance, format_time, convert_to_utf8
 from pokemongo_bot.navigation import FortNavigator
 import pokemongo_bot.logger as logger
 
@@ -26,8 +26,8 @@ class Mapper(object):
         # type: (float, float) -> List[Cell]
         cell_id = self._get_cell_id_from_latlong()
         timestamp = [0, ] * len(cell_id)
-        self.api_wrapper.get_map_objects(latitude=f2i(lat),
-                                         longitude=f2i(lng),
+        self.api_wrapper.get_map_objects(latitude=lat,
+                                         longitude=lng,
                                          since_timestamp_ms=timestamp,
                                          cell_id=cell_id)
 
