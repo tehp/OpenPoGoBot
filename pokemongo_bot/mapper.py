@@ -5,7 +5,7 @@ import json
 
 from s2sphere import CellId, LatLng  # type: ignore
 from pokemongo_bot.human_behaviour import sleep, random_lat_long_delta
-from pokemongo_bot.utils import distance, format_time, convert_to_utf8
+from pokemongo_bot.utils import distance, format_time
 from pokemongo_bot.navigation import FortNavigator
 import pokemongo_bot.logger as logger
 

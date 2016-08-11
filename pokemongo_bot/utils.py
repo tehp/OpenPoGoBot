@@ -117,23 +117,3 @@ def format_time(seconds):
         minutes = seconds / 60
         return '{:.2f} minutes'.format(minutes)
     return '{:.2f} seconds'.format(seconds)
-
-
-# pylint: disable=too-many-return-statements
-def convert_to_utf8(data):
-    if isinstance(data, bytes):
-        return data.decode()
-    elif isinstance(data, str):
-        return str(data)
-    elif isinstance(data, integer_types):
-        return int(data)
-    elif isinstance(data, float):
-        return float(data)
-    elif isinstance(data, dict):
-        return dict(map(convert_to_utf8, data.items()))
-    elif isinstance(data, tuple):
-        return tuple(map(convert_to_utf8, data))
-    elif isinstance(data, list):
-        return list(map(convert_to_utf8, data))
-    elif isinstance(data, set):
-        return set(map(convert_to_utf8, data))

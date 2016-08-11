@@ -13,7 +13,7 @@ from googlemaps.exceptions import ApiError
 
 from pokemongo_bot import logger, human_behaviour, item_list
 from pokemongo_bot.event_manager import manager
-from pokemongo_bot.utils import filtered_forts, distance, convert_to_utf8
+from pokemongo_bot.utils import filtered_forts, distance
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.item_list import Item
 from pokemongo_bot.mapper import Mapper
