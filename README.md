@@ -1,5 +1,7 @@
 # OpenPoGoBot
 [![Build Status](https://travis-ci.org/OpenPoGo/OpenPoGoBot.svg?branch=master)](https://travis-ci.org/OpenPoGo/OpenPoGoBot)
+[![Build status](https://ci.appveyor.com/api/projects/status/2w4vvuyto0cos54r/branch/master?svg=true)](https://ci.appveyor.com/project/wchill/openpogobot/branch/master)
+[![codecov](https://codecov.io/gh/OpenPoGo/OpenPoGoBot/branch/master/graph/badge.svg)](https://codecov.io/gh/OpenPoGo/OpenPoGoBot)
 
   A quick note:
   
@@ -31,7 +33,7 @@ See [CONTRIBUTING.md](https://github.com/OpenPoGo/OpenPoGoBot/blob/master/CONTRI
  * Use superior ball types when necessary
  * When out of normal pokeballs, use the next type of ball unless there are less than 10 of that type, in which case start automatically farming pokestops
  * Bot Navigation via Google Directions API
-* Incubate eggs
+ * Incubate eggs
 
 ## Installation
 

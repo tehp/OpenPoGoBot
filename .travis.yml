@@ -1,21 +1,54 @@
-sudo: false
-language: python
-cache: pip
-python:
-- '3.5'
-- '2.7'
-addons:
-  apt:
-    packages:
-    - protobuf-compiler
-    - protobuf-c-compiler
-    - python-protobuf
+cache:
+  pip: true
+  directories:
+    - $HOME/Library/Caches/pip
+
+matrix:
+  include:
+    - os: linux
+      sudo: false
+      language: python
+      python: 2.7
+    - os: linux
+      sudo: false
+      language: python
+      python: 3.5
+    - os: osx
+      osx_image: xcode7.3
+      language: generic
+      env: PYTHON="2.7"
+    - os: osx
+      osx_image: xcode7.3
+      language: generic
+      env: PYTHON="3.5"
+
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" && "$PYTHON" == "2.7" ]]; then brew install python; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" && "$PYTHON" == "3.5" ]]; then brew install python3; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then /usr/local/bin/python$PYTHON -m pip install virtualenv; virtualenv venv -p /usr/local/bin/python$PYTHON; source venv/bin/activate; fi
+
 install:
-- pip install -r requirements.txt
-- pip install pylint
+  - pushd /tmp
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then wget https://github.com/google/protobuf/releases/download/v3.0.0-beta-4/protoc-3.0.0-beta-4-linux-x86_64.zip && unzip protoc-3.0.0-beta-4-linux-x86_64.zip; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then wget https://github.com/google/protobuf/releases/download/v3.0.0-beta-4/protoc-3.0.0-beta-4-osx-x86_64.zip && unzip protoc-3.0.0-beta-4-osx-x86_64.zip; fi
+  - popd
+  - export PATH=/tmp/bin:$PATH
+
+  - python -m pip install -r requirements.txt
+  - python -m pip install pylint pytest pytest-cov pytest-xdist
+
 script:
-- pylint -j 2 pokecli.py pokemongo_bot plugins api
-- py.test --cov=pokemongo_bot --cov=plugins pokemongo_bot/ plugins/
+  - python -m pylint -j 2 pokecli.py pokemongo_bot plugins api
+  - python -m pytest -n 2 --cov=pokemongo_bot --cov=plugins pokemongo_bot/ plugins/
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+branches:
+  only:
+    - master
+    - \d+\.\d+\.\d+
+
 notifications:
   slack:
     secure: OVA5zqmalbyJb0H5+zeLJpcxf6Vx7lDunn/PcZHRKnSACFgygSgY4Hq0Nc97E4noIj2COQFEMO8qmpIQ5U2vxZ1hovguM/xZ5q0fdPdRM47ID3q3GIyuPxy+7rAEES5vrID9fswfKV2N60BRy98PeTzexNST6wMTDIJdTRapmnFKqt9ketE3n4bbjGvUm6NZiQ06V6SPuA0BWzabmCuAwfh655ve37SclFABagjZ0oWqUsYtwElcrXM2fnyz/u3pkLKzMUQ5RRheXUpdZOxMvJ8nQnckh4hyDPEbPEt1VFblERUJPBd2WSNhmmvMLgbbCvDHIBaGW0Dqf0c7/DopWFReIxYMOCau8jycbMN5Xx4xZ6DA8KSXOOi9kNIPTtn5AbOOE6t3wugTcCKI7kX/O1FMUHxvhXNxI+fGBQSwIw5csu/SL8ZlHv1EFIVhVI1eFpuCAudQYGEuPv6jvBLBtRb+5zu2VTJ8qADqPGAp6VqXoZ9XHOWBwrhAR/F14Jk6cDCHAoHC/sUbns9AmUnQOz19ugtoEq7NQkB53fENbC+DN+IO9YyCwnCV9rqQLlxt4qN9cQ985yzh7O4T5csd3Utc0wqtvn7100SY3sbhu2I842aYp8qqYF4UrTl6oCL3Z14aIfKLeI/MTknbdqF8uZGwBsHpjZtAzgO3EsCNDbU=

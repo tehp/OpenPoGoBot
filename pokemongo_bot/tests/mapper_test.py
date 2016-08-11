@@ -30,7 +30,7 @@ class MapperTest(unittest.TestCase):
 
     def test_get_cells(self):
         bot = create_mock_bot({
-            "username": "testaccount1337"
+            "username": "testaccount1"
         })
         bot.position = (51.5044524, -0.0752479, 10)
         bot.stepper = Stepper(bot)
@@ -49,8 +49,8 @@ class MapperTest(unittest.TestCase):
         })
 
         # Clean up any old location logs
-        if os.path.isfile('data/last-location-testaccount1337.json'):
-            os.unlink('data/last-location-testaccount1337.json')
+        if os.path.isfile('data/last-location-testaccount1.json'):
+            os.unlink('data/last-location-testaccount1.json')
 
         mapper = Mapper(bot)
 
@@ -58,17 +58,17 @@ class MapperTest(unittest.TestCase):
 
         assert len(cells) == 5
 
-        assert os.path.isfile('data/last-location-testaccount1337.json') is True
-        with open('data/last-location-testaccount1337.json') as data_file:
+        assert os.path.isfile('data/last-location-testaccount1.json') is True
+        with open('data/last-location-testaccount1.json') as data_file:
             data = json.load(data_file)
             assert data["lat"] == 51.5044524
             assert data["lng"] == -0.0752479
 
-        os.unlink('data/last-location-testaccount1337.json')
+        os.unlink('data/last-location-testaccount1.json')
 
     def test_get_cells_at_current_position(self):
         bot = create_mock_bot({
-            "username": "testaccount1337"
+            "username": "testaccount2"
         })
         bot.position = (51.5044524, -0.0752479, 10)
         bot.stepper = Stepper(bot)
@@ -87,8 +87,8 @@ class MapperTest(unittest.TestCase):
         })
 
         # Clean up any old location logs
-        if os.path.isfile('data/last-location-testaccount1337.json'):
-            os.unlink('data/last-location-testaccount1337.json')
+        if os.path.isfile('data/last-location-testaccount2.json'):
+            os.unlink('data/last-location-testaccount2.json')
 
         mapper = Mapper(bot)
 
@@ -96,18 +96,18 @@ class MapperTest(unittest.TestCase):
 
         assert len(cells) == 5
 
-        assert os.path.isfile('data/last-location-testaccount1337.json') is True
-        with open('data/last-location-testaccount1337.json') as data_file:
+        assert os.path.isfile('data/last-location-testaccount2.json') is True
+        with open('data/last-location-testaccount2.json') as data_file:
             data = json.load(data_file)
             assert data["lat"] == 51.5044524
             assert data["lng"] == -0.0752479
 
-        os.unlink('data/last-location-testaccount1337.json')
+        os.unlink('data/last-location-testaccount2.json')
 
     @staticmethod
     def test_get_cells_no_response():
         bot = create_mock_bot({
-            "username": "testaccount1337"
+            "username": "testaccount3"
         })
         bot.position = (51.5044524, -0.0752479, 10)
         bot.stepper = Stepper(bot)
@@ -119,8 +119,8 @@ class MapperTest(unittest.TestCase):
         bot.api_wrapper.call = Mock(return_value=None)
 
         # Clean up any old location logs
-        if os.path.isfile('data/last-location-testaccount1337.json'):
-            os.unlink('data/last-location-testaccount1337.json')
+        if os.path.isfile('data/last-location-testaccount3.json'):
+            os.unlink('data/last-location-testaccount3.json')
 
         mapper = Mapper(bot)
 

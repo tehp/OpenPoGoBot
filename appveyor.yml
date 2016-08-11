@@ -1,0 +1,35 @@
+environment:
+  matrix:
+    - PYTHON: "C:\\Python27"
+      PYTHON_VERSION: "2.7"
+      RUN: "%PYTHON%\\python"
+      PIP: "%PYTHON%\\Scripts\\pip"
+      COV: "%PYTHON%\\Scripts\\coverage"
+
+    - PYTHON: "C:\\Python35"
+      PYTHON_VERSION: "3.5"
+      RUN: "%PYTHON%\\python"
+      PIP: "%PYTHON%\\Scripts\\pip"
+      COV: "%PYTHON%\\Scripts\\coverage"
+
+cache: C:\Users\appveyor\pip
+
+matrix:
+  fast_finish: true
+
+install:
+  - "ECHO %PYTHON% %PYTHON_VERSION%%APPVEYOR_BUILD_FOLDER%"
+  - "set HOME=%APPVEYOR_BUILD_FOLDER%"
+  - "%PIP% install -r requirements.txt"
+  - "%PIP% install pylint pytest pytest-cov pytest-xdist"
+  - "cd %HOME%"
+
+test: off
+
+build_script:
+  - "%RUN% -m pylint -j 2 pokecli.py pokemongo_bot plugins api"
+  - "%RUN% -m pytest -n 2 --cov=pokemongo_bot --cov=plugins pokemongo_bot/ plugins/"
+
+branches:
+  only:
+  - master
