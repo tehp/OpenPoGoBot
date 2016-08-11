@@ -2,6 +2,7 @@
 [![Build Status](https://travis-ci.org/OpenPoGo/OpenPoGoBot.svg?branch=master)](https://travis-ci.org/OpenPoGo/OpenPoGoBot)
 [![Build status](https://ci.appveyor.com/api/projects/status/2w4vvuyto0cos54r/branch/master?svg=true)](https://ci.appveyor.com/project/wchill/openpogobot/branch/master)
 [![codecov](https://codecov.io/gh/OpenPoGo/OpenPoGoBot/branch/master/graph/badge.svg)](https://codecov.io/gh/OpenPoGo/OpenPoGoBot)
+[![Dependency Status](https://www.versioneye.com/user/projects/57ac766d89a974004123d9f4/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/57ac766d89a974004123d9f4)
 
   A quick note:
   
