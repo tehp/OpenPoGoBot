@@ -1,7 +1,7 @@
 from threading import Thread
 import os
 import logging
-from flask import Flask, request
+from flask import Flask, request, redirect
 from flask_socketio import SocketIO, emit
 
 from pokemongo_bot import logger
@@ -22,12 +22,17 @@ def run_socket_server():
     app.config["SECRET_KEY"] = "OpenPoGoBotSocket"
     socketio = SocketIO(app, logging=False, engineio_logger=False, json=myjson)
 
+    @app.route("/")
+    def redirect_online():
+        return redirect("http://openpogoui.nicontoso.eu")
+
     state = {}
 
     botevents.register_bot_events(socketio, state)
     uievents.register_ui_events(socketio, state)
 
     socketio.run(app, host="0.0.0.0", port=8000, debug=False, use_reloader=False, log_output=False)
+
 
 # prevent starting the thread already on imports
 if __name__ == "__init__":
