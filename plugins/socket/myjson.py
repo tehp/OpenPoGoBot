@@ -2,6 +2,8 @@ import jsonpickle
 
 # pylint: disable=unused-variable, unused-argument
 
+jsonpickle.set_preferred_backend("json")
+
 def dumps(obj, **args):
     return jsonpickle.encode(obj, unpicklable=False)
 
