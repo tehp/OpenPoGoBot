@@ -54,6 +54,28 @@ def register_ui_events(socketio, state):
             }
             socketio.emit("inventory_list", emit_object, namespace="/event", room=request.sid)
 
+    @socketio.on("player_stats", namespace="/event")
+    def client_ask_for_player_stats():
+        if "bot" in state:
+            logger.log("Web UI action: Player Stats", "yellow", fire_event=False)
+            bot = state["bot"]
+            bot.api_wrapper.get_player().get_inventory()
+            inventory = bot.api_wrapper.call()
+
+            player = inventory["player"]
+            emit_object = {
+                "player": {
+                    "level": player.level,
+                    "unique_pokedex_entries": player.unique_pokedex_entries,
+                    "pokemons_captured": player.pokemons_captured,
+                    "next_level_xp": player.next_level_xp,
+                    "prev_level_xp": player.prev_level_xp,
+                    "experience": player.experience
+                }
+            }
+            state["player"] = emit_object["player"]
+            socketio.emit("player_stats", emit_object, namespace="/event", room=request.sid)
+
     @socketio.on("eggs_list", namespace="/event")
     def client_ask_for_eggs_list():
         if "bot" in state:
@@ -85,6 +107,15 @@ def register_ui_events(socketio, state):
             if pokemon is not None:
                 bot.api_wrapper.release_pokemon(pokemon_id=int(evt["id"])).call()
                 bot.fire('after_transfer_pokemon', pokemon=pokemon)
+
+                pokemon_num = pokemon.pokemon_id
+                pokemon_name = bot.pokemon_list[pokemon_num - 1]["Name"]
+                pokemon_cp = pokemon.combat_power
+                pokemon_potential = pokemon.potential
+                logger.log("Transferring {0} (#{1}) with CP {2} and IV {3}".format(pokemon_name,
+                                                                                   pokemon_num,
+                                                                                   pokemon_cp,
+                                                                                   pokemon_potential))
 
     @socketio.on("evolve_pokemon", namespace="/event")
     def client_ask_for_evolve(evt):
