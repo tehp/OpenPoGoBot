@@ -12,6 +12,14 @@ def register_bot_events(socketio, state):
         emitted_object = {
             "username": player.username,
             "level": player.level,
+            "player": {
+                "level": player.level,
+                "unique_pokedex_entries": player.unique_pokedex_entries,
+                "pokemons_captured": player.pokemons_captured,
+                "next_level_xp": player.next_level_xp,
+                "prev_level_xp": player.prev_level_xp,
+                "experience": player.experience
+            },
             "coordinates": bot.get_position(),
             "storage": {
                 "max_item_storage": player.max_item_storage,
