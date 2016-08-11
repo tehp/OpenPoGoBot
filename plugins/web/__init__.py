@@ -141,7 +141,7 @@ def run_flask():
         cached_events["nearby_pokemon"] = emitted_object
         socketio.emit("nearby_pokemon", emitted_object, namespace="/event")
 
-    socketio.run(app, host="0.0.0.0", port=8000, debug=False, use_reloader=False, log_output=False)
+    socketio.run(app, host="0.0.0.0", port=8001, debug=False, use_reloader=False, log_output=False)
 
 
 WEB_THREAD = Thread(target=run_flask)
