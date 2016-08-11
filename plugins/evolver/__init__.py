@@ -1,5 +1,5 @@
 from pokemongo_bot import logger
-from pokemongo_bot import manager
+from pokemongo_bot.event_manager import manager
 from pokemongo_bot import sleep
 
 # pylint: disable=unused-argument

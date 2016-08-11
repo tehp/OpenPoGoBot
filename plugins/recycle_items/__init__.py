@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from pokemongo_bot import sleep
 from pokemongo_bot.event_manager import manager
 from pokemongo_bot import logger
 
@@ -81,6 +81,8 @@ def recycle_items(bot, recyclable_items=None):
         log("Recycling {} {}{}".format(quantity, item_name, "s" if quantity > 1 else ""), color="green")
         bot.api_wrapper.recycle_inventory_item(item_id=item_type, count=quantity).call()
         recycled_items += quantity
+
+        sleep(3)
 
     if recycled_items > 0:
         log("Recycled {} items.".format(recycled_items), color="green")

@@ -33,6 +33,8 @@ import os
 import ssl
 import sys
 
+import colorama
+import ruamel.yaml
 from pgoapi import PGoApi
 
 from api import PoGoApi
@@ -44,8 +46,6 @@ from pokemongo_bot.navigation import *
 from pokemongo_bot.navigation.path_finder import *
 from pokemongo_bot.plugins import PluginManager
 from pokemongo_bot.stepper import Stepper
-import colorama
-import ruamel.yaml
 
 # Disable HTTPS certificate verification
 if sys.version_info >= (2, 7, 9):
@@ -89,10 +89,10 @@ def main():
         pgo = PGoApi()
         api_wrapper = PoGoApi(
             pgo,
-            provider=config.provider,
+            provider=config.auth_service,
             username=config.username,
             password=config.password,
-            shared_lib=config.shared_lib
+            shared_lib=config.load_library
         )
 
         plugin_manager = PluginManager('./plugins')

@@ -16,7 +16,6 @@ from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.item_list import Item
 from pokemongo_bot.plugins import PluginManager
 from pokemongo_bot.navigation import FortNavigator, WaypointNavigator, CamperNavigator
-from api import PoGoApi
 from geopy import geocoders
 #import geopy
 # Uncomment for type annotations on Python 3
@@ -44,7 +43,7 @@ class PokemonGoBot(object):
         for item_id, item_name in json.load(open('data/items.json')).items():
             self.item_list[int(item_id)] = item_name
 
-        self.position = (0, 0, 0)
+        self.position = (0.0, 0.0, 0.0)
         self.last_session_check = time.gmtime()
         self.inventory = []
         self.candies = {}
@@ -55,6 +54,8 @@ class PokemonGoBot(object):
         self._setup_plugins()
         self._setup_api()
         random.seed()
+
+        self.stepper.start(*self.position)
 
         self.fire('bot_initialized')
 
@@ -97,7 +98,6 @@ class PokemonGoBot(object):
         self._set_starting_position()
 
         while not self.api_wrapper.login():
-            sys.exit("end")
             logger.log('Login Error, server busy', 'red')
             logger.log('Waiting 15 seconds before trying again...')
             time.sleep(15)
@@ -143,7 +143,10 @@ class PokemonGoBot(object):
         # exit(0)
 
     def run(self):
-        map_cells = self.mapper.get_cells_at_current_position()
+        map_cells = self.mapper.get_cells(
+            self.stepper.current_lat,
+            self.stepper.current_lng
+        )
 
         # Work on all the initial cells
         self.work_on_cells(map_cells)
@@ -169,7 +172,10 @@ class PokemonGoBot(object):
                 self.heartbeat()
 
                 self.work_on_cells(
-                    self.mapper.get_cells_at_current_position()
+                    self.mapper.get_cells(
+                        self.stepper.current_lat,
+                        self.stepper.current_lng
+                    )
                 )
 
             self.fire("walking_finished", coords=(destination.target_lat, destination.target_lng, destination.target_alt))
