@@ -64,7 +64,9 @@ class PokemonGoBot(object):
         loaded_plugins = sorted(self.plugin_manager.get_loaded_plugins().keys())
         sleep(2)
         logger.log("Plugins loaded: {}".format(loaded_plugins), color="green", prefix="Plugins")
-        logger.log("Events available: {}".format(manager.get_registered_events()), color="green", prefix="Events")
+        if self.config.print_events:
+            logger.log("Events available: {}".format(manager.get_registered_events()), color="green", prefix="Events")
+            manager.print_all_event_pipelines()
 
     def start(self):
         self._setup_logging()

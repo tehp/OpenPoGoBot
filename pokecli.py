@@ -99,7 +99,8 @@ def init_config():
         },
 
         "debug": False,
-        "test": False
+        "test": False,
+        "print_events": False
     }
 
     if platform.system() == "Windows":
@@ -235,6 +236,13 @@ def init_config():
         help="Only parse the specified location",
         action="store_true",
         dest="test",
+        default=None)
+    parser.add_argument(
+        "-pe",
+        "--print-events",
+        help="Print event pipelines",
+        action="store_true",
+        dest="print_events",
         default=None)
 
     parser.add_argument(

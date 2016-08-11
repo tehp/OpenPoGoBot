@@ -131,3 +131,55 @@ class EventManagerTest(unittest.TestCase):
         event_manager.fire_with_context('test', bot)
 
         bot.assert_called_once()
+
+
+    @staticmethod
+    def test_event_pipeline_empty_output():
+
+        import sys
+        from io import StringIO
+
+        out = StringIO()
+        sys.stdout = out
+        event_manager = EventManager()
+
+        event_manager.events['test'] = Event('test')
+        event_manager.print_all_event_pipelines()
+
+        assert 'Event pipeline for "test" is empty.' in out.getvalue().strip()
+
+
+    @staticmethod
+    def test_event_pipeline_output():
+
+        import sys
+        from io import StringIO
+
+        out = StringIO()
+        sys.stdout = out
+
+        event_manager = EventManager()
+
+        def test_listener_1(bot=None):
+            bot()
+
+        def test_listener_2(bot=None):
+            bot()
+
+        def test_listener_3(bot=None):
+            bot()
+
+        def test_listener_4(bot=None):
+            bot()
+
+        event_manager.add_listener('test1', test_listener_1, priority=-100)
+        event_manager.add_listener('test1', test_listener_2, priority=0)
+        event_manager.add_listener('test1', test_listener_3, priority=0)
+        event_manager.add_listener('test1', test_listener_4, priority=100)
+        event_manager.add_listener('test2', test_listener_1, priority=100)
+        event_manager.print_all_event_pipelines()
+
+        assert 'Event pipeline for "test1":' in out.getvalue().strip()
+        assert '-100 (test_listener_1) -> 0 (test_listener_2 -> test_listener_3) -> 100 (test_listener_4)' in out.getvalue().strip()
+        assert 'Event pipeline for "test2":' in out.getvalue().strip()
+        assert '100 (test_listener_1)' in out.getvalue().strip()
