@@ -21,7 +21,7 @@ install:
   - "ECHO %PYTHON% %PYTHON_VERSION%%APPVEYOR_BUILD_FOLDER%"
   - "set HOME=%APPVEYOR_BUILD_FOLDER%"
   - "%PIP% install -r requirements.txt"
-  - "%PIP% install pylint pytest pytest-cov pytest-xdist"
+  - "%PIP% install -r requirements-dev.txt"
   - "cd %HOME%"
 
 test: off
