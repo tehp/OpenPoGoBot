@@ -11,11 +11,11 @@ from pokemongo_bot.tests import create_mock_api_wrapper, create_test_config
 class FortNavigatorTest(unittest.TestCase):
 
     def test_navigate_pokestops_known(self):
-        api_wrapper = create_mock_api_wrapper()
         config = create_test_config({
             "walk": 5,
             "max_steps": 2
         })
+        api_wrapper = create_mock_api_wrapper(config)
         navigator = FortNavigator(config, api_wrapper)
 
         pgoapi = api_wrapper._api
@@ -43,12 +43,12 @@ class FortNavigatorTest(unittest.TestCase):
         assert pgoapi.call_stack_size() == 0
 
     def test_navigate_pokestops_unknown(self):
-        api_wrapper = create_mock_api_wrapper()
-        api_wrapper.call = MagicMock(return_value=None)
         config = create_test_config({
             "walk": 5,
             "max_steps": 2
         })
+        api_wrapper = create_mock_api_wrapper(config)
+        api_wrapper.call = MagicMock(return_value=None)
         navigator = FortNavigator(config, api_wrapper)
 
         pgoapi = api_wrapper._api  # pylint: disable=protected-access

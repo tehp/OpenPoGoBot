@@ -3,9 +3,12 @@
 import json
 
 from s2sphere import CellId, LatLng  # type: ignore
+
+from app import service_container
 from pokemongo_bot.utils import distance
 
 
+@service_container.register('mapper', ['@config', '@api_wrapper'])
 class Mapper(object):
     def __init__(self, config, api_wrapper):
         # type: (Namespace, PoGoApi, Stepper) -> None

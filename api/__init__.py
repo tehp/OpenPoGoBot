@@ -2,20 +2,23 @@ from __future__ import print_function
 import time
 import random
 
-from six import integer_types                                   # type: ignore
-from pgoapi.exceptions import ServerSideRequestThrottlingException, ServerSideAccessForbiddenException, UnexpectedResponseException  # type: ignore
+from six import integer_types  # type: ignore
+from pgoapi.exceptions import ServerSideRequestThrottlingException, ServerSideAccessForbiddenException, \
+    UnexpectedResponseException  # type: ignore
 
+from app import service_container
 from .state_manager import StateManager
 from .exceptions import AccountBannedException
 
 
+@service_container.register('api_wrapper', ['@pgoapi', '@config'])
 class PoGoApi(object):
-    def __init__(self, api, provider="google", username="", password="", shared_lib="encrypt.dll"):
+    def __init__(self, api, config):
 
         self._api = api
-        self.provider = provider
-        self.username = username
-        self.password = password
+        self.provider = config.auth_service
+        self.username = config.username
+        self.password = config.password
 
         self.current_position = (0, 0, 0)
 
@@ -24,7 +27,7 @@ class PoGoApi(object):
         self._pending_calls = {}
         self._pending_calls_keys = []
 
-        self._api.activate_signature(shared_lib)
+        self._api.activate_signature(config.load_library)
 
     def login(self):
         try:

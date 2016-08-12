@@ -2,11 +2,13 @@
 
 from math import ceil
 
+from app import service_container
 from pokemongo_bot.human_behaviour import sleep, random_lat_long_delta
 from pokemongo_bot.utils import distance, format_time, format_dist
 import pokemongo_bot.logger as logger
 
 
+@service_container.register('stepper', ['@config', '@api_wrapper', '%path_finder%'])
 class Stepper(object):
     AVERAGE_STRIDE_LENGTH_IN_METRES = 0.60
 

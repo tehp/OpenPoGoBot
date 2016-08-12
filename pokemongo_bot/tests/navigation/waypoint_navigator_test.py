@@ -9,7 +9,6 @@ from pokemongo_bot.tests import create_mock_api_wrapper, create_test_config
 class WaypointNavigatorTest(unittest.TestCase):
 
     def test_navigate_waypoint(self):
-        api_wrapper = create_mock_api_wrapper()
         config = create_test_config({
             "walk": 5,
             "max_steps": 2,
@@ -18,6 +17,7 @@ class WaypointNavigatorTest(unittest.TestCase):
                 [51.5060435, -0.073983]
             ]
         })
+        api_wrapper = create_mock_api_wrapper(config)
 
         navigator = WaypointNavigator(config, api_wrapper)
         map_cells = self._create_map_cells()
@@ -40,7 +40,6 @@ class WaypointNavigatorTest(unittest.TestCase):
         assert len(destinations) == 2
 
     def test_navigate_waypoint_add(self):
-        api_wrapper = create_mock_api_wrapper()
         config = create_test_config({
             "walk": 5,
             "max_steps": 2,
@@ -49,6 +48,7 @@ class WaypointNavigatorTest(unittest.TestCase):
                 [51.5060435, -0.073983]
             ]
         })
+        api_wrapper = create_mock_api_wrapper(config)
 
         navigator = WaypointNavigator(config, api_wrapper)
         map_cells = self._create_map_cells()
@@ -77,7 +77,6 @@ class WaypointNavigatorTest(unittest.TestCase):
         assert len(destinations) == 3
 
     def test_navigate_waypoint_add_runtime(self):
-        api_wrapper = create_mock_api_wrapper()
         config = create_test_config({
             "walk": 5,
             "max_steps": 2,
@@ -86,6 +85,7 @@ class WaypointNavigatorTest(unittest.TestCase):
                 [51.5060435, -0.073983]
             ]
         })
+        api_wrapper = create_mock_api_wrapper(config)
 
         navigator = WaypointNavigator(config, api_wrapper)
         map_cells = self._create_map_cells()
@@ -118,7 +118,6 @@ class WaypointNavigatorTest(unittest.TestCase):
         assert len(destinations) == 3
 
     def test_navigate_waypoint_remove(self):
-        api_wrapper = create_mock_api_wrapper()
         config = create_test_config({
             "walk": 5,
             "max_steps": 2,
@@ -127,6 +126,7 @@ class WaypointNavigatorTest(unittest.TestCase):
                 [51.5060435, -0.073983]
             ]
         })
+        api_wrapper = create_mock_api_wrapper(config)
 
         navigator = WaypointNavigator(config, api_wrapper)
         map_cells = self._create_map_cells()
@@ -146,7 +146,6 @@ class WaypointNavigatorTest(unittest.TestCase):
         assert len(destinations) == 1
 
     def test_navigate_waypoint_remove_runtime(self):
-        api_wrapper = create_mock_api_wrapper()
         config = create_test_config({
             "walk": 5,
             "max_steps": 2,
@@ -155,6 +154,7 @@ class WaypointNavigatorTest(unittest.TestCase):
                 [51.5060435, -0.073983]
             ]
         })
+        api_wrapper = create_mock_api_wrapper(config)
 
         navigator = WaypointNavigator(config, api_wrapper)
         map_cells = self._create_map_cells()
@@ -179,7 +179,6 @@ class WaypointNavigatorTest(unittest.TestCase):
 
     @staticmethod
     def test_navigate_waypoint_remove_not_exists():
-        api_wrapper = create_mock_api_wrapper()
         config = create_test_config({
             "walk": 5,
             "max_steps": 2,
@@ -188,6 +187,7 @@ class WaypointNavigatorTest(unittest.TestCase):
                 [51.5060435, -0.073983]
             ]
         })
+        api_wrapper = create_mock_api_wrapper(config)
 
         navigator = WaypointNavigator(config, api_wrapper)
 

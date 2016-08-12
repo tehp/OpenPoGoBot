@@ -15,7 +15,7 @@ class StepperTest(unittest.TestCase):
         config = create_test_config({
             "walk": 13.37,
         })
-        api_wrapper = create_mock_api_wrapper()
+        api_wrapper = create_mock_api_wrapper(config)
         path_finder = Mock()
 
         stepper = Stepper(config, api_wrapper, path_finder)
@@ -35,7 +35,7 @@ class StepperTest(unittest.TestCase):
         config = create_test_config({
             "walk": None,
         })
-        api_wrapper = create_mock_api_wrapper()
+        api_wrapper = create_mock_api_wrapper(config)
         path_finder = Mock()
         stepper = Stepper(config, api_wrapper, path_finder)
 
@@ -46,7 +46,7 @@ class StepperTest(unittest.TestCase):
         config = create_test_config({
             "walk": -5,
         })
-        api_wrapper = create_mock_api_wrapper()
+        api_wrapper = create_mock_api_wrapper(config)
         path_finder = Mock()
         stepper = Stepper(config, api_wrapper, path_finder)
 
@@ -57,7 +57,7 @@ class StepperTest(unittest.TestCase):
         config = create_test_config({
             "walk": 4.16,
         })
-        api_wrapper = create_mock_api_wrapper()
+        api_wrapper = create_mock_api_wrapper(config)
         path_finder = GooglePathFinder(config)
         stepper = Stepper(config, api_wrapper, path_finder)
 
@@ -68,7 +68,7 @@ class StepperTest(unittest.TestCase):
         config = create_test_config({
             "walk": 4.16,
         })
-        api_wrapper = create_mock_api_wrapper()
+        api_wrapper = create_mock_api_wrapper(config)
         path_finder = DirectPathFinder(config)
         stepper = Stepper(config, api_wrapper, path_finder)
 
@@ -79,7 +79,7 @@ class StepperTest(unittest.TestCase):
         config = create_test_config({
             "walk": 4.16,
         })
-        api_wrapper = create_mock_api_wrapper()
+        api_wrapper = create_mock_api_wrapper(config)
         path_finder = DirectPathFinder(config)
         stepper = Stepper(config, api_wrapper, path_finder)
 
@@ -105,7 +105,7 @@ class StepperTest(unittest.TestCase):
         config = create_test_config({
             "walk": 5,
         })
-        api_wrapper = create_mock_api_wrapper()
+        api_wrapper = create_mock_api_wrapper(config)
         path_finder = DirectPathFinder(config)
         stepper = Stepper(config, api_wrapper, path_finder)
         stepper.start(51.5044524, -0.0752479, 10)
@@ -124,7 +124,7 @@ class StepperTest(unittest.TestCase):
         config = create_test_config({
             "walk": 5,
         })
-        api_wrapper = create_mock_api_wrapper()
+        api_wrapper = create_mock_api_wrapper(config)
         path_finder = DirectPathFinder(config)
         stepper = Stepper(config, api_wrapper, path_finder)
 
@@ -148,7 +148,7 @@ class StepperTest(unittest.TestCase):
         config = create_test_config({
             "walk": 5,
         })
-        api_wrapper = create_mock_api_wrapper()
+        api_wrapper = create_mock_api_wrapper(config)
         path_finder = DirectPathFinder(config)
         stepper = Stepper(config, api_wrapper, path_finder)
         stepper.start(51.50451, -0.07607, 10)
@@ -174,7 +174,7 @@ class StepperTest(unittest.TestCase):
             "path_finder": "direct",
             "distance_unit": "m"
         })
-        api_wrapper = create_mock_api_wrapper()
+        api_wrapper = create_mock_api_wrapper(bot.config)
         path_finder = DirectPathFinder(bot.config)
         stepper = Stepper(bot.config, api_wrapper, path_finder)
         stepper.start(51.50451, -0.07607, 10)
@@ -192,7 +192,7 @@ class StepperTest(unittest.TestCase):
         # This route is being walked: http://www.darrinward.com/lat-long/?id=2163411
         # pre-calculated distance is 17.8 meters
         pointer = 0
-        for step in stepper.step(destination):
+        for _ in stepper.step(destination):
             target_lat, target_lng, target_alt = steps[pointer]
             assert stepper.current_lat == target_lat
             assert stepper.current_lng == target_lng

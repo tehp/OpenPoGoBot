@@ -7,8 +7,7 @@ def register_bot_events(socketio, state):
 
     @manager.on("bot_initialized")
     def bot_initialized(bot):
-        info = bot.update_player_and_inventory()
-        player = info["player"]
+        player = bot.player_service.get_player()
         emitted_object = {
             "username": player.username,
             "level": player.level,

@@ -1,3 +1,4 @@
+from app import service_container
 from pokemongo_bot import logger
 from pokemongo_bot import sleep
 from pokemongo_bot.navigation.destination import Destination
@@ -5,6 +6,7 @@ from pokemongo_bot.navigation.navigator import Navigator
 from pokemongo_bot.event_manager import manager
 
 
+@service_container.register('camper_navigator', ['@config', '@api_wrapper'])
 class CamperNavigator(Navigator):
     def __init__(self, config, api_wrapper):
         # type: (Namespace, PoGoApi) -> None
@@ -25,7 +27,6 @@ class CamperNavigator(Navigator):
             self.camping_sites.append((current_lat, current_lng))
 
         try:
-            print(self.camping_sites[self.pointer])
             lat, lng = self.camping_sites[self.pointer]
             position = (lat, lng, 0.0)
 

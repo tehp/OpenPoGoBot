@@ -16,20 +16,20 @@ from pokemongo_bot.tests import create_mock_bot, create_test_config, create_mock
 class MapperTest(unittest.TestCase):
     @staticmethod
     def test_init():
-        api_wrapper = create_mock_api_wrapper()
         config = create_test_config({
             "walk": 13.37,
         })
+        api_wrapper = create_mock_api_wrapper(config)
         mapper = Mapper(config, api_wrapper)
 
         assert mapper.config == config
         assert mapper.api_wrapper == api_wrapper
 
     def test_get_cells(self):
-        api_wrapper = create_mock_api_wrapper()
         config = create_test_config({
             "username": "testaccount1337"
         })
+        api_wrapper = create_mock_api_wrapper(config)
         mapper = Mapper(config, api_wrapper)
 
         api_wrapper.set_position(51.5044524, -0.0752479, 10)
@@ -63,10 +63,10 @@ class MapperTest(unittest.TestCase):
 
     @staticmethod
     def test_get_cells_no_response():
-        api_wrapper = create_mock_api_wrapper()
         config = create_test_config({
             "username": "testaccount1337"
         })
+        api_wrapper = create_mock_api_wrapper(config)
         mapper = Mapper(config, api_wrapper)
 
         api_wrapper.set_position(51.5044524, -0.0752479, 10)

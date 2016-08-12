@@ -19,7 +19,7 @@ class PluginsTest(unittest.TestCase):
 
         plugins = plugin_manager.get_available_plugins()
 
-        assert len(plugins) == 1
+        assert len(plugins) == 2
         assert 'test_plugin' in plugins
         assert 'name' in plugins['test_plugin']
         assert plugins['test_plugin']['name'] == 'test_plugin'

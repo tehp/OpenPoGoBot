@@ -26,10 +26,8 @@ Author: tjado <https://github.com/tejado>
 """
 
 from __future__ import print_function
-from getpass import getpass
-# pylint: disable=redefined-builtin
+
 import logging
-import os
 import ssl
 import sys
 
@@ -37,15 +35,10 @@ import colorama
 import ruamel.yaml
 from pgoapi import PGoApi
 
-from api import PoGoApi
+from app import service_container
 from pokemongo_bot import logger
-from pokemongo_bot import PokemonGoBot
 from pokemongo_bot.event_manager import manager
-from pokemongo_bot.mapper import Mapper
-from pokemongo_bot.navigation import *
-from pokemongo_bot.navigation.path_finder import *
 from pokemongo_bot.plugins import PluginManager
-from pokemongo_bot.stepper import Stepper
 
 # Disable HTTPS certificate verification
 if sys.version_info >= (2, 7, 9):
@@ -86,42 +79,24 @@ def main():
     logger.log('[x] Configuration initialized', 'yellow')
 
     try:
-        pgo = PGoApi()
-        api_wrapper = PoGoApi(
-            pgo,
-            provider=config.auth_service,
-            username=config.username,
-            password=config.password,
-            shared_lib=config.load_library
-        )
+        service_container.register_singleton('config', config)
+        service_container.register_singleton('pgoapi', PGoApi())
+        service_container.register_singleton('plugin_manager', PluginManager('./plugins'))
+        service_container.register_singleton('event_manager', manager)
 
-        plugin_manager = PluginManager('./plugins')
-
-        event_manager = manager
-
-        mapper = Mapper(config, api_wrapper)
-
-        if config.path_finder == 'google':
-            path_finder = GooglePathFinder(config)  # pylint: disable=redefined-variable-type
-        elif config.path_finder == 'direct':
-            path_finder = DirectPathFinder(config)  # pylint: disable=redefined-variable-type
+        if config.path_finder in ['google', 'direct']:
+            service_container.set_parameter('path_finder', config.path_finder)
         else:
             raise Exception('You must provide a path finder')
 
-        stepper = Stepper(config, api_wrapper, path_finder)
-
-        if config.navigator == 'fort':
-            navigator = FortNavigator(config, api_wrapper)  # pylint: disable=redefined-variable-type
-        elif config.navigator == 'waypoint':
-            navigator = WaypointNavigator(config, api_wrapper)  # pylint: disable=redefined-variable-type
-        elif config.navigator == 'camper':
-            navigator = CamperNavigator(config, api_wrapper)  # pylint: disable=redefined-variable-type
+        if config.navigator in ['fort', 'waypoint', 'camper']:
+            service_container.set_parameter('navigator', config.navigator)
         else:
             raise Exception('You must provide a navigator')
 
-        log = logging.getLogger(__name__)
-
-        bot = PokemonGoBot(config, api_wrapper, plugin_manager, event_manager, mapper, stepper, navigator, log)
+        #log = logging.getLogger(__name__)
+        # bot = PokemonGoBot(config, api_wrapper, player_service, pokemon_service, plugin_manager, event_manager, mapper, stepper, navigator, log)
+        bot = service_container.get('pokemongo_bot')
         bot.start()
 
         logger.log('[x] Starting PokemonGo Bot....', 'green')

@@ -1,11 +1,12 @@
+from app import service_container
 from pokemongo_bot import sleep
 from pokemongo_bot.navigation.destination import Destination
 from pokemongo_bot.navigation.navigator import Navigator
 from pokemongo_bot.utils import distance
 
 
+@service_container.register('fort_navigator', ['@config', '@api_wrapper'])
 class FortNavigator(Navigator):
-
     def navigate(self, map_cells):
         # type: (List[Cell]) -> List([Destination])
 

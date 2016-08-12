@@ -10,6 +10,7 @@ import time
 import googlemaps
 from googlemaps.exceptions import ApiError
 
+from app import service_container
 from pokemongo_bot import logger, human_behaviour, item_list
 from pokemongo_bot.utils import filtered_forts, distance
 from pokemongo_bot.human_behaviour import sleep
@@ -17,26 +18,28 @@ from pokemongo_bot.item_list import Item
 from pokemongo_bot.plugins import PluginManager
 from pokemongo_bot.navigation import FortNavigator, WaypointNavigator, CamperNavigator
 from geopy import geocoders
-#import geopy
+
+
 # Uncomment for type annotations on Python 3
 # from typing import Any, List, Dict, Union, Tuple
 # from api.pokemon import Pokemon
 # from api.worldmap import Cell
 
-
+@service_container.register('pokemongo_bot', ['@config', '@api_wrapper', '@player_service', '@pokemon_service', '@plugin_manager', '@event_manager', '@mapper', '@stepper', '%navigator%'])
 class PokemonGoBot(object):
     process_ignored_pokemon = False
 
-    def __init__(self, config, api_wrapper, plugin_manager, event_manager, mapper, stepper, navigator, log):
-        # type: (Namespace, PoGoApi, PluginManager, EventManager, Mapper, Stepper, Navigator, logging) -> None
+    def __init__(self, config, api_wrapper, player_service, pokemon_service, plugin_manager, event_manager, mapper, stepper, navigator):
+        # type: (Namespace, PoGoApi, Player, Pokemon, PluginManager, EventManager, Mapper, Stepper, Navigator) -> None
         self.config = config
         self.api_wrapper = api_wrapper
+        self.player_service = player_service
+        self.pokemon_service = pokemon_service
         self.plugin_manager = plugin_manager
         self.event_manager = event_manager
         self.mapper = mapper
         self.stepper = stepper
         self.navigator = navigator
-        self.log = log
 
         self.pokemon_list = json.load(open('data/pokemon.json'))
         self.item_list = {}
@@ -45,9 +48,6 @@ class PokemonGoBot(object):
 
         self.position = (0.0, 0.0, 0.0)
         self.last_session_check = time.gmtime()
-        self.inventory = []
-        self.candies = {}
-        self.ignores = []
 
     def start(self):
         self._setup_logging()
@@ -60,11 +60,12 @@ class PokemonGoBot(object):
         self.fire('bot_initialized')
 
         logger.log('[#]')
-        self.update_player_and_inventory()
+        self.player_service.update()
 
     def _setup_logging(self):
         # log settings
         # log format
+        logging.getLogger(__name__)
         logging.basicConfig(
             level=logging.DEBUG,
             format='%(asctime)s [%(module)10s] [%(levelname)5s] %(message)s')
@@ -97,50 +98,14 @@ class PokemonGoBot(object):
         # provide player position on the earth
         self._set_starting_position()
 
-        while not self.api_wrapper.login():
+        while not self.player_service.login():
             logger.log('Login Error, server busy', 'red')
             logger.log('Waiting 15 seconds before trying again...')
             time.sleep(15)
 
         logger.log('[+] Login to Pokemon Go successful.', 'green')
 
-        # chain subrequests (methods) into one RPC call
-
-        # get player profile call
-        # ----------------------
-        response_dict = self.update_player_and_inventory()
-
-        if response_dict is not None:
-            player = response_dict['player']
-            inventory = response_dict['inventory']
-            self.candies = response_dict['candy']
-            pokemon = response_dict['pokemon']
-            eggs = response_dict['eggs']
-            creation_date = player.get_creation_date()
-
-            balls_stock = self.pokeball_inventory()
-
-            pokecoins = player.pokecoin
-            stardust = player.stardust
-
-            logger.log('[#]')
-            logger.log('[#] Username: {}'.format(player.username))
-            logger.log('[#] Account creation: {}'.format(creation_date))
-            logger.log('[#] Bag storage: {}/{}'.format(inventory["count"], player.max_item_storage))
-            logger.log('[#] Pokemon storage: {}/{}'.format(len(pokemon) + len(eggs), player.max_pokemon_storage))
-            logger.log('[#] Stardust: {:,}'.format(stardust))
-            logger.log('[#] Pokecoins: {}'.format(pokecoins))
-            logger.log('[#] Poke Balls: {}'.format(balls_stock[1]))
-            logger.log('[#] Great Balls: {}'.format(balls_stock[2]))
-            logger.log('[#] Ultra Balls: {}'.format(balls_stock[3]))
-            logger.log('[#] -- Level: {}'.format(player.level))
-            logger.log('[#] -- Experience: {:,}'.format(player.experience))
-            logger.log('[#] -- Experience until next level: {:,}'.format(player.next_level_xp - player.experience))
-            logger.log('[#] -- Pokemon captured: {:,}'.format(player.pokemons_captured))
-            logger.log('[#] -- Pokestops visited: {:,}'.format(player.poke_stop_visits))
-        # Testing
-        # self.drop_item(Item.ITEM_POTION.value,1)
-        # exit(0)
+        self.player_service.print_stats()
 
     def run(self):
         map_cells = self.mapper.get_cells(
@@ -165,7 +130,8 @@ class PokemonGoBot(object):
                 )
             )
 
-            self.fire("walking_started", coords=(destination.target_lat, destination.target_lng, destination.target_alt))
+            self.fire("walking_started",
+                      coords=(destination.target_lat, destination.target_lng, destination.target_alt))
 
             for step in self.stepper.step(destination):
                 self.fire("position_updated", coordinates=step)
@@ -178,7 +144,8 @@ class PokemonGoBot(object):
                     )
                 )
 
-            self.fire("walking_finished", coords=(destination.target_lat, destination.target_lng, destination.target_alt))
+            self.fire("walking_finished",
+                      coords=(destination.target_lat, destination.target_lng, destination.target_alt))
 
     def work_on_cells(self, map_cells):
         # type: (Cell, bool) -> None
@@ -197,12 +164,6 @@ class PokemonGoBot(object):
         # type: (str, *Any, **Any) -> None
         self.event_manager.fire_with_context(event, self, *args, **kwargs)
 
-    def update_player_and_inventory(self):
-        # type: () -> Dict[str, object]
-        response_dict = self.api_wrapper.get_player().get_inventory().call()
-        self.candies = response_dict['candy']
-        return response_dict
-
     def add_candies(self, name=None, pokemon_candies=None):
         for pokemon in self.pokemon_list:
             if pokemon['Name'] is not name:
@@ -219,25 +180,9 @@ class PokemonGoBot(object):
                 else:
                     self.candies[candy_name] = pokemon_candies
                 logger.log("[#] Added {} candies for {}".format(pokemon_candies,
-                                                                self.pokemon_list[int(candy_name) - 1]['Name']), 'green')
+                                                                self.pokemon_list[int(candy_name) - 1]['Name']),
+                           'green')
                 break
-
-    def pokeball_inventory(self):
-        balls_stock = {Item.ITEM_POKE_BALL.value: 0,
-                       Item.ITEM_GREAT_BALL.value: 0,
-                       Item.ITEM_ULTRA_BALL.value: 0,
-                       Item.ITEM_MASTER_BALL.value: 0}
-
-        result = self.api_wrapper.get_inventory().call()
-        if result is None:
-            return balls_stock
-
-        inventory_list = result["inventory"]
-
-        for item_id in inventory_list:
-            if item_id in balls_stock:
-                balls_stock[item_id] = inventory_list[item_id]
-        return balls_stock
 
     def _set_starting_position(self):
 
@@ -314,26 +259,12 @@ class PokemonGoBot(object):
         self.api_wrapper.check_awarded_badges()
         self.api_wrapper.call()
 
-    def get_pokemon_count(self):
-        # type: () -> int
-        response_dict = self.update_player_and_inventory()
-        if response_dict is None:
-            return 0
-        return len(response_dict["pokemon"])
-
-    def get_item_count(self):
-        # type: () -> int
-        response_dict = self.update_player_and_inventory()
-        if response_dict is None:
-            return 0
-        return response_dict["inventory"]["count"]
-
     def get_username(self):
         # type: () -> str
-        response_dict = self.update_player_and_inventory()
-        if response_dict is None:
+        player = self.player_service.get_player()
+        if player is None:
             return "Unknown"
-        return response_dict["player"].username
+        return player.username
 
     def get_position(self):
         return self.position

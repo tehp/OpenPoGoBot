@@ -3,7 +3,10 @@ import googlemaps
 
 from pokemongo_bot.navigation.path_finder.path_finder import PathFinder
 
+from app import service_container
 
+
+@service_container.register('google_path_finder', ['@config'])
 class GooglePathFinder(PathFinder):
 
     def path(self, from_lat, form_lng, to_lat, to_lng):

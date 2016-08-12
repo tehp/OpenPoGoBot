@@ -1,8 +1,10 @@
+from app import service_container
 from pokemongo_bot.navigation.destination import Destination
 from pokemongo_bot.navigation.navigator import Navigator
 from pokemongo_bot.event_manager import manager
 
 
+@service_container.register('waypoint_navigator', ['@config', '@api_wrapper'])
 class WaypointNavigator(Navigator):
     def __init__(self, config, api_wrapper):
         # type: (Namespace, PoGoApi) -> None

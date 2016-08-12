@@ -1,12 +1,8 @@
-import unittest
 import sys
+import unittest
 from io import StringIO
 
-from mock import Mock
-
-import pokemongo_bot
 from api.worldmap import PokeStop, Gym
-
 from pokemongo_bot.utils import distance, filtered_forts, convert, dist_to_str, format_dist, format_time, f2i, i2f, \
     convert_to_utf8
 

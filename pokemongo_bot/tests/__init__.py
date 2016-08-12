@@ -10,6 +10,8 @@ from pokemongo_bot import PluginManager
 from pokemongo_bot.event_manager import EventManager
 from pokemongo_bot.mapper import Mapper
 from pokemongo_bot.navigation.path_finder import DirectPathFinder
+from pokemongo_bot.service.player import Player
+from pokemongo_bot.service.pokemon import Pokemon
 from pokemongo_bot.stepper import Stepper
 import pgoapi
 import api
@@ -28,7 +30,6 @@ class PGoApiMock(pgoapi.PGoApi):
 
     # pylint: disable=unused-argument
     def login(self, provider, username, password, lat=None, lng=None, alt=None, app_simulation=True):
-        print("login: {}".format(self.should_login))
         return self.should_login
 
     def set_position(self, lat, lng, alt):
@@ -94,9 +95,9 @@ class PGoApiRequestMock(pgoapi.pgoapi.PGoApiRequest):
         return function
 
 
-def create_mock_api_wrapper():
+def create_mock_api_wrapper(config):
     pgoapi_instance = PGoApiMock()
-    api_wrapper = api.PoGoApi(api=pgoapi_instance)
+    api_wrapper = api.PoGoApi(pgoapi_instance, config)
     api_wrapper.get_expiration_time = MagicMock(return_value=1000000)
     api_wrapper.set_position(0, 0, 0)
     return api_wrapper
@@ -107,6 +108,10 @@ def create_test_config(user_config=None):
         user_config = {}
 
     config = {
+        "auth_service": "ptc",
+        "username": "testaccount",
+        "password": "test123",
+        "load_library": "libencrypt.so",
         "debug": False,
         "path_finder": None,
         "walk": 4.16,
@@ -120,16 +125,26 @@ def create_test_config(user_config=None):
 def create_mock_bot(user_config=None):
     config_namespace = create_test_config(user_config)
 
-    api_wrapper = create_mock_api_wrapper()
+    api_wrapper = create_mock_api_wrapper(config_namespace)
+    player_service = Player(api_wrapper)
+    pokemon_service = Pokemon(api_wrapper)
     plugin_manager = PluginManager(os.path.dirname(os.path.realpath(__file__)) + '/plugins')
     mapper = Mapper(config_namespace, api_wrapper)
     path_finder = DirectPathFinder(config_namespace)
     stepper = Stepper(config_namespace, api_wrapper, path_finder)
     navigator = FortNavigator(config_namespace, api_wrapper)
-    log = logging.getLogger(__name__)
     event_manager = EventManager()
 
-    bot = pokemongo_bot.PokemonGoBot(config_namespace, api_wrapper, plugin_manager, event_manager, mapper, stepper,
-                                     navigator, log)
+    bot = pokemongo_bot.PokemonGoBot(
+        config_namespace,
+        api_wrapper,
+        player_service,
+        pokemon_service,
+        plugin_manager,
+        event_manager,
+        mapper,
+        stepper,
+        navigator
+    )
 
     return bot
