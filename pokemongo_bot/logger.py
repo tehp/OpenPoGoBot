@@ -11,7 +11,7 @@ from pokemongo_bot.event_manager import manager
 # from typing import Optional
 
 output_file = open("log.txt", "a+")
-atexit.register(output.close)
+atexit.register(output_file.close)
 
 
 def log(string, color="black", prefix=None, fire_event=True):
