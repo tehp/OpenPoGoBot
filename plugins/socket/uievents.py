@@ -26,6 +26,16 @@ def register_ui_events(socketio, state):
     def disconnect():
         logger.log("Web client disconnected", "yellow", fire_event=False)
 
+    @socketio.on("pokemon_settings", namespace="/event")
+    def client_ask_for_pokemon_settings():
+        if "bot" in state:
+            bot = state["bot"]
+            templates = bot.api_wrapper.download_item_templates().call()
+            templates = templates["DOWNLOAD_ITEM_TEMPLATES"]["item_templates"]
+            pokemon_settings = [t["pokemon_settings"] for t in templates if "pokemon_settings" in t]
+            pokemon_settings = sorted(pokemon_settings, key=lambda p: p["pokemon_id"])
+            socketio.emit("pokemon_settings", pokemon_settings, namespace="/event", room=request.sid)
+
     @socketio.on("pokemon_list", namespace="/event")
     def client_ask_for_pokemon_list():
         if "bot" in state:
