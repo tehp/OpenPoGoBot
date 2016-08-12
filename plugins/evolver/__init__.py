@@ -4,7 +4,7 @@ from pokemongo_bot import sleep
 
 # pylint: disable=unused-argument
 
-@manager.on('caught_pokemon', priority=0)
+@manager.on('pokemon_caught', priority=0)
 def _after_catch(event, bot, pokemon=None):
     _do_evolve(bot, bot.pokemon_list[pokemon.pokemon_id - 1]['Name'])
 
@@ -35,7 +35,7 @@ def _do_evolve(bot, name):
 
             num_evolved = 0
             for pokemon in pokemon_evolve:
-                if num_evolve < pokemon_candies:
+                if num_evolve > pokemon_candies:
                     break
                 bot.api_wrapper.evolve_pokemon(pokemon_id=pokemon.unique_id)
                 response = bot.api_wrapper.call()
@@ -52,7 +52,7 @@ def _do_evolve(bot, name):
                     _log('Evolving {} failed'.format(base_name), color='red')
                     break
 
-            if num_evolve > pokemon_candies and num_evolved is 0:
+            if num_evolve > pokemon_candies:
                 _log('Not enough candies for {} to evolve'.format(base_name), color='yellow')
             elif len(pokemon_evolve) > num_evolved:
                 _log('Stopped evolving due to error', color='red')
