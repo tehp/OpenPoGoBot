@@ -21,7 +21,7 @@ def make_sure_path_exists(path):
 
 
 make_sure_path_exists("logs")
-output_file = open(os.path.join("logs", "{}.txt".format(time.strftime("%Y.%m.%d-%H:%M:%S"))), "w")
+output_file = open(os.path.join("logs", "{}.txt".format(time.strftime("%Y.%m.%d-%H.%M.%S"))), "w")
 atexit.register(output_file.close)
 
 
