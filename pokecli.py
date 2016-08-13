@@ -33,6 +33,7 @@ import os
 import ssl
 import sys
 
+import googlemaps
 import colorama
 import ruamel.yaml
 from pgoapi import PGoApi

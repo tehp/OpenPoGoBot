@@ -24,11 +24,11 @@ class PGoApiMock(pgoapi.PGoApi):
         self.call_responses = list()
         self.should_login = []
 
-    # pylint: disable=unused-argument
+    # pylint: disable=unused-argument,no-self-use
     def activate_signature(self, shared_lib):
         return None
 
-    # pylint: disable=unused-argument
+    # pylint: disable=unused-argument,no-self-use
     def login(self, provider, username, password, lat=None, lng=None, alt=None, app_simulation=True):
         if len(self.should_login):
             return self.should_login.pop(0)

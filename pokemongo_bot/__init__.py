@@ -7,19 +7,18 @@ import random
 import sys
 import time
 
-import googlemaps
-from googlemaps.exceptions import ApiError
-
 from app import service_container
-from pokemongo_bot import logger, human_behaviour, item_list, mapper, stepper, event_manager
-from pokemongo_bot.navigation.path_finder import *
-from pokemongo_bot.service import player, pokemon
+from pokemongo_bot import logger, human_behaviour, item_list
+from pokemongo_bot.navigation.path_finder import DirectPathFinder, GooglePathFinder
+from pokemongo_bot.service import Player, Pokemon
 from pokemongo_bot.utils import filtered_forts, distance
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.item_list import Item
 from pokemongo_bot.plugins import PluginManager
-from pokemongo_bot.navigation import *
-from geopy import geocoders
+from pokemongo_bot.mapper import Mapper
+from pokemongo_bot.stepper import Stepper
+from pokemongo_bot.event_manager import EventManager
+from pokemongo_bot.navigation import CamperNavigator, FortNavigator, WaypointNavigator
 
 
 # Uncomment for type annotations on Python 3
