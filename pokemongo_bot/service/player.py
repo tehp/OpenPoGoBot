@@ -1,7 +1,7 @@
 from app import service_container
-from pokemongo_bot import Item
+from pokemongo_bot.item_list import Item
 from pokemongo_bot import logger
-from pokemongo_bot import sleep
+from pokemongo_bot.human_behaviour import sleep
 
 
 @service_container.register('player_service', ['@api_wrapper'])
@@ -11,6 +11,7 @@ class Player(object):
         self._logged_in = False
 
         self._eggs = None
+        self._egg_incubators = []
         self._candies = {}
         self._pokeballs = {
             Item.ITEM_POKE_BALL.value: 0,
@@ -40,6 +41,7 @@ class Player(object):
         self._pokemon = response_dict['pokemon']
         self._candies = response_dict['candy']
         self._eggs = response_dict['eggs']
+        self._egg_incubators = response_dict['egg_incubators']
 
         for item_id in self._inventory:
             if item_id in self._pokeballs:
@@ -54,6 +56,14 @@ class Player(object):
     def get_inventory(self):
         self.update()
         return self._inventory
+
+    def get_eggs(self):
+        self.update()
+        return self._eggs
+
+    def get_egg_incubators(self):
+        self.update()
+        return self._egg_incubators
 
     def get_pokemon(self):
         self.update()

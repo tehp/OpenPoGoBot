@@ -11,12 +11,14 @@ import googlemaps
 from googlemaps.exceptions import ApiError
 
 from app import service_container
-from pokemongo_bot import logger, human_behaviour, item_list
+from pokemongo_bot import logger, human_behaviour, item_list, mapper, stepper, event_manager
+from pokemongo_bot.navigation.path_finder import *
+from pokemongo_bot.service import player, pokemon
 from pokemongo_bot.utils import filtered_forts, distance
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.item_list import Item
 from pokemongo_bot.plugins import PluginManager
-from pokemongo_bot.navigation import FortNavigator, WaypointNavigator, CamperNavigator
+from pokemongo_bot.navigation import *
 from geopy import geocoders
 
 

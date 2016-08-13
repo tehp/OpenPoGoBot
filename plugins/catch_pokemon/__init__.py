@@ -51,7 +51,7 @@ def pokemon_found(bot, encounters=None):
 
             log("A wild {} appeared! [CP {}] [Potential {}]".format(pokemon_name, combat_power, pokemon_potential))
 
-            balls_stock = bot.pokeball_inventory()
+            balls_stock = bot.playter_service.get_pokeballs()
             total_pokeballs = sum([balls_stock[ball_type] for ball_type in balls_stock])
 
             # Simulate app

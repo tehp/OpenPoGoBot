@@ -19,7 +19,7 @@ def register_bot_events(socketio, state):
                 "prev_level_xp": player.prev_level_xp,
                 "experience": player.experience
             },
-            "coordinates": bot.get_position(),
+            "coordinates": bot.api_wrapper.get_position(),
             "storage": {
                 "max_item_storage": player.max_item_storage,
                 "max_pokemon_storage": player.max_pokemon_storage

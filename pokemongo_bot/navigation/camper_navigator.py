@@ -1,6 +1,6 @@
 from app import service_container
 from pokemongo_bot import logger
-from pokemongo_bot import sleep
+from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.navigation.destination import Destination
 from pokemongo_bot.navigation.navigator import Navigator
 from pokemongo_bot.event_manager import manager

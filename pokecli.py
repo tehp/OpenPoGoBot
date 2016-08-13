@@ -27,6 +27,7 @@ Author: tjado <https://github.com/tejado>
 
 from __future__ import print_function
 
+import googlemaps
 import logging
 import os
 import ssl
@@ -85,14 +86,15 @@ def main():
         service_container.register_singleton('pgoapi', PGoApi())
         service_container.register_singleton('plugin_manager', PluginManager('./plugins'))
         service_container.register_singleton('event_manager', manager)
+        service_container.register_singleton('google_maps', googlemaps.Client(key=config.gmapkey))
 
         if config.path_finder in ['google', 'direct']:
-            service_container.set_parameter('path_finder', config.path_finder)
+            service_container.set_parameter('path_finder', config.path_finder + '_path_finder')
         else:
             raise Exception('You must provide a valid path finder')
 
         if config.navigator in ['fort', 'waypoint', 'camper']:
-            service_container.set_parameter('navigator', config.navigator)
+            service_container.set_parameter('navigator', config.navigator + '_navigator')
         else:
             raise Exception('You must provide a valid navigator')
 

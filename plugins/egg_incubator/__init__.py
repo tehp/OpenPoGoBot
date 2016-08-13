@@ -22,13 +22,14 @@ def incubate_eggs(bot, coords=None):
     if coords is None:
         return
 
-    inventory = bot.update_player_and_inventory()
+    eggs = bot.player_service.get_eggs()
+    all_incubators = bot.player_service.get_egg_incubators()
 
-    eggs = [egg for egg in inventory["eggs"] if egg.egg_incubator_id == ""]
-    incubators = [incu for incu in inventory["egg_incubators"] if incu.pokemon_id == 0 and (
-        incubate_config["incubation_use_all"] is True or incu.item_id == 901)]
+    eggs = [egg for egg in eggs if egg.egg_incubator_id == ""]
+    incubators = [incu for incu in all_incubators if incu.pokemon_id == 0 and (
+        bot.config.incubation_use_all or incu.item_id == 901)]
 
-    in_use_count = len(inventory["egg_incubators"]) - len(incubators)
+    in_use_count = len(all_incubators) - len(incubators)
 
     # order eggs by distance longest -> shortest
     eggs_by_distance = sorted(eggs, key=lambda x: x.total_distance, reverse=True)
@@ -41,7 +42,7 @@ def incubate_eggs(bot, coords=None):
 
         for egg in eggs_by_distance:
             if len(incubators) == 0:
-                log("No more free incubators ({}/{} in use)".format(in_use_count, len(inventory["egg_incubators"])), "yellow")
+                log("No more free incubators ({}/{} in use)".format(in_use_count, len(all_incubators)), "yellow")
                 return
 
             if egg_restriction is None:

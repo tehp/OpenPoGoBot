@@ -21,8 +21,7 @@ def recycle_on_bot_start(bot):
 def filter_recyclable_items(bot, recyclable_items=None):
 
     if recyclable_items is None:
-        response = bot.update_player_and_inventory()
-        recyclable_items = response["inventory"]
+        recyclable_items = bot.player_service.get_inventory()
 
     copy_of_recyclable_items = dict(recyclable_items)
 
