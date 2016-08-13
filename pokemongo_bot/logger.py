@@ -3,6 +3,7 @@ from __future__ import print_function
 from builtins import str
 import atexit
 import time
+import os
 
 from colorama import Fore, Back, Style
 from pokemongo_bot.event_manager import manager
@@ -10,7 +11,17 @@ from pokemongo_bot.event_manager import manager
 # Uncomment for type annotations on Python 3
 # from typing import Optional
 
-output_file = open("log-{}.txt".format(time.strftime("%Y.%m.%d-%H:%M:%S")), "a+")
+
+def make_sure_path_exists(path):
+    try: 
+        os.makedirs(path)
+    except OSError:
+        if not os.path.isdir(path):
+            raise
+
+
+make_sure_path_exists("logs")
+output_file = open(os.path.join("logs", "{}.txt".format(time.strftime("%Y.%m.%d-%H:%M:%S"))), "w")
 atexit.register(output_file.close)
 
 

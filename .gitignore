@@ -40,3 +40,6 @@ encrypt.dll
 *.so
 *.o
 encrypt.c
+
+# Log files
+logs
