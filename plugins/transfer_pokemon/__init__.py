@@ -39,14 +39,14 @@ def filter_pokemon(bot, transfer_list=None, pokemon=None):
         ignore_list = bot.config.ign_init_trans.split(',')
         if release_rules:
             log(
-                "Transferring {} Pokemon according to rules and excluding [{}].".format(
+                "Transferring {} Pokemon according to rules, excluding [{}].".format(
                     ("caught" if isinstance(pokemon, Pokemon) else "all"),
                     ', '.join(ignore_list)
                 )
             )
         else:
             log(
-                "Transferring {} Pokemon with CP NOT above {} and IV NOT above {} and excluding [{}].".format(
+                "Transferring {} Pokemon that have CP <= {} and IV <= {}, excluding [{}].".format(
                     ("caught" if isinstance(pokemon, Pokemon) else "all"),
                     bot.config.cp,
                     bot.config.pokemon_potential,
@@ -59,8 +59,8 @@ def filter_pokemon(bot, transfer_list=None, pokemon=None):
             # Load rules for this group. If rule doesnt exist make one with default settings.
             pokemon_name = bot.pokemon_list[group - 1]["Name"]
             pokemon_rules = release_rules.get(pokemon_name, default_rules)
-            release_below_cp = pokemon_rules.get('release_below_cp', bot.config.cp)
-            release_below_iv = pokemon_rules.get('release_below_iv', bot.config.pokemon_potential)
+            cp_threshold = pokemon_rules.get('release_below_cp', bot.config.cp)
+            iv_threshold = pokemon_rules.get('release_below_iv', bot.config.pokemon_potential)
             rules_logic = pokemon_rules.get('logic', 'and')
 
             # If we've been given a caught pokemon, only process that group
@@ -69,14 +69,14 @@ def filter_pokemon(bot, transfer_list=None, pokemon=None):
                 continue
 
             # check if ID or species name is in ignore list or if it's our only pokemon of this type
-            if str(group) in ignore_list or bot.pokemon_list[group - 1] in ignore_list or len(indexed_pokemon[group]) < 2:
+            if str(group) in ignore_list or bot.pokemon_list[group - 1]["Name"] in ignore_list or len(indexed_pokemon[group]) < 2:
                 del indexed_pokemon[group]
             else:
                 # only keep everything below specified CP
                 group_transfer_list = []
                 for deck_pokemon in indexed_pokemon[group]:
-                    within_cp = (deck_pokemon.combat_power > release_below_cp)
-                    within_potential = (deck_pokemon.potential >= release_below_iv)
+                    within_cp = (deck_pokemon.combat_power <= cp_threshold)
+                    within_potential = (deck_pokemon.potential <= iv_threshold)
                     if rules_logic == 'and' and (within_cp and within_potential):
                         continue
                     elif rules_logic == 'or' and (within_cp or within_potential):
@@ -100,7 +100,7 @@ def filter_pokemon(bot, transfer_list=None, pokemon=None):
 
         for group in indexed_pokemon:
             # There's only one, keep it
-            if len(indexed_pokemon[group]) < 2:
+            if str(group) in ignore_list or bot.pokemon_list[group - 1]["Name"] in ignore_list or len(indexed_pokemon[group]) < 2:
                 continue
 
             # Sort by CP and keep the best one
