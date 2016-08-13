@@ -10,7 +10,7 @@ from pokemongo_bot.event_manager import manager
 # Uncomment for type annotations on Python 3
 # from typing import Optional
 
-output_file = open("log-{}.txt".format(time.strftime("%Y.%m.%d-%H:%M:%S"), "a+"))
+output_file = open("log-{}.txt".format(time.strftime("%Y.%m.%d-%H:%M:%S")), "a+")
 atexit.register(output_file.close)
 
 
