@@ -2,18 +2,21 @@
 
 import json
 
+from googlemaps.exceptions import ApiError
 from s2sphere import CellId, LatLng  # type: ignore
 
 from app import service_container
+from pokemongo_bot import logger
 from pokemongo_bot.utils import distance
 
 
-@service_container.register('mapper', ['@config', '@api_wrapper'])
+@service_container.register('mapper', ['@config', '@api_wrapper', '@google_maps'])
 class Mapper(object):
-    def __init__(self, config, api_wrapper):
-        # type: (Namespace, PoGoApi, Stepper) -> None
+    def __init__(self, config, api_wrapper, google_maps):
+        # type: (Namespace, PoGoApi, Client) -> None
         self.config = config
         self.api_wrapper = api_wrapper
+        self.google_maps = google_maps
 
     def get_cells(self, lat, lng):
         # type: (float, float) -> List[Cell]
@@ -41,6 +44,34 @@ class Mapper(object):
             x.pokestops) > 0 else 1e6)
 
         return map_cells
+
+    def find_location(self, location):
+        # type: (str) -> Tuple[float, float, float]
+
+        # If we have been given a string of coordinates
+        if location.count(',') == 1:
+            try:
+                parts = location.split(',')
+
+                pos_lat = float(parts[0])
+                pos_lng = float(parts[1])
+
+                # we need to ask google for the altitude
+                response = self.google_maps.elevation((pos_lat, pos_lng))
+
+                if response is not None and len(response) and "elevation" in response[0]:
+                    return pos_lat, pos_lng, response[0]["elevation"]
+                else:
+                    raise ValueError
+            except ApiError:
+                logger.log("Could not fetch altitude from google. Trying geolocator.", prefix='Logger', color='yellow')
+            except ValueError:
+                logger.log("Location was not Lat/Lng. Trying geolocator.", prefix='Logger', color='yellow')
+
+        # Fallback to geolocation if no Lat/Lng can be found
+        loc = self.google_maps.geocode(location)
+
+        return loc.latitude, loc.longitude, loc.altitude
 
     def _get_cell_id_from_latlong(self, radius=10):
         # type: (Optional[int]) -> List[str]

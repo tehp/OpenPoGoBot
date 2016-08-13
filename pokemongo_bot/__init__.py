@@ -57,6 +57,8 @@ class PokemonGoBot(object):
 
         self.stepper.start(*self.position)
 
+        self.player_service.print_stats()
+
         self.fire('bot_initialized')
 
         logger.log('[#]')
@@ -88,7 +90,6 @@ class PokemonGoBot(object):
                 logger.log("Not loading plugin \"{}\"".format(plugin), color="red", prefix="Plugins")
 
         loaded_plugins = sorted(self.plugin_manager.get_loaded_plugins().keys())
-        sleep(2)
         logger.log("Plugins loaded: {}".format(loaded_plugins), color="green", prefix="Plugins")
         if self.config["debug"]:
             logger.log("Events available: {}".format(self.event_manager.get_registered_events()), color="green", prefix="Events")
@@ -99,13 +100,11 @@ class PokemonGoBot(object):
         self._set_starting_position()
 
         while not self.player_service.login():
-            logger.log('Login Error, server busy', 'red')
+            logger.log('Login Error, server busy', color='red')
             logger.log('Waiting 15 seconds before trying again...')
             time.sleep(15)
 
-        logger.log('[+] Login to Pokemon Go successful.', 'green')
-
-        self.player_service.print_stats()
+        logger.log('[+] Login to Pokemon Go successful.', color='green')
 
     def run(self):
         map_cells = self.mapper.get_cells(
@@ -135,7 +134,7 @@ class PokemonGoBot(object):
 
             for step in self.stepper.step(destination):
                 self.fire("position_updated", coordinates=step)
-                self.heartbeat()
+                self.player_service.heartbeat()
 
                 self.work_on_cells(
                     self.mapper.get_cells(
@@ -164,28 +163,7 @@ class PokemonGoBot(object):
         # type: (str, *Any, **Any) -> None
         self.event_manager.fire_with_context(event, self, *args, **kwargs)
 
-    def add_candies(self, name=None, pokemon_candies=None):
-        for pokemon in self.pokemon_list:
-            if pokemon['Name'] is not name:
-                continue
-            else:
-                previous_evolutions = pokemon.get("Previous evolution(s)", [])
-                if previous_evolutions:
-                    candy_name = previous_evolutions[0]['Number']
-                else:
-                    candy_name = pokemon.get("Number")
-
-                if self.candies.get(candy_name, None) is not None:
-                    self.candies[candy_name] += pokemon_candies
-                else:
-                    self.candies[candy_name] = pokemon_candies
-                logger.log("[#] Added {} candies for {}".format(pokemon_candies,
-                                                                self.pokemon_list[int(candy_name) - 1]['Name']),
-                           'green')
-                break
-
     def _set_starting_position(self):
-
         if self.config["mapping"]["location_cache"]:
             try:
                 #
@@ -206,58 +184,14 @@ class PokemonGoBot(object):
             except IOError:
                 if not self.config["mapping"]["location"]:
                     sys.exit("No cached Location. Please specify initial location.")
-                else:
-                    self._read_config_location()
-        else:
-            self._read_config_location()
 
-        logger.log('[x] Position in-game set as: {}'.format(self.position))
-        logger.log('')
-
-    def _read_config_location(self):
-        self.position = self._get_pos_by_name(self.config["mapping"]["location_cache"])
+        # Fallback to location in configuration
+        self.position = self.mapper.find_location(self.config["mapping"]["location"])
         self.api_wrapper.set_position(*self.position)
         logger.log('')
-        logger.log(u'[x] Address found: {}'.format(self.config["mapping"]["location_cache"]))
-
-    def _get_pos_by_name(self, location_name):
-        # type: (str) -> Tuple[float, float, float]
-        if location_name.count(',') == 1:
-            try:
-                logger.log("[x] Fetching altitude from google")
-                parts = location_name.split(',')
-
-                pos_lat = float(parts[0])
-                pos_lng = float(parts[1])
-
-                # we need to ask google for the altitude
-                gmaps = googlemaps.Client(key=self.config["mapping"]["gmapkey"])
-                response = gmaps.elevation((pos_lat, pos_lng))
-
-                if len(response) and "elevation" in response[0]:
-                    return pos_lat, pos_lng, response[0]["elevation"]
-                else:
-                    raise ValueError
-            except ApiError:
-                logger.log("[x] Could not fetch altitude from google. Trying geolocator.")
-            except ValueError:
-                logger.log("[x] Location was not Lat/Lng.")
-
-        # Fallback to geolocation if no Lat/Lng can be found
-        geolocator = geocoders.GoogleV3(api_key=self.config["mapping"]["gmapkey"])
-        loc = geolocator.geocode(location_name, timeout=10)
-
-        # self.log.info('Your given location: %s', loc.address.encode('utf-8'))
-        # self.log.info('lat/long/alt: %s %s %s', loc.latitude, loc.longitude, loc.altitude)
-
-        return loc.latitude, loc.longitude, loc.altitude
-
-    def heartbeat(self):
-        self.api_wrapper.get_player()
-        self.api_wrapper.get_hatched_eggs()
-        self.api_wrapper.get_inventory()
-        self.api_wrapper.check_awarded_badges()
-        self.api_wrapper.call()
+        logger.log(u'[x] Address found: {}'.format(self.config["mapping"]["location"]))
+        logger.log('[x] Position in-game set as: {}'.format(self.position))
+        logger.log('')
 
     def get_username(self):
         # type: () -> str
@@ -265,6 +199,3 @@ class PokemonGoBot(object):
         if player is None:
             return "Unknown"
         return player.username
-
-    def get_position(self):
-        return self.position

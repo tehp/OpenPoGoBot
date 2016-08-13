@@ -2,6 +2,8 @@ import os
 import json
 import unittest
 
+from googlemaps import Client
+from googlemaps.exceptions import ApiError
 from mock import Mock, call
 
 from api.worldmap import Cell
@@ -20,21 +22,24 @@ class MapperTest(unittest.TestCase):
             "walk": 13.37,
         })
         api_wrapper = create_mock_api_wrapper(config)
-        mapper = Mapper(config, api_wrapper)
+        google_maps = Mock(spec=Client)
+        mapper = Mapper(config, api_wrapper, google_maps)
 
         assert mapper.config == config
         assert mapper.api_wrapper == api_wrapper
+        assert mapper.google_maps == google_maps
 
     def test_get_cells(self):
         config = create_test_config({
-            "username": "testaccount1337"
+            "username": "testaccount1"
         })
         api_wrapper = create_mock_api_wrapper(config)
-        mapper = Mapper(config, api_wrapper)
+        google_maps = Mock(spec=Client)
+        mapper = Mapper(config, api_wrapper, google_maps)
 
         api_wrapper.set_position(51.5044524, -0.0752479, 10)
 
-        pgo = api_wrapper._api
+        pgo = api_wrapper.get_api()
         pgo.set_response("get_map_objects", {
             "map_cells": [
                 self._create_map_cell(1),
@@ -53,7 +58,7 @@ class MapperTest(unittest.TestCase):
 
         assert len(cells) == 5
 
-        assert os.path.isfile('data/last-location-testaccount1.json') is True
+        assert bool(os.path.isfile('data/last-location-testaccount1.json')) is True
         with open('data/last-location-testaccount1.json') as data_file:
             data = json.load(data_file)
             assert data["lat"] == 51.5044524
@@ -64,24 +69,77 @@ class MapperTest(unittest.TestCase):
     @staticmethod
     def test_get_cells_no_response():
         config = create_test_config({
-            "username": "testaccount1337"
+            "username": "testaccount2"
         })
         api_wrapper = create_mock_api_wrapper(config)
-        mapper = Mapper(config, api_wrapper)
+        google_maps = Mock(spec=Client)
+        mapper = Mapper(config, api_wrapper, google_maps)
 
         api_wrapper.set_position(51.5044524, -0.0752479, 10)
 
-        pgo = api_wrapper._api  # pylint: disable=protected-access
+        pgo = api_wrapper.get_api()
         pgo.set_response("get_map_objects", {})
         api_wrapper.call = Mock(return_value=None)
 
         # Clean up any old location logs
-        if os.path.isfile('data/last-location-testaccount3.json'):
-            os.unlink('data/last-location-testaccount3.json')
+        if os.path.isfile('data/last-location-testaccount2.json'):
+            os.unlink('data/last-location-testaccount2.json')
 
         cells = mapper.get_cells(51.5044524, -0.0752479)
 
         assert len(cells) == 0
+
+    @staticmethod
+    def test_find_location_with_coordinates():
+        config = create_test_config()
+        api_wrapper = create_mock_api_wrapper(config)
+        google_maps = Mock(spec=Client)
+        google_maps.elevation = Mock(return_value=[{'elevation': 10.1}])
+        mapper = Mapper(config, api_wrapper, google_maps)
+
+        lat, lng, alt = mapper.find_location('51.5044524, -0.0752479')
+
+        assert lat == 51.5044524
+        assert lng == -0.0752479
+        assert alt == 10.1
+
+    @staticmethod
+    def test_find_location_with_coordinates_google_error():
+        config = create_test_config()
+        api_wrapper = create_mock_api_wrapper(config)
+        google_maps = Mock(spec=Client)
+        google_maps.elevation = Mock(side_effect=ApiError(403))
+        location = Mock()
+        location.latitude = 51.5044524
+        location.longitude = -0.0752479
+        location.altitude = 10.1
+        google_maps.geocode = Mock(return_value=location)
+        mapper = Mapper(config, api_wrapper, google_maps)
+
+        lat, lng, alt = mapper.find_location('51.5044524, -0.0752479')
+
+        assert lat == 51.5044524
+        assert lng == -0.0752479
+        assert alt == 10.1
+
+    @staticmethod
+    def test_find_location_with_coordinates_invalid_response():
+        config = create_test_config()
+        api_wrapper = create_mock_api_wrapper(config)
+        google_maps = Mock(spec=Client)
+        google_maps.elevation = Mock(return_value=None)
+        location = Mock()
+        location.latitude = 51.5044524
+        location.longitude = -0.0752479
+        location.altitude = 10.1
+        google_maps.geocode = Mock(return_value=location)
+        mapper = Mapper(config, api_wrapper, google_maps)
+
+        lat, lng, alt = mapper.find_location('51.5044524, -0.0752479')
+
+        assert lat == 51.5044524
+        assert lng == -0.0752479
+        assert alt == 10.1
 
     def _create_map_cell(self, cell_id):
         return {

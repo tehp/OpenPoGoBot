@@ -93,7 +93,7 @@ class StepperTest(unittest.TestCase):
         assert stepper.current_lng == -0.0752479
         assert stepper.current_alt == 10
 
-        pgo = api_wrapper._api
+        pgo = api_wrapper.get_api()
         lat, lng, alt = pgo.get_position()
 
         assert lat == 51.5044524
@@ -133,7 +133,7 @@ class StepperTest(unittest.TestCase):
         # pre-calculated distance is 10.3 meters
         stepper.snap_to(51.504389, -0.07621, 11)
 
-        pgo = api_wrapper._api
+        pgo = api_wrapper.get_api()
         lat, lng, alt = pgo.get_position()
 
         assert stepper.current_lat == 51.504389
@@ -156,7 +156,7 @@ class StepperTest(unittest.TestCase):
         # pre-calculated distance is 17.8 meters
         stepper.snap_to(51.50436, -0.07616, 11)
 
-        pgo = api_wrapper._api
+        pgo = api_wrapper.get_api()
         lat, lng, alt = pgo.get_position()
 
         assert stepper.current_lat == 51.50451
@@ -168,15 +168,14 @@ class StepperTest(unittest.TestCase):
 
     @staticmethod
     def test_step():
-        calls = []
-        bot = create_mock_bot({
+        config = create_test_config({
             "walk": 5,
             "path_finder": "direct",
             "distance_unit": "m"
         })
-        api_wrapper = create_mock_api_wrapper(bot.config)
-        path_finder = DirectPathFinder(bot.config)
-        stepper = Stepper(bot.config, api_wrapper, path_finder)
+        api_wrapper = create_mock_api_wrapper(config)
+        path_finder = DirectPathFinder(config)
+        stepper = Stepper(config, api_wrapper, path_finder)
         stepper.start(51.50451, -0.07607, 10)
 
         destination = Destination(51.506000, -0.075049, 11, name="Test Destination", exact_location=False)
@@ -187,7 +186,7 @@ class StepperTest(unittest.TestCase):
         ]
         destination.set_steps(steps)
 
-        pgo = api_wrapper._api
+        pgo = api_wrapper.get_api()
 
         # This route is being walked: http://www.darrinward.com/lat-long/?id=2163411
         # pre-calculated distance is 17.8 meters
@@ -205,24 +204,26 @@ class StepperTest(unittest.TestCase):
 
             pointer += 1
 
-        calls.append(call("walking_finished", coords=(51.506000, -0.075049, 11)))
+        assert pointer == 3
 
-        assert bot.fire.call_count == 5
-        bot.fire.assert_has_calls(calls, any_order=False)
-
-        assert bot.heartbeat.call_count == 3
+        bot_lat, bot_lng, bot_alt = pgo.get_position()
+        assert bot_lat == 51.505436
+        assert bot_lng == -0.075446
+        assert bot_alt == 11
+        assert stepper.current_lat == 51.505436
+        assert stepper.current_lng == -0.075446
+        assert stepper.current_alt == 11
 
     @staticmethod
     def test_step_already_near_fort():
         calls = []
-        bot = create_mock_bot({
+        config = create_test_config({
             "walk": 5,
             "path_finder": "direct",
             "distance_unit": "m"
         })
-        bot.position = (51.50451, -0.07607, 10)
-        bot.fire = Mock(return_value=None)
-        bot.heartbeat = Mock(return_value=None)
+        api_wrapper = create_mock_api_wrapper(config)
+        path_finder = DirectPathFinder(config)
 
         destination = Destination(51.50436, -0.07616, 11, name="Test Destination", exact_location=False)
         steps = [
@@ -232,10 +233,10 @@ class StepperTest(unittest.TestCase):
         ]
         destination.set_steps(steps)
 
-        stepper = Stepper(bot)
-        stepper.start()
+        stepper = Stepper(config, api_wrapper, path_finder)
+        stepper.start(51.50451, -0.07607, 10)
 
-        pgo = bot.api_wrapper._api  # pylint: disable=protected-access
+        pgo = api_wrapper.get_api()
 
         # This route is being walked: http://www.darrinward.com/lat-long/?id=2163408
         calls.append(call("walking_started", coords=(51.50436, -0.07616, 11)))
@@ -252,11 +253,3 @@ class StepperTest(unittest.TestCase):
         assert stepper.current_lat == 51.50451
         assert stepper.current_lng == -0.07607
         assert stepper.current_alt == 10
-
-        calls.append(call("walking_finished", coords=(51.50436, -0.07616, 11)))
-
-        assert bot.fire.call_count == 2
-        bot.fire.assert_has_calls(calls, any_order=False)
-
-        assert bot.heartbeat.call_count == 0
-        assert pointer == 3

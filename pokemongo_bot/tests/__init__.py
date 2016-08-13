@@ -3,17 +3,17 @@ import os
 from argparse import Namespace
 
 from mock import Mock, MagicMock
+import pgoapi
 
-import pokemongo_bot
-from pokemongo_bot import FortNavigator
+from app import service_container
+from pokemongo_bot import FortNavigator, PokemonGoBot
 from pokemongo_bot import PluginManager
-from pokemongo_bot.event_manager import EventManager
+from pokemongo_bot.event_manager import EventManager, manager
 from pokemongo_bot.mapper import Mapper
 from pokemongo_bot.navigation.path_finder import DirectPathFinder
 from pokemongo_bot.service.player import Player
 from pokemongo_bot.service.pokemon import Pokemon
 from pokemongo_bot.stepper import Stepper
-import pgoapi
 import api
 
 
@@ -22,7 +22,7 @@ class PGoApiMock(pgoapi.PGoApi):
     def __init__(self):
         self.positions = list()
         self.call_responses = list()
-        self.should_login = True
+        self.should_login = []
 
     # pylint: disable=unused-argument
     def activate_signature(self, shared_lib):
@@ -30,7 +30,10 @@ class PGoApiMock(pgoapi.PGoApi):
 
     # pylint: disable=unused-argument
     def login(self, provider, username, password, lat=None, lng=None, alt=None, app_simulation=True):
-        return self.should_login
+        if len(self.should_login):
+            return self.should_login.pop(0)
+        else:
+            return True
 
     def set_position(self, lat, lng, alt):
         self.positions.append((lat, lng, alt))
@@ -96,6 +99,7 @@ class PGoApiRequestMock(pgoapi.pgoapi.PGoApiRequest):
 
 
 def create_mock_api_wrapper(config):
+    # type: (Dict) -> PoGoApi
     pgoapi_instance = PGoApiMock()
     api_wrapper = api.PoGoApi(pgoapi_instance, config)
     api_wrapper.get_expiration_time = MagicMock(return_value=1000000)
@@ -103,7 +107,26 @@ def create_mock_api_wrapper(config):
     return api_wrapper
 
 
+def create_test_service_container(user_config=None):
+    # type: (Dict) -> ServiceContainer
+    config = create_test_config(user_config)
+
+    service_container.register_singleton('config', config)
+    service_container.register_singleton('pgoapi', PGoApiMock())
+    service_container.register_singleton(
+        'plugin_manager',
+        PluginManager(os.path.dirname(os.path.realpath(__file__)) + '/plugins')
+    )
+    service_container.register_singleton('event_manager', manager)
+
+    service_container.set_parameter('path_finder', config.path_finder)  # pylint: disable=no-member
+    service_container.set_parameter('navigator', config.navigator)  # pylint: disable=no-member
+
+    return service_container
+
+
 def create_test_config(user_config=None):
+    # type: (Dict) -> Namespace
     if user_config is None:
         user_config = {}
 
@@ -111,11 +134,13 @@ def create_test_config(user_config=None):
         "auth_service": "ptc",
         "username": "testaccount",
         "password": "test123",
+        "gmapskey": "test_key",
         "load_library": "libencrypt.so",
         "debug": False,
-        "path_finder": None,
+        "navigator": "fort",
+        "path_finder": "direct",
         "walk": 4.16,
-        "max_steps": 2,
+        "max_steps": 2
     }
     config.update(user_config)
 
@@ -129,13 +154,13 @@ def create_mock_bot(user_config=None):
     player_service = Player(api_wrapper)
     pokemon_service = Pokemon(api_wrapper)
     plugin_manager = PluginManager(os.path.dirname(os.path.realpath(__file__)) + '/plugins')
-    mapper = Mapper(config_namespace, api_wrapper)
+    mapper = Mapper(config_namespace, api_wrapper, Mock())
     path_finder = DirectPathFinder(config_namespace)
     stepper = Stepper(config_namespace, api_wrapper, path_finder)
     navigator = FortNavigator(config_namespace, api_wrapper)
     event_manager = EventManager()
 
-    bot = pokemongo_bot.PokemonGoBot(
+    bot = PokemonGoBot(
         config_namespace,
         api_wrapper,
         player_service,

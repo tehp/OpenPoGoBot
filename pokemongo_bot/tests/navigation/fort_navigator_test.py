@@ -18,7 +18,7 @@ class FortNavigatorTest(unittest.TestCase):
         api_wrapper = create_mock_api_wrapper(config)
         navigator = FortNavigator(config, api_wrapper)
 
-        pgoapi = api_wrapper._api
+        pgoapi = api_wrapper.get_api()
         pgoapi.set_response('fort_details', self._create_pokestop("Test Stop", 51.5043872, -0.0741802))
         pgoapi.set_response('fort_details', self._create_pokestop("Test Stop 2", 51.5060435, -0.073983))
 
@@ -51,7 +51,7 @@ class FortNavigatorTest(unittest.TestCase):
         api_wrapper.call = MagicMock(return_value=None)
         navigator = FortNavigator(config, api_wrapper)
 
-        pgoapi = api_wrapper._api  # pylint: disable=protected-access
+        pgoapi = api_wrapper.get_api()
 
         map_cells = self._create_map_cells()
 

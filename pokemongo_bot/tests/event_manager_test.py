@@ -100,7 +100,6 @@ class EventManagerTest(unittest.TestCase):
 
     @staticmethod
     def test_fire_no_listeners():
-
         import sys
         from io import StringIO
 
@@ -113,7 +112,6 @@ class EventManagerTest(unittest.TestCase):
         event_manager.fire('test', value=None)
 
         assert 'WARNING: No handler has registered to handle event "test"' in out.getvalue().strip()
-
 
     @staticmethod
     def test_fire_with_context():
@@ -129,10 +127,8 @@ class EventManagerTest(unittest.TestCase):
 
         bot.assert_called_once()
 
-
     @staticmethod
     def test_event_pipeline_empty_output():
-
         import sys
         from io import StringIO
 
@@ -141,14 +137,28 @@ class EventManagerTest(unittest.TestCase):
         event_manager = EventManager()
 
         event_manager.events['test'] = Event('test')
+        event_manager.events['test'].listeners['test_listener'] = []
         event_manager.print_all_event_pipelines()
 
         assert 'Event pipeline for "test" is empty.' in out.getvalue().strip()
 
+    @staticmethod
+    def test_event_pipeline_no_listeners():
+        import sys
+        from io import StringIO
+
+        out = StringIO()
+        sys.stdout = out
+        event_manager = EventManager()
+
+        event_manager.events['test'] = Event('test')
+        event_manager.events['test'].listeners['test_listener'] = []
+        event_manager.print_all_event_pipelines()
+
+        assert 'Event pipeline for "test" is empty.' in out.getvalue().strip()
 
     @staticmethod
     def test_event_pipeline_output():
-
         import sys
         from io import StringIO
 

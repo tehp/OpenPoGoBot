@@ -3,8 +3,7 @@ import unittest
 from io import StringIO
 
 from api.worldmap import PokeStop, Gym
-from pokemongo_bot.utils import distance, filtered_forts, convert, dist_to_str, format_dist, format_time, f2i, i2f, \
-    convert_to_utf8
+from pokemongo_bot.utils import distance, filtered_forts, convert, dist_to_str, format_dist, format_time
 
 
 class UtilsTest(unittest.TestCase):
@@ -30,9 +29,9 @@ class UtilsTest(unittest.TestCase):
         returned_forts = filtered_forts(51.503056, -0.119500, forts)
 
         assert len(returned_forts) == 3
-        assert returned_forts[0].fort_name == 'test_2'
-        assert returned_forts[1].fort_name == 'test_1'
-        assert returned_forts[2].fort_name == 'test_3'
+        assert returned_forts[0].fort_id == 'pokestop_test_2'
+        assert returned_forts[2].fort_id == 'pokestop_test_3'
+        assert returned_forts[1].fort_id == 'pokestop_test_1'
 
     @staticmethod
     def test_convert():
@@ -116,27 +115,6 @@ class UtilsTest(unittest.TestCase):
         assert (format_time(123.456)) == "2.06 minutes"
         assert (format_time(123.456)) == "2.06 minutes"
         assert (format_time(12345.678)) == "12345.68 seconds"
-
-    @staticmethod
-    def test_f2i():
-        assert (f2i(51.503315)) == 4632445264504572682
-        assert (f2i(-0.119421)) == 13816641647455544128
-
-    @staticmethod
-    def test_i2f():
-        assert (i2f(4632445264504572682)) == 51.503315
-        assert (i2f(13816641647455544128)) == -0.119421
-
-    @staticmethod
-    def test_convert_to_utf8():
-        assert (convert_to_utf8(b'hello')) == "hello"
-        assert (convert_to_utf8(u'hello')) == "hello"
-        assert (convert_to_utf8(123)) == 123
-        assert (convert_to_utf8(123.456)) == 123.456
-        assert (convert_to_utf8({'key': b'value'})) == {'key': 'value'}
-        assert (convert_to_utf8((b'value', u'uvalue'))) == ('value', 'uvalue')
-        assert (convert_to_utf8(list((b'value', u'uvalue')))) == list(('value', 'uvalue'))
-        assert (convert_to_utf8(set((b'value', u'uvalue')))) == set(('value', 'uvalue'))
 
     @staticmethod
     def _create_fort(fort_type, name, lat, lng):

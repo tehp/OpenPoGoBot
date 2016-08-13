@@ -14,7 +14,6 @@ from .exceptions import AccountBannedException
 @service_container.register('api_wrapper', ['@pgoapi', '@config'])
 class PoGoApi(object):
     def __init__(self, api, config):
-
         self._api = api
         self.provider = config.auth_service
         self.username = config.username
@@ -28,6 +27,9 @@ class PoGoApi(object):
         self._pending_calls_keys = []
 
         self._api.activate_signature(config.load_library)
+
+    def get_api(self):
+        return self._api
 
     def login(self):
         try:

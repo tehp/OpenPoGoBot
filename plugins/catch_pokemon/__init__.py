@@ -119,7 +119,9 @@ def throw_pokeball(bot, encounter_id, pokeball, spawn_point_id, pokemon, pos):
         return False
     pokemon_catch_response = response["encounter"]
     status = pokemon_catch_response.status
-    pokemon_name = bot.pokemon_list[pokemon.pokemon_id - 1]["Name"]
+    pokemon_data = bot.pokemon_list[pokemon.pokemon_id - 1]
+    pokemon_name = pokemon_data["Name"]
+    pokemon_id = pokemon_data["Number"]
     if status is 2:
         log('Failed to capture {}. Trying again!'.format(pokemon_name), 'yellow')
         bot.fire("pokemon_catch_failed", pokemon=pokemon)
@@ -134,7 +136,7 @@ def throw_pokeball(bot, encounter_id, pokeball, spawn_point_id, pokemon, pos):
         xp = pokemon_catch_response.xp
         stardust = pokemon_catch_response.stardust
         candy = pokemon_catch_response.candy
-        bot.add_candies(name=pokemon_name, pokemon_candies=candy)
+        bot.player_service.add_candy(pokemon_id, candy)
         log("Rewards: {} XP, {} Stardust, {} Candy".format(xp, stardust, candy), "green")
         bot.fire("pokemon_caught", pokemon=pokemon, position=pos)
         return False

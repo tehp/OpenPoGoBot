@@ -1,5 +1,4 @@
 from app import service_container
-from pokemongo_bot import sleep
 from pokemongo_bot.navigation.destination import Destination
 from pokemongo_bot.navigation.navigator import Navigator
 from pokemongo_bot.utils import distance
@@ -18,7 +17,7 @@ class FortNavigator(Navigator):
             # Sort all by distance from current pos- eventually this should
             # build graph & A* it
             current_lat, current_lng, _ = self.api_wrapper.get_position()
-            pokestops.sort(key=lambda x: distance(current_lat, current_lng, x.latitude, x.longitude))
+            pokestops.sort(key=lambda x, lat=current_lat, lng=current_lng: distance(lat, lng, x.latitude, x.longitude))
 
             for fort in pokestops:
 
