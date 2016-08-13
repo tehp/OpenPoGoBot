@@ -104,7 +104,7 @@ $ python pokecli.py [flags]
 | `--combat-power [COMBAT_POWER]` | `-cp [COMBAT_POWER]` | Transfer Pokemon that have CP less than this value (default 100)",                                                                                                                          |
 | `--pokemon-potential [IV]`      | `-iv [IV]`           | Set the ratio for the IV values to transfer, e.g. `0.4` will transfer a Pokémon with IV 0.3 (default: `0.4`)                                                                                |
 | `--recycle-items`               | `-ri`                | Recycle unneeded items automatically                                                                                                                                                        |
-| `--exclude-plugins [LIST]`      | `-ep [LIST]`         | Pass a list of plugins to exclude from the loading process (e.g, `logger,web`).                                                                                                             |
+| `--exclude-plugins [LIST]`      | `-ep [LIST]`         | Pass a list of plugins to exclude from the loading process (e.g, `logger,socket`).                                                                                                             |
 | `--gmapkey [KEY]`               | `-k [KEY]`           | Set a Google Maps API key to use                                                                                                                                                            |
 | `--google-directions`           | `-gd`                | Use directions from the Google Maps API to navigate                                                                                                                                         |
 | `--debug`                       | `-d`                 | Enable Debug Mode                                                                                                                                                                           |
@@ -190,29 +190,11 @@ ignore:
 ```
 ### How do I use the map?
 
-There are currently two plugins while we are refactoring. Choose only one.  
-
 #### Socket Plugin
 
-The socket plugin expose a server on port `8000` that allow communication to your browser.  
-Once launched, just to to [http://openpogoui.nicontoso.eu](http://openpogoui.nicontoso.eu) to show progress on a map.  
+The socket plugin exposes a server on port `8000` that allow communication to your browser.
+Once launched, just to to [http://openpogoui.nicontoso.eu](http://openpogoui.nicontoso.eu) to show progress on a map.
 You can then click on settings (lower right) to modify map settings.  
-
-#### Web Plugin
-
-The web plugin uses `Flask` to open a server on port `8000`. Before visiting the site, you will need to set your username(s) in the `userdata.js` file:
-
-1. Copy `userdata.js.example` to `userdata.js` 
-2. Open the `userdata.js` file in your editor.
-3. Edit the the username to match yours.
-4. Change other settings if you want.
-5. Browse `http://localhost:8000` and enjoy!
-
-If you are using multiple usernames, the format is like this:  
-```
-var users = ["username1","username2"];
-```
-
 
 ---------
 
@@ -226,7 +208,6 @@ Here are the available plugins:
 | `recycle_items`    |
 | `spin_pokestop`    |
 | `transfer_pokemon` |
-| `web`              |
 | `socket`           |
 
 

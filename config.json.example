@@ -38,5 +38,5 @@
     "navigator": "fort",
     "navigator_waypoints": [],
     "navigator_campsite": null,
-    "exclude_plugins": "web"
+    "exclude_plugins": ""
 }
