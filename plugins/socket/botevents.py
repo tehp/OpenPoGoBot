@@ -27,9 +27,6 @@ def register_bot_events(socketio, state):
             }
         }
 
-        # templates = bot.api_wrapper.download_item_templates().call()
-        # print templates
-
         # reinit state
         state.update(emitted_object)
         state["bot"] = bot
