@@ -81,7 +81,11 @@ class Player(object):
             return 0
 
     def add_candy(self, pokemon_id, pokemon_candies):
-        self._candies[pokemon_id] += pokemon_candies
+        pokemon_id = int(pokemon_id)
+        if pokemon_id in self._candies:
+            self._candies[pokemon_id] += int(pokemon_candies)
+        else:
+            self._candies[pokemon_id] = int(pokemon_candies)
 
     def get_pokeballs(self):
         self.update()
