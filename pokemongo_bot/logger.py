@@ -13,7 +13,7 @@ from pokemongo_bot.event_manager import manager
 
 
 def make_sure_path_exists(path):
-    try: 
+    try:
         os.makedirs(path)
     except OSError:
         if not os.path.isdir(path):
