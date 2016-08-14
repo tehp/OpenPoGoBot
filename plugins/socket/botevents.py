@@ -98,3 +98,8 @@ def register_bot_events(socketio, state):
             "pokemon": pokemon
         }
         socketio.emit("transfered_pokemon", emitted_object, namespace="/event")
+
+    @manager.on("route")
+    def on_route_event(bot=None, route=None):
+        if route is not None:
+            socketio.emit("route", route, namespace="/event")
