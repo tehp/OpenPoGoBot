@@ -67,6 +67,7 @@ class PGoApiRequestMock(pgoapi.pgoapi.PGoApiRequest):
 
         if len(return_values) > 0:
             return {
+                'status_code': 1,
                 'responses': return_values
             }
         else:

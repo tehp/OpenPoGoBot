@@ -7,6 +7,7 @@ from pgoapi import PGoApi                                           # type: igno
 from pgoapi.exceptions import ServerSideRequestThrottlingException, ServerSideAccessForbiddenException, UnexpectedResponseException  # type: ignore
 
 from .state_manager import StateManager
+from .exceptions import AccountBannedException
 
 
 class PoGoApi(object):
@@ -123,10 +124,18 @@ class PoGoApi(object):
                 time.sleep(10)
                 continue
 
-            if results is False or results is None or results.get('status_code', 1) != 1:
-                print("[API] API call failed. Retrying in 10 seconds...")
+            if results is False or results is None:
+                print("[API] API call failed (empty response). Retrying in 10 seconds...")
                 time.sleep(10)
             else:
+                status_code = results.get('status_code', None)
+                if status_code == 3:
+                    raise AccountBannedException()
+                elif status_code != 1:
+                    print("[API] API call failed (status code {}). Retrying in 10 seconds...".format(status_code))
+                    time.sleep(10)
+                    continue
+
                 # status code 1: success
                 with open('api-test.txt', 'w') as outfile:
                     outfile.write(str(results))
