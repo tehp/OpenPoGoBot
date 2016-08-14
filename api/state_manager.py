@@ -29,7 +29,8 @@ class StateManager(object):
             "USE_ITEM_EGG_INCUBATOR": self._parse_use_incubator,
             "GET_HATCHED_EGGS": self._parse_get_hatched_eggs,
             "EVOLVE_POKEMON": self._parse_evolution,
-            "DOWNLOAD_ITEM_TEMPLATES": self._identity
+            "DOWNLOAD_ITEM_TEMPLATES": self._identity,
+            "SET_FAVORITE_POKEMON": self._identity
         }
 
         # Maps methods to the state objects that they refresh.
@@ -49,7 +50,8 @@ class StateManager(object):
             "FORT_SEARCH": ["FORT_SEARCH"],
             "RECYCLE_INVENTORY_ITEM": [],
             "EVOLVE_POKEMON": ["evolution"],
-            "DOWNLOAD_ITEM_TEMPLATES": ["DOWNLOAD_ITEM_TEMPLATES"]
+            "DOWNLOAD_ITEM_TEMPLATES": ["DOWNLOAD_ITEM_TEMPLATES"],
+            "SET_FAVORITE_POKEMON": ["SET_FAVORITE_POKEMON"]
         }
 
         # Maps methods to the state objects that they invalidate.
@@ -73,7 +75,8 @@ class StateManager(object):
             "FORT_SEARCH": ["player", "inventory", "eggs"],
             "RECYCLE_INVENTORY_ITEM": ["inventory"],
             "EVOLVE_POKEMON": ["player", "inventory", "pokemon", "pokedex", "candy"],
-            "DOWNLOAD_ITEM_TEMPLATES": []
+            "DOWNLOAD_ITEM_TEMPLATES": [],
+            "SET_FAVORITE_POKEMON": ["pokemon"]
         }
 
         self.current_state = {}

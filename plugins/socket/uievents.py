@@ -157,3 +157,14 @@ def register_ui_events(socketio, state):
             item_name = bot.item_list[item_id]
             log("Recycling {} {}{}".format(count, item_name, "s" if count > 1 else ""))
             bot.api_wrapper.recycle_inventory_item(item_id=item_id, count=count).call()
+
+    @socketio.on("favorite_pokemon", namespace="/event")
+    def client_ask_for_favorite_pokemon(evt):
+        if "bot" in state:
+            logger.log("Web UI action: Favorite", "yellow", fire_event=False)
+
+            bot = state["bot"]
+            pkm_id = int(evt["id"])
+            favorite = evt["favorite"]
+
+            bot.api_wrapper.set_favorite_pokemon(pokemon_id=pkm_id, is_favorite=favorite).call()
