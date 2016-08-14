@@ -1,10 +1,9 @@
-from app import service_container
+from app import kernel
 from pokemongo_bot.navigation.destination import Destination
 from pokemongo_bot.navigation.navigator import Navigator
-from pokemongo_bot.event_manager import manager
 
 
-@service_container.register('waypoint_navigator', ['@config', '@api_wrapper'])
+@kernel.container.register('waypoint_navigator', ['@config', '@api_wrapper'])
 class WaypointNavigator(Navigator):
     def __init__(self, config, api_wrapper):
         # type: (Namespace, PoGoApi) -> None
@@ -32,12 +31,10 @@ class WaypointNavigator(Navigator):
 
         self.pointer = 0
 
-    @manager.on("waypoint_add", priority=0)
     def waypoint_add(self, longitude, latitude):
         # type: (float, float) -> None
         self.waypoints.append([longitude, latitude])
 
-    @manager.on("waypoint_remove", priority=0)
     def waypoint_remove(self, index):
         # type: (float, float) -> None
         try:

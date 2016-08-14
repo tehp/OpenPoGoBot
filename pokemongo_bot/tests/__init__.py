@@ -1,14 +1,14 @@
-import logging
 import os
 from argparse import Namespace
 
 from mock import Mock, MagicMock
 import pgoapi
 
-from app import service_container
+from app import Kernel
+from app.plugin_manager import PluginManager
 from pokemongo_bot import FortNavigator, PokemonGoBot
-from pokemongo_bot import PluginManager
-from pokemongo_bot.event_manager import EventManager, manager
+from pokemongo_bot.event_manager import EventManager
+from pokemongo_bot.logger import Logger
 from pokemongo_bot.mapper import Mapper
 from pokemongo_bot.navigation.path_finder import DirectPathFinder
 from pokemongo_bot.service.player import Player
@@ -107,22 +107,25 @@ def create_mock_api_wrapper(config):
     return api_wrapper
 
 
-def create_test_service_container(user_config=None):
+def create_test_kernel(user_config=None):
     # type: (Dict) -> ServiceContainer
+
+    kernel = Kernel()
+
     config = create_test_config(user_config)
 
-    service_container.register_singleton('config', config)
-    service_container.register_singleton('pgoapi', PGoApiMock())
-    service_container.register_singleton(
+    kernel.container.register_singleton('config', config)
+    kernel.container.register_singleton('pgoapi', PGoApiMock())
+    kernel.container.register_singleton(
         'plugin_manager',
         PluginManager(os.path.dirname(os.path.realpath(__file__)) + '/plugins')
     )
-    service_container.register_singleton('event_manager', manager)
+    kernel.container.register_singleton('event_manager', EventManager())
 
-    service_container.set_parameter('path_finder', config.path_finder)  # pylint: disable=no-member
-    service_container.set_parameter('navigator', config.navigator)  # pylint: disable=no-member
+    kernel.container.set_parameter('path_finder', config.path_finder)  # pylint: disable=no-member
+    kernel.container.set_parameter('navigator', config.navigator)  # pylint: disable=no-member
 
-    return service_container
+    return kernel
 
 
 def create_test_config(user_config=None):
@@ -150,26 +153,26 @@ def create_test_config(user_config=None):
 def create_mock_bot(user_config=None):
     config_namespace = create_test_config(user_config)
 
-    api_wrapper = create_mock_api_wrapper(config_namespace)
-    player_service = Player(api_wrapper)
-    pokemon_service = Pokemon(api_wrapper)
-    plugin_manager = PluginManager(os.path.dirname(os.path.realpath(__file__)) + '/plugins')
-    mapper = Mapper(config_namespace, api_wrapper, Mock())
-    path_finder = DirectPathFinder(config_namespace)
-    stepper = Stepper(config_namespace, api_wrapper, path_finder)
-    navigator = FortNavigator(config_namespace, api_wrapper)
     event_manager = EventManager()
+    logger = Logger(event_manager)
+    api_wrapper = create_mock_api_wrapper(config_namespace)
+    player_service = Player(api_wrapper, logger)
+    pokemon_service = Pokemon(api_wrapper)
+    mapper = Mapper(config_namespace, api_wrapper, Mock(), logger)
+    path_finder = DirectPathFinder(config_namespace)
+    stepper = Stepper(config_namespace, api_wrapper, path_finder, logger)
+    navigator = FortNavigator(config_namespace, api_wrapper)
 
     bot = PokemonGoBot(
         config_namespace,
         api_wrapper,
         player_service,
         pokemon_service,
-        plugin_manager,
         event_manager,
         mapper,
         stepper,
-        navigator
+        navigator,
+        logger
     )
 
     return bot

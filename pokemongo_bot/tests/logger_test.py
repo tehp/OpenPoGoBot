@@ -1,21 +1,24 @@
 from __future__ import print_function
 import unittest
 
-from mock import Mock, patch
+from mock import Mock
 
 import pokemongo_bot
-from pokemongo_bot.event_manager import manager
+from pokemongo_bot import EventManager
+from pokemongo_bot import Logger
+
 
 class LoggerTest(unittest.TestCase):
-
     @staticmethod
     def test_log_by_event():
+        event_manager = EventManager()
+        logger = Logger(event_manager)
 
-        manager.fire = Mock()
+        event_manager.fire = Mock()
 
-        pokemongo_bot.logger.log("log row", color="yellow", prefix="test", fire_event=True)
+        logger.log("log row", color="yellow", prefix="test", fire_event=True)
 
-        manager.fire.assert_called_once_with("logging", text="log row", color="yellow", prefix="test")
+        event_manager.fire.assert_called_once_with("logging", text="log row", color="yellow", prefix="test")
 
     @staticmethod
     def test_log_by_call():
@@ -24,6 +27,8 @@ class LoggerTest(unittest.TestCase):
         out = StringIO()
         sys.stdout = out
 
-        pokemongo_bot.logger.log("log row", color="yellow", prefix="test", fire_event=False)
+        logger = Logger(Mock())
+
+        logger.log("log row", color="yellow", prefix="test", fire_event=False)
         output = out.getvalue().strip()
         assert "[test] log row" in output

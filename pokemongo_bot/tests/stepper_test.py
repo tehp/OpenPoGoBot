@@ -18,7 +18,9 @@ class StepperTest(unittest.TestCase):
         api_wrapper = create_mock_api_wrapper(config)
         path_finder = Mock()
 
-        stepper = Stepper(config, api_wrapper, path_finder)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        stepper = Stepper(config, api_wrapper, path_finder, logger)
 
         assert stepper.origin_lat is None
         assert stepper.origin_lng is None
@@ -37,7 +39,9 @@ class StepperTest(unittest.TestCase):
         })
         api_wrapper = create_mock_api_wrapper(config)
         path_finder = Mock()
-        stepper = Stepper(config, api_wrapper, path_finder)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        stepper = Stepper(config, api_wrapper, path_finder, logger)
 
         assert stepper.speed == 4.16
 
@@ -48,7 +52,9 @@ class StepperTest(unittest.TestCase):
         })
         api_wrapper = create_mock_api_wrapper(config)
         path_finder = Mock()
-        stepper = Stepper(config, api_wrapper, path_finder)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        stepper = Stepper(config, api_wrapper, path_finder, logger)
 
         assert stepper.speed == 4.16
 
@@ -58,8 +64,10 @@ class StepperTest(unittest.TestCase):
             "walk": 4.16,
         })
         api_wrapper = create_mock_api_wrapper(config)
-        path_finder = GooglePathFinder(config)
-        stepper = Stepper(config, api_wrapper, path_finder)
+        path_finder = GooglePathFinder(config, Mock())
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        stepper = Stepper(config, api_wrapper, path_finder, logger)
 
         assert isinstance(stepper.path_finder, GooglePathFinder)
 
@@ -70,7 +78,9 @@ class StepperTest(unittest.TestCase):
         })
         api_wrapper = create_mock_api_wrapper(config)
         path_finder = DirectPathFinder(config)
-        stepper = Stepper(config, api_wrapper, path_finder)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        stepper = Stepper(config, api_wrapper, path_finder, logger)
 
         assert isinstance(stepper.path_finder, DirectPathFinder)
 
@@ -81,7 +91,9 @@ class StepperTest(unittest.TestCase):
         })
         api_wrapper = create_mock_api_wrapper(config)
         path_finder = DirectPathFinder(config)
-        stepper = Stepper(config, api_wrapper, path_finder)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        stepper = Stepper(config, api_wrapper, path_finder, logger)
 
         stepper.start(51.5044524, -0.0752479, 10)
 
@@ -107,7 +119,9 @@ class StepperTest(unittest.TestCase):
         })
         api_wrapper = create_mock_api_wrapper(config)
         path_finder = DirectPathFinder(config)
-        stepper = Stepper(config, api_wrapper, path_finder)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        stepper = Stepper(config, api_wrapper, path_finder, logger)
         stepper.start(51.5044524, -0.0752479, 10)
 
         # pre-calculated distance is 205.5 meters
@@ -126,7 +140,9 @@ class StepperTest(unittest.TestCase):
         })
         api_wrapper = create_mock_api_wrapper(config)
         path_finder = DirectPathFinder(config)
-        stepper = Stepper(config, api_wrapper, path_finder)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        stepper = Stepper(config, api_wrapper, path_finder, logger)
 
         stepper.start(51.5043945, -0.0760622, 10)
 
@@ -150,7 +166,9 @@ class StepperTest(unittest.TestCase):
         })
         api_wrapper = create_mock_api_wrapper(config)
         path_finder = DirectPathFinder(config)
-        stepper = Stepper(config, api_wrapper, path_finder)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        stepper = Stepper(config, api_wrapper, path_finder, logger)
         stepper.start(51.50451, -0.07607, 10)
 
         # pre-calculated distance is 17.8 meters
@@ -175,7 +193,9 @@ class StepperTest(unittest.TestCase):
         })
         api_wrapper = create_mock_api_wrapper(config)
         path_finder = DirectPathFinder(config)
-        stepper = Stepper(config, api_wrapper, path_finder)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        stepper = Stepper(config, api_wrapper, path_finder, logger)
         stepper.start(51.50451, -0.07607, 10)
 
         destination = Destination(51.506000, -0.075049, 11, name="Test Destination", exact_location=False)
@@ -233,7 +253,9 @@ class StepperTest(unittest.TestCase):
         ]
         destination.set_steps(steps)
 
-        stepper = Stepper(config, api_wrapper, path_finder)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        stepper = Stepper(config, api_wrapper, path_finder, logger)
         stepper.start(51.50451, -0.07607, 10)
 
         pgo = api_wrapper.get_api()

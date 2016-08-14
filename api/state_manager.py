@@ -2,7 +2,6 @@
 from __future__ import print_function
 
 from api.evolution_result import EvolutionResult
-from pokemongo_bot import logger
 from .player import Player
 from .inventory_parser import InventoryParser
 from .worldmap import WorldMap, Gym, PokeStop
@@ -226,7 +225,6 @@ class StateManager(object):
             self._update_state({"player": current_player})
 
             if len(response.get("pokemon_id", [])) > 0:
-                logger.log("[Egg] Hatched an egg!", "green")
                 self.mark_returned_stale("GET_INVENTORY")
 
     def _parse_use_incubator(self, key, response):

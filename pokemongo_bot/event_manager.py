@@ -4,6 +4,8 @@ import time
 
 from colorama import Fore, Style
 
+from app import kernel
+
 
 class Event(object):
 
@@ -61,6 +63,8 @@ class Event(object):
                 else:
                     listener_args = {}
                     for key in argspec.args:
+                        if key == 'self':
+                            continue
                         listener_args[key] = kwargs.get(key)
                     return_dict = listener(**listener_args)
 
@@ -92,6 +96,7 @@ class Event(object):
         self.log(" -> ".join(output) + "\n", color="yellow")
 
 
+@kernel.container.register('event_manager')
 class EventManager(object):
     def __init__(self):
         self.events = {}
@@ -101,19 +106,6 @@ class EventManager(object):
             self.events[name] = Event(name)
         priority = kwargs.get("priority", 0)
         self.events[name].add_listener(listener, priority)
-
-    # Decorator for event handlers.
-    # Higher priority events run before lower priority ones.
-    # pylint: disable=invalid-name
-    def on(self, *trigger_list, **kwargs):
-        priority = kwargs.get("priority", 0)
-
-        def register_handler(function):
-            for trigger in trigger_list:
-                self.add_listener(trigger, function, priority=priority)
-            return function
-
-        return register_handler
 
     # Fire an event and call all event handlers.
     def fire(self, event_name, *args, **kwargs):
@@ -141,10 +133,3 @@ class EventManager(object):
     def print_all_event_pipelines(self):
         for event_name in self.events:
             self.events[event_name].print_event_pipeline()
-
-
-# This will only be loaded once
-# To use, add the following code to plugins:
-# from event_manager import manager
-# pylint: disable=invalid-name
-manager = EventManager()

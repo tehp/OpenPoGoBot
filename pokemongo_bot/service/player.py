@@ -1,13 +1,13 @@
-from app import service_container
+from app import kernel
 from pokemongo_bot.item_list import Item
-from pokemongo_bot import logger
 from pokemongo_bot.human_behaviour import sleep
 
 
-@service_container.register('player_service', ['@api_wrapper'])
+@kernel.container.register('player_service', ['@api_wrapper', '@logger'])
 class Player(object):
-    def __init__(self, api_wrapper):
+    def __init__(self, api_wrapper, logger):
         self._api_wrapper = api_wrapper
+        self._logger = logger
         self._logged_in = False
 
         self._eggs = None
@@ -32,7 +32,7 @@ class Player(object):
         sleep(2)
 
         if response_dict is None:
-            logger.log('Failed to retrieve player and inventory stats', color='red', prefix='#')
+            self._log('Failed to retrieve player and inventory stats', color='red')
             return False
 
         self._player = response_dict['player']
@@ -93,22 +93,21 @@ class Player(object):
 
     def print_stats(self):
         if self.update() is True:
-            logger.log('', prefix='#')
-            logger.log('Username: {}'.format(self._player.username), prefix='#')
-            logger.log('Account creation: {}'.format(self._player.get_creation_date()), prefix='#')
-            logger.log('Bag storage: {}/{}'.format(self._inventory['count'], self._player.max_item_storage), prefix='#')
-            logger.log('Pokemon storage: {}/{}'.format(len(self._pokemon) + len(self._eggs), self._player.max_pokemon_storage), prefix='#')
-            logger.log('Stardust: {:,}'.format(self._player.stardust), prefix='#')
-            logger.log('Pokecoins: {}'.format(self._player.pokecoin), prefix='#')
-            logger.log('Poke Balls: {}'.format(self._pokeballs[1]), prefix='#')
-            logger.log('Great Balls: {}'.format(self._pokeballs[2]), prefix='#')
-            logger.log('Ultra Balls: {}'.format(self._pokeballs[3]), prefix='#')
-            logger.log('-- Level: {}'.format(self._player.level), prefix='#')
-            logger.log('-- Experience: {:,}'.format(self._player.experience), prefix='#')
-            logger.log(
-                '-- Experience until next level: {:,}'.format(self._player.next_level_xp - self._player.experience), prefix='#')
-            logger.log('-- Pokemon captured: {:,}'.format(self._player.pokemons_captured), prefix='#')
-            logger.log('-- Pokestops visited: {:,}'.format(self._player.poke_stop_visits), prefix='#')
+            self._log('')
+            self._log('Username: {}'.format(self._player.username))
+            self._log('Account creation: {}'.format(self._player.get_creation_date()))
+            self._log('Bag storage: {}/{}'.format(self._inventory['count'], self._player.max_item_storage))
+            self._log('Pokemon storage: {}/{}'.format(len(self._pokemon) + len(self._eggs), self._player.max_pokemon_storage))
+            self._log('Stardust: {:,}'.format(self._player.stardust))
+            self._log('Pokecoins: {}'.format(self._player.pokecoin))
+            self._log('Poke Balls: {}'.format(self._pokeballs[1]))
+            self._log('Great Balls: {}'.format(self._pokeballs[2]))
+            self._log('Ultra Balls: {}'.format(self._pokeballs[3]))
+            self._log('-- Level: {}'.format(self._player.level))
+            self._log('-- Experience: {:,}'.format(self._player.experience))
+            self._log('-- Experience until next level: {:,}'.format(self._player.next_level_xp - self._player.experience))
+            self._log('-- Pokemon captured: {:,}'.format(self._player.pokemons_captured))
+            self._log('-- Pokestops visited: {:,}'.format(self._player.poke_stop_visits))
 
     def heartbeat(self):
         self._api_wrapper.get_hatched_eggs()
@@ -116,8 +115,18 @@ class Player(object):
 
         self.update()
 
+        if len(self._player.hatched_eggs):
+            self._player.hatched_eggs.pop(0)
+            self._log("[Egg] Hatched an egg!", "green")
+
     def get_hatched_eggs(self):
         self._api_wrapper.get_hatched_eggs().call()
+        if len(self._player.hatched_eggs):
+            self._player.hatched_eggs.pop(0)
+            self._log("[Egg] Hatched an egg!", "green")
 
     def check_awarded_badges(self):
         self._api_wrapper.check_awarded_badges().call()
+
+    def _log(self, text, color='black'):
+        self._logger.log(text, color=color, prefix='#')

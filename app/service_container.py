@@ -1,13 +1,25 @@
+from app.exceptions import ServiceNotFoundException, ContainerAlreadyBootedException
+
+
 class ServiceContainer(object):
     def __init__(self):
         self._services_definitions = {}
+        self._services_tags = {}
         self._services = {}
         self._parameters = {}
+        self._booted = False
+        self._compiler_passes = []
 
-    def register(self, service_id, arguments=None, keywordsargs=None):
+    def register(self, service_id, arguments=None, keywordsargs=None, tags=None):
+        if tags is None:
+            tags = []
 
         def register_handler(function):
             self._services_definitions[service_id] = (function, arguments, keywordsargs)
+            for tag in tags:
+                if tag not in self._services_tags:
+                    self._services_tags[tag] = []
+                self._services_tags[tag].append(service_id)
             return function
 
         return register_handler
@@ -28,7 +40,7 @@ class ServiceContainer(object):
                     else:
                         args.append(param)
                 else:
-                    if service_arg[0] == '@' and self.has(service_arg[1:]):
+                    if service_arg[0] == '@':
                         args.append(self.get(service_arg[1:]))
                     else:
                         args.append(service_arg)
@@ -37,21 +49,39 @@ class ServiceContainer(object):
         if service_kwargs is not None:
             for service_kwarg_param in service_kwargs:
                 service_kwarg = service_kwargs[service_kwarg_param]
-                if self.has(service_kwarg):
-                    kwargs[service_kwarg_param] = self.get(service_kwarg)
+                if service_kwarg[0] == '%' and service_kwarg[-1:] == '%':
+                    param = self.get_parameter(service_kwarg[1:-1])
+                    if self.has(param):
+                        kwargs[service_kwarg_param] = self.get(param)
+                    else:
+                        kwargs[service_kwarg_param] = param
                 else:
-                    kwargs[service_kwarg_param] = service_kwarg
+                    if service_kwarg[0] == '@':
+                        kwargs[service_kwarg_param] = self.get(service_kwarg[1:])
+                    else:
+                        kwargs[service_kwarg_param] = service_kwarg
 
         return service_class(*args, **kwargs)
 
     def get(self, service_id):
         if not self.has(service_id):
-            raise Exception('Service "{}" was not registered.'.format(service_id))
+            raise ServiceNotFoundException('Service "{}" was not registered.'.format(service_id))
 
         if service_id not in self._services:
             self._services[service_id] = self._make_service(service_id)
 
         return self._services[service_id]
+
+    def get_by_tag(self, tag):
+        services = []
+
+        if tag not in self._services_tags:
+            return services
+
+        for service_id in self._services_tags[tag]:
+            services.append(self.get(service_id))
+
+        return services
 
     def has(self, service_id):
         return service_id in self._services_definitions or service_id in self._services
@@ -61,3 +91,22 @@ class ServiceContainer(object):
 
     def set_parameter(self, parameter, value):
         self._parameters[parameter] = value
+
+    def register_compiler_pass(self):
+        if self._booted:
+            raise ContainerAlreadyBootedException()
+
+        def compiler_pass_handler(function):
+            self._compiler_passes.append(function)
+            return function
+
+        return compiler_pass_handler
+
+    def boot(self):
+        if self._booted:
+            raise ContainerAlreadyBootedException()
+
+        for compiler_pass in self._compiler_passes:
+            compiler_pass(self)
+
+        self._booted = True

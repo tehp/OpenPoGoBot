@@ -1,3 +1,4 @@
+from app.kernel import Kernel
 from app.service_container import ServiceContainer
 
-service_container = ServiceContainer()
+kernel = Kernel()

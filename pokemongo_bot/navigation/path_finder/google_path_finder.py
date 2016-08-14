@@ -3,21 +3,23 @@ import googlemaps
 
 from pokemongo_bot.navigation.path_finder.path_finder import PathFinder
 
-from app import service_container
+from app import kernel
 
 
-@service_container.register('google_path_finder', ['@config'])
+@kernel.container.register('google_path_finder', ['@config', '@google_maps'])
 class GooglePathFinder(PathFinder):
+
+    def __init__(self, config, google_maps):
+        super(GooglePathFinder, self).__init__(config)
+
+        self.google_maps = google_maps
 
     def path(self, from_lat, form_lng, to_lat, to_lng):
         # type: (float, float, float, float) -> List[(float, float)]
-
-        gmaps = googlemaps.Client(key=self.config["mapping"]["gmapkey"])
-
         now = datetime.now()
         start = "{},{}".format(from_lat, form_lng)
         end = "{},{}".format(to_lat, to_lng)
-        directions_result = gmaps.directions(start, end, mode="walking", departure_time=now)
+        directions_result = self.google_maps.directions(start, end, mode="walking", departure_time=now)
 
         if len(directions_result) and len(directions_result[0]["legs"]):
             steps = []

@@ -2,21 +2,21 @@
 
 from math import ceil
 
-from app import service_container
+from app import kernel
 from pokemongo_bot.human_behaviour import sleep, random_lat_long_delta
 from pokemongo_bot.utils import distance, format_time, format_dist
-import pokemongo_bot.logger as logger
 
 
-@service_container.register('stepper', ['@config', '@api_wrapper', '%path_finder%'])
+@kernel.container.register('stepper', ['@config', '@api_wrapper', '%path_finder%', '@logger'])
 class Stepper(object):
     AVERAGE_STRIDE_LENGTH_IN_METRES = 0.60
 
-    def __init__(self, config, api_wrapper, path_finder):
-        # type: (Namespace, PoGpApi, PathFinder) -> None
+    def __init__(self, config, api_wrapper, path_finder, logger):
+        # type: (Namespace, PoGpApi, PathFinder, Logger) -> None
         self.config = config
         self.api_wrapper = api_wrapper
         self.path_finder = path_finder
+        self.logger = logger
 
         self.origin_lat = None
         self.origin_lng = None
@@ -46,10 +46,10 @@ class Stepper(object):
         dist = distance(self.current_lat, self.current_lng, destination.target_lat, destination.target_lng)
 
         if destination.name:
-            logger.log("Walking towards {} ({} away, eta {})".format(destination.name,
-                                                                     format_dist(dist, self.config["mapping"]["distance_unit"]),
-                                                                     format_time(destination.get_step_count())),
-                       prefix="Navigation")
+            self.logger.log("Walking towards {} ({} away, eta {})".format(destination.name,
+                                                                          format_dist(dist, self.config["mapping"]["distance_unit"]),
+                                                                          format_time(destination.get_step_count())),
+                            prefix="Navigation")
 
         for step in destination.step():
             if distance(self.current_lat, self.current_lng, destination.target_lat, destination.target_lng) < 30:
@@ -58,7 +58,7 @@ class Stepper(object):
             yield step
 
         if destination.name:
-            logger.log("Arrived at {} ({} away)".format(destination.name, format_dist(dist, self.config["mapping"]["distance_unit"])), prefix="Navigation")
+            self.logger.log("Arrived at {} ({} away)".format(destination.name, format_dist(dist, self.config["mapping"]["distance_unit"])), prefix="Navigation")
 
     def get_route_between(self, from_lat, from_lng, to_lat, to_lng, alt):
         # type: (float, float, float) -> List[(float, float, float)]

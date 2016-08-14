@@ -6,18 +6,18 @@ from six import integer_types  # type: ignore
 from pgoapi.exceptions import ServerSideRequestThrottlingException, ServerSideAccessForbiddenException, \
     UnexpectedResponseException  # type: ignore
 
-from app import service_container
+from app import kernel
 from .state_manager import StateManager
 from .exceptions import AccountBannedException
 
 
-@service_container.register('api_wrapper', ['@pgoapi', '@config'])
+@kernel.container.register('api_wrapper', ['@pgoapi'], {'provider': '%pogoapi.provider%', 'username': '%pogoapi.username%', 'password': '%pogoapi.password%', 'shared_lib': '%pogoapi.shared_lib%'})
 class PoGoApi(object):
-    def __init__(self, api, config):
+    def __init__(self, api, provider="google", username="", password="", shared_lib="encrypt.dll"):
         self._api = api
-        self.provider = config.auth_service
-        self.username = config.username
-        self.password = config.password
+        self.provider = provider
+        self.username = username
+        self.password = password
 
         self.current_position = (0, 0, 0)
 
@@ -26,7 +26,7 @@ class PoGoApi(object):
         self._pending_calls = {}
         self._pending_calls_keys = []
 
-        self._api.activate_signature(config.load_library)
+        self._api.activate_signature(shared_lib)
 
     def get_api(self):
         return self._api

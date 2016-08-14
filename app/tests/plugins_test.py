@@ -2,7 +2,7 @@ import unittest
 import os
 import pytest
 
-from pokemongo_bot.plugins import PluginManager
+from app.plugin_manager import PluginManager
 
 
 class PluginsTest(unittest.TestCase):

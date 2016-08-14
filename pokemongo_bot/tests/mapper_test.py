@@ -4,15 +4,10 @@ import unittest
 
 from googlemaps import Client
 from googlemaps.exceptions import ApiError
-from mock import Mock, call
+from mock import Mock
 
-from api.worldmap import Cell
 from pokemongo_bot.mapper import Mapper
-from pokemongo_bot.stepper import Stepper
-from pokemongo_bot.navigation.destination import Destination
-from pokemongo_bot.navigation.path_finder import DirectPathFinder
-from pokemongo_bot.navigation.path_finder import GooglePathFinder
-from pokemongo_bot.tests import create_mock_bot, create_test_config, create_mock_api_wrapper
+from pokemongo_bot.tests import create_test_config, create_mock_api_wrapper
 
 
 class MapperTest(unittest.TestCase):
@@ -23,7 +18,9 @@ class MapperTest(unittest.TestCase):
         })
         api_wrapper = create_mock_api_wrapper(config)
         google_maps = Mock(spec=Client)
-        mapper = Mapper(config, api_wrapper, google_maps)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        mapper = Mapper(config, api_wrapper, google_maps, logger)
 
         assert mapper.config == config
         assert mapper.api_wrapper == api_wrapper
@@ -35,7 +32,9 @@ class MapperTest(unittest.TestCase):
         })
         api_wrapper = create_mock_api_wrapper(config)
         google_maps = Mock(spec=Client)
-        mapper = Mapper(config, api_wrapper, google_maps)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        mapper = Mapper(config, api_wrapper, google_maps, logger)
 
         api_wrapper.set_position(51.5044524, -0.0752479, 10)
 
@@ -73,7 +72,9 @@ class MapperTest(unittest.TestCase):
         })
         api_wrapper = create_mock_api_wrapper(config)
         google_maps = Mock(spec=Client)
-        mapper = Mapper(config, api_wrapper, google_maps)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        mapper = Mapper(config, api_wrapper, google_maps, logger)
 
         api_wrapper.set_position(51.5044524, -0.0752479, 10)
 
@@ -95,7 +96,9 @@ class MapperTest(unittest.TestCase):
         api_wrapper = create_mock_api_wrapper(config)
         google_maps = Mock(spec=Client)
         google_maps.elevation = Mock(return_value=[{'elevation': 10.1}])
-        mapper = Mapper(config, api_wrapper, google_maps)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        mapper = Mapper(config, api_wrapper, google_maps, logger)
 
         lat, lng, alt = mapper.find_location('51.5044524, -0.0752479')
 
@@ -114,7 +117,9 @@ class MapperTest(unittest.TestCase):
         location.longitude = -0.0752479
         location.altitude = 10.1
         google_maps.geocode = Mock(return_value=location)
-        mapper = Mapper(config, api_wrapper, google_maps)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        mapper = Mapper(config, api_wrapper, google_maps, logger)
 
         lat, lng, alt = mapper.find_location('51.5044524, -0.0752479')
 
@@ -133,7 +138,9 @@ class MapperTest(unittest.TestCase):
         location.longitude = -0.0752479
         location.altitude = 10.1
         google_maps.geocode = Mock(return_value=location)
-        mapper = Mapper(config, api_wrapper, google_maps)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        mapper = Mapper(config, api_wrapper, google_maps, logger)
 
         lat, lng, alt = mapper.find_location('51.5044524, -0.0752479')
 

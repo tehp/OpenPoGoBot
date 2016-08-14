@@ -33,21 +33,22 @@ class PluginManager(object):
             output = color_hex[color] + output + Style.RESET_ALL
         print(output)
 
-    def __init__(self, plugin_folder, main_module='__init__'):
-        self.plugin_folder = plugin_folder
+    def __init__(self, plugin_folders, main_module='__init__'):
+        self.plugin_folders = plugin_folders
         self.main_module = main_module
         self.loaded_plugins = collections.OrderedDict()
 
     def get_available_plugins(self):
         plugins = {}
-        for possible in os.listdir(self.plugin_folder):
-            location = os.path.join(self.plugin_folder, possible)
-            if os.path.isdir(location) and self.main_module + '.py' in os.listdir(location):
-                info = imp.find_module(self.main_module, [location])
-                plugins[possible] = {
-                    'name': possible,
-                    'info': info
-                }
+        for folder in self.plugin_folders:
+            for possible in os.listdir():
+                location = os.path.join(folder, possible)
+                if os.path.isdir(location) and self.main_module + '.py' in os.listdir(location):
+                    info = imp.find_module(self.main_module, [location])
+                    plugins[possible] = {
+                        'name': possible,
+                        'info': info
+                    }
         return plugins
 
     def get_loaded_plugins(self):

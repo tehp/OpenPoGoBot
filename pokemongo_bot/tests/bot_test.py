@@ -14,39 +14,29 @@ from pokemongo_bot.mapper import Mapper
 from pokemongo_bot.navigation import FortNavigator
 from pokemongo_bot.navigation.destination import Destination
 from pokemongo_bot.navigation.path_finder import DirectPathFinder
-from pokemongo_bot.plugins import PluginManager
 from pokemongo_bot.service.player import Player
 from pokemongo_bot.service.pokemon import Pokemon as PokemonService
 from pokemongo_bot.stepper import Stepper
-from pokemongo_bot.tests import create_mock_api_wrapper, create_test_config, create_test_service_container
+from pokemongo_bot.tests import create_mock_api_wrapper, create_test_config, create_test_kernel
 
 
 class BotTest(unittest.TestCase):
     @staticmethod
-    def test_service_container():
-        service_container = create_test_service_container()
-
-        assert (service_container.has('pokemongo_bot')) is True
-
-        bot = service_container.get('pokemongo_bot')
-
-        assert isinstance(bot, PokemonGoBot)
-
-    @staticmethod
     def test_init():
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+
         config_namespace = create_test_config({})
         api_wrapper = create_mock_api_wrapper(config_namespace)
-        plugin_manager = PluginManager(os.path.dirname(os.path.realpath(__file__)) + '/plugins')
-        player_service = Player(api_wrapper)
+        player_service = Player(api_wrapper, logger)
         pokemon_service = PokemonService(api_wrapper)
-        mapper = Mapper(config_namespace, api_wrapper, Mock())
+        mapper = Mapper(config_namespace, api_wrapper, Mock(), logger)
         path_finder = DirectPathFinder(config_namespace)
-        stepper = Stepper(config_namespace, api_wrapper, path_finder)
+        stepper = Stepper(config_namespace, api_wrapper, path_finder, logger)
         navigator = FortNavigator(config_namespace, api_wrapper)
         event_manager = EventManager()
 
-        bot = PokemonGoBot(config_namespace, api_wrapper, player_service, pokemon_service, plugin_manager,
-                           event_manager, mapper, stepper, navigator)
+        bot = PokemonGoBot(config_namespace, api_wrapper, player_service, pokemon_service, event_manager, mapper, stepper, navigator, logger)
 
         assert len(bot.pokemon_list) == 151
         assert len(bot.item_list) == 30
@@ -56,15 +46,13 @@ class BotTest(unittest.TestCase):
         assert bot.api_wrapper is api_wrapper
         assert bot.player_service is player_service
         assert bot.pokemon_service is pokemon_service
-        assert bot.plugin_manager is plugin_manager
         assert bot.event_manager is event_manager
         assert bot.mapper is mapper
         assert bot.stepper is stepper
         assert bot.navigator is navigator
+        assert bot.logger is logger
 
-    @patch('pokemongo_bot.event_manager.manager', new_callable=EventManager)
-    @patch('pokemongo_bot.logger.log', return_value=None)
-    def test_start_login_success_no_debug(self, log_fn, event_manager):
+    def test_start_login_success_no_debug(self):
         bot = self._create_generic_bot({
             'debug': False,
             'test': False,
@@ -83,32 +71,18 @@ class BotTest(unittest.TestCase):
 
         bot.mapper.google_maps.elevation = Mock(return_value=[{'elevation': 10.1}])
 
-        event_manager.fire_with_context = Mock()
-        bot.event_manager = event_manager
+        bot.event_manager.fire_with_context = Mock()
 
         pgo = bot.api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
         pgo.set_response('get_inventory', self._create_generic_inventory_response())
 
+        bot.player_service.print_stats = Mock(return_value=None)
+
         bot.start()
 
-        assert log_fn.call_count == 24
-        log_fn.assert_any_call('Plugins loaded: [\'test_plugin\']', color='green', prefix='Plugins')
-        log_fn.assert_any_call('Events available: [\'test\']', color='green', prefix='Events')
-
-        log_fn.assert_any_call('Username: test_account', prefix='#')
-        log_fn.assert_any_call('Bag storage: 36/350', prefix='#')
-        log_fn.assert_any_call('Pokemon storage: 2/250', prefix='#')
-        log_fn.assert_any_call('Stardust: 20,000', prefix='#')
-        log_fn.assert_any_call('Pokecoins: 10', prefix='#')
-        log_fn.assert_any_call('Poke Balls: 11', prefix='#')
-        log_fn.assert_any_call('Great Balls: 12', prefix='#')
-        log_fn.assert_any_call('Ultra Balls: 13', prefix='#')
-        log_fn.assert_any_call('-- Level: 14', prefix='#')
-        log_fn.assert_any_call('-- Experience: 15', prefix='#')
-        log_fn.assert_any_call('-- Experience until next level: 985', prefix='#')
-        log_fn.assert_any_call('-- Pokemon captured: 17', prefix='#')
-        log_fn.assert_any_call('-- Pokestops visited: 18', prefix='#')
+        # Assert print stats is called
+        bot.player_service.print_stats.assert_called_once()
 
         bot.event_manager.fire_with_context.assert_has_calls([
             call('bot_initialized', bot),
@@ -121,16 +95,10 @@ class BotTest(unittest.TestCase):
         assert logging.getLogger('pgoapi').level == logging.ERROR
         assert logging.getLogger('rpc_api').level == logging.ERROR
 
-        # Check Plugins
-        assert len(bot.plugin_manager.get_loaded_plugins()) == 1
-        assert 'test_plugin' in bot.plugin_manager.get_loaded_plugins()
-
         # Check events
         assert bot.event_manager.fire_with_context.call_count == 3
 
-    @patch('pokemongo_bot.event_manager.manager', new_callable=EventManager)
-    @patch('pokemongo_bot.logger.log', return_value=None)
-    def test_start_login_success_with_debug(self, log_fn, event_manager):
+    def test_start_login_success_with_debug(self):
         bot = self._create_generic_bot({
             'debug': True,
             'test': False,
@@ -149,8 +117,7 @@ class BotTest(unittest.TestCase):
 
         bot.mapper.google_maps.elevation = Mock(return_value=[{'elevation': 10.1}])
 
-        event_manager.fire_with_context = Mock()
-        bot.event_manager = event_manager
+        bot.event_manager.fire_with_context = Mock()
 
         pgo = bot.api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -158,23 +125,7 @@ class BotTest(unittest.TestCase):
 
         bot.start()
 
-        assert log_fn.call_count == 25
-        log_fn.assert_any_call('Plugins loaded: [\'test_plugin\']', color='green', prefix='Plugins')
-        log_fn.assert_any_call('Events available: [\'test\']', color='green', prefix='Events')
-
-        log_fn.assert_any_call('Username: test_account', prefix='#')
-        log_fn.assert_any_call('Bag storage: 36/350', prefix='#')
-        log_fn.assert_any_call('Pokemon storage: 2/250', prefix='#')
-        log_fn.assert_any_call('Stardust: 20,000', prefix='#')
-        log_fn.assert_any_call('Pokecoins: 10', prefix='#')
-        log_fn.assert_any_call('Poke Balls: 11', prefix='#')
-        log_fn.assert_any_call('Great Balls: 12', prefix='#')
-        log_fn.assert_any_call('Ultra Balls: 13', prefix='#')
-        log_fn.assert_any_call('-- Level: 14', prefix='#')
-        log_fn.assert_any_call('-- Experience: 15', prefix='#')
-        log_fn.assert_any_call('-- Experience until next level: 985', prefix='#')
-        log_fn.assert_any_call('-- Pokemon captured: 17', prefix='#')
-        log_fn.assert_any_call('-- Pokestops visited: 18', prefix='#')
+        # TODO: assert print stats called
 
         bot.event_manager.fire_with_context.assert_has_calls([
             call('bot_initialized', bot),
@@ -187,15 +138,10 @@ class BotTest(unittest.TestCase):
         assert logging.getLogger('pgoapi').level == logging.DEBUG
         assert logging.getLogger('rpc_api').level == logging.DEBUG
 
-        # Check Plugins
-        self._assert_plugins_loaded(bot.plugin_manager, ['test_plugin'])
-
         # Check events
         assert bot.event_manager.fire_with_context.call_count == 3
 
-    @patch('pokemongo_bot.event_manager.manager', new_callable=EventManager)
-    @patch('pokemongo_bot.logger.log', return_value=None)
-    def test_start_login_success_location_cache_not_exists(self, log_fn, event_manager):
+    def test_start_login_success_location_cache_not_exists(self):
         bot = self._create_generic_bot({
             'debug': True,
             'test': False,
@@ -215,17 +161,14 @@ class BotTest(unittest.TestCase):
         if os.path.isfile('data/last-location-test_account.json'):
             os.unlink('data/last-location-test_account.json')
 
-        log_fn.return_value = None
+        bot.logger.log.return_value = None
 
-        event_manager.fire_with_context = Mock()
-        bot.event_manager = event_manager
+        bot.event_manager.fire_with_context = Mock()
 
         with pytest.raises(SystemExit):
             bot.start()
 
-    @patch('pokemongo_bot.event_manager.manager', new_callable=EventManager)
-    @patch('pokemongo_bot.logger.log', return_value=None)
-    def test_start_login_success_location_cache(self, log_fn, event_manager):
+    def test_start_login_success_location_cache(self):
         bot = self._create_generic_bot({
             'debug': True,
             'test': False,
@@ -248,34 +191,15 @@ class BotTest(unittest.TestCase):
         with open('data/last-location-test_account.json', 'w') as location_file:
             location_file.write(json.dumps({'lat': 51.5037053, 'lng': -0.2047603}))
 
-        log_fn.return_value = None
+        bot.logger.log.return_value = None
 
-        event_manager.fire_with_context = Mock()
-        bot.event_manager = event_manager
+        bot.event_manager.fire_with_context = Mock()
 
         pgo = bot.api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
         pgo.set_response('get_inventory', self._create_generic_inventory_response())
 
         bot.start()
-
-        assert log_fn.call_count == 24
-        log_fn.assert_any_call('Plugins loaded: [\'test_plugin\']', color='green', prefix='Plugins')
-        log_fn.assert_any_call('Events available: [\'test\']', color='green', prefix='Events')
-
-        log_fn.assert_any_call('Username: test_account', prefix='#')
-        log_fn.assert_any_call('Bag storage: 36/350', prefix='#')
-        log_fn.assert_any_call('Pokemon storage: 2/250', prefix='#')
-        log_fn.assert_any_call('Stardust: 20,000', prefix='#')
-        log_fn.assert_any_call('Pokecoins: 10', prefix='#')
-        log_fn.assert_any_call('Poke Balls: 11', prefix='#')
-        log_fn.assert_any_call('Great Balls: 12', prefix='#')
-        log_fn.assert_any_call('Ultra Balls: 13', prefix='#')
-        log_fn.assert_any_call('-- Level: 14', prefix='#')
-        log_fn.assert_any_call('-- Experience: 15', prefix='#')
-        log_fn.assert_any_call('-- Experience until next level: 985', prefix='#')
-        log_fn.assert_any_call('-- Pokemon captured: 17', prefix='#')
-        log_fn.assert_any_call('-- Pokestops visited: 18', prefix='#')
 
         bot.event_manager.fire_with_context.assert_has_calls([
             call('bot_initialized', bot),
@@ -288,17 +212,12 @@ class BotTest(unittest.TestCase):
         assert logging.getLogger('pgoapi').level == logging.DEBUG
         assert logging.getLogger('rpc_api').level == logging.DEBUG
 
-        # Check Plugins
-        self._assert_plugins_loaded(bot.plugin_manager, ['test_plugin'])
-
         # Check events
         assert bot.event_manager.fire_with_context.call_count == 3
 
         os.unlink('data/last-location-test_account.json')
 
-    @patch('pokemongo_bot.event_manager.manager', new_callable=EventManager)
-    @patch('pokemongo_bot.logger.log', return_value=None)
-    def test_start_login_failed(self, log_fn, event_manager):
+    def test_start_login_failed(self):
         bot = self._create_generic_bot({
             'debug': True,
             'test': False,
@@ -317,8 +236,7 @@ class BotTest(unittest.TestCase):
 
         bot.mapper.google_maps.elevation = Mock(return_value=[{'elevation': 10.1}])
 
-        event_manager.fire_with_context = Mock()
-        bot.event_manager = event_manager
+        bot.event_manager.fire_with_context = Mock()
 
         pgo = bot.api_wrapper.get_api()
         pgo.should_login = [False, False, True]
@@ -330,12 +248,8 @@ class BotTest(unittest.TestCase):
 
             sleep.assert_any_call(15)
 
-        assert log_fn.call_count == 28
-        log_fn.assert_any_call('Plugins loaded: [\'test_plugin\']', color='green', prefix='Plugins')
-        log_fn.assert_any_call('Events available: [\'test\']', color='green', prefix='Events')
-
-        log_fn.assert_any_call('Login Error, server busy', color='red')
-        log_fn.assert_any_call('Waiting 15 seconds before trying again...')
+        bot.logger.log.assert_any_call('Login Error, server busy', color='red')
+        bot.logger.log.assert_any_call('Waiting 15 seconds before trying again...')
 
     def test_run(self):
         bot = self._create_generic_bot({
@@ -443,22 +357,16 @@ class BotTest(unittest.TestCase):
         assert (bot.get_username()) == 'Unknown'
 
     @staticmethod
-    def _assert_plugins_loaded(plugin_manager, plugins):
-        # type: (PluginManager, List[String]) -> None
-        assert len(plugin_manager.get_loaded_plugins()) == len(plugins)
-        for plugin in plugins:
-            assert plugin in plugin_manager.get_loaded_plugins()
-
-    @staticmethod
     def _create_generic_bot(config):
+        logger = Mock()
+        logger.log = Mock()
         config_namespace = create_test_config(config)
         api_wrapper = create_mock_api_wrapper(config_namespace)
-        plugin_manager = PluginManager(os.path.dirname(os.path.realpath(__file__)) + '/plugins')
-        player_service = Player(api_wrapper)
+        player_service = Player(api_wrapper, logger)
         pokemon_service = PokemonService(api_wrapper)
-        mapper = Mapper(config_namespace, api_wrapper, Mock())
+        mapper = Mapper(config_namespace, api_wrapper, Mock(), logger)
         path_finder = DirectPathFinder(config_namespace)
-        stepper = Stepper(config_namespace, api_wrapper, path_finder)
+        stepper = Stepper(config_namespace, api_wrapper, path_finder, logger)
         navigator = FortNavigator(config_namespace, api_wrapper)
         event_manager = Mock()
 
@@ -467,11 +375,11 @@ class BotTest(unittest.TestCase):
             api_wrapper,
             player_service,
             pokemon_service,
-            plugin_manager,
             event_manager,
             mapper,
             stepper,
-            navigator
+            navigator,
+            logger
         )
 
     @staticmethod

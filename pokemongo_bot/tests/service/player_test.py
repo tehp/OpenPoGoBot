@@ -3,22 +3,19 @@ import unittest
 from mock import Mock, patch
 
 from api.player import Player as PlayerData
-from pokemongo_bot import Item
+from pokemongo_bot.item_list import Item
 from pokemongo_bot.service.player import Player
 from pokemongo_bot.tests import create_test_config, create_mock_api_wrapper
 
-def answer(x):
-    ints = x
-    while ints > 10:
-        parts = [int(i) for i in str(ints).split()]
-        ints = sum(parts)
 
 class PlayerTest(unittest.TestCase):
     @staticmethod
     def test_login_success():
         config = create_test_config({})
         api_wrapper = create_mock_api_wrapper(config)
-        player_service = Player(api_wrapper)
+        logger = Mock()
+        logger.log = Mock()
+        player_service = Player(api_wrapper, logger)
 
         api_wrapper.get_api().login = Mock(return_value=True)
 
@@ -28,7 +25,9 @@ class PlayerTest(unittest.TestCase):
     def test_login_failure():
         config = create_test_config({})
         api_wrapper = create_mock_api_wrapper(config)
-        player_service = Player(api_wrapper)
+        logger = Mock()
+        logger.log = Mock()
+        player_service = Player(api_wrapper, logger)
 
         api_wrapper.get_api().login = Mock(return_value=False)
 
@@ -37,7 +36,9 @@ class PlayerTest(unittest.TestCase):
     def test_get_player(self):
         config = create_test_config({})
         api_wrapper = create_mock_api_wrapper(config)
-        player_service = Player(api_wrapper)
+        logger = Mock()
+        logger.log = Mock()
+        player_service = Player(api_wrapper, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -52,7 +53,9 @@ class PlayerTest(unittest.TestCase):
     def test_get_inventory(self):
         config = create_test_config({})
         api_wrapper = create_mock_api_wrapper(config)
-        player_service = Player(api_wrapper)
+        logger = Mock()
+        logger.log = Mock()
+        player_service = Player(api_wrapper, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -66,7 +69,9 @@ class PlayerTest(unittest.TestCase):
     def test_get_pokemon(self):
         config = create_test_config({})
         api_wrapper = create_mock_api_wrapper(config)
-        player_service = Player(api_wrapper)
+        logger = Mock()
+        logger.log = Mock()
+        player_service = Player(api_wrapper, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -80,7 +85,9 @@ class PlayerTest(unittest.TestCase):
     def test_get_candies(self):
         config = create_test_config({})
         api_wrapper = create_mock_api_wrapper(config)
-        player_service = Player(api_wrapper)
+        logger = Mock()
+        logger.log = Mock()
+        player_service = Player(api_wrapper, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -91,12 +98,13 @@ class PlayerTest(unittest.TestCase):
         assert len(candies) == 1
         assert candies[1] == 100
         assert pgo.call_stack_size() == 0
-        assert pgo.call_stack_size() == 0
 
     def test_get_candy(self):
         config = create_test_config({})
         api_wrapper = create_mock_api_wrapper(config)
-        player_service = Player(api_wrapper)
+        logger = Mock()
+        logger.log = Mock()
+        player_service = Player(api_wrapper, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -110,7 +118,9 @@ class PlayerTest(unittest.TestCase):
     def test_get_candy_key_error(self):
         config = create_test_config({})
         api_wrapper = create_mock_api_wrapper(config)
-        player_service = Player(api_wrapper)
+        logger = Mock()
+        logger.log = Mock()
+        player_service = Player(api_wrapper, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -124,7 +134,9 @@ class PlayerTest(unittest.TestCase):
     def test_add_candy(self):
         config = create_test_config({})
         api_wrapper = create_mock_api_wrapper(config)
-        player_service = Player(api_wrapper)
+        logger = Mock()
+        logger.log = Mock()
+        player_service = Player(api_wrapper, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -142,7 +154,9 @@ class PlayerTest(unittest.TestCase):
     def test_get_pokeballs(self):
         config = create_test_config({})
         api_wrapper = create_mock_api_wrapper(config)
-        player_service = Player(api_wrapper)
+        logger = Mock()
+        logger.log = Mock()
+        player_service = Player(api_wrapper, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -163,56 +177,59 @@ class PlayerTest(unittest.TestCase):
 
         assert pgo.call_stack_size() == 0
 
-    @patch('pokemongo_bot.logger.log', return_value=None)
-    def test_print_stats(self, log_fn):
+    def test_print_stats(self):
         config = create_test_config({})
         api_wrapper = create_mock_api_wrapper(config)
-        player_service = Player(api_wrapper)
+        logger = Mock()
+        logger.log = Mock()
+        player_service = Player(api_wrapper, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
         pgo.set_response('get_inventory', self._create_generic_inventory_response())
 
-        log_fn.return_value = None
+        logger.log.return_value = None
 
         player_service.print_stats()
 
-        assert log_fn.call_count == 15
-        log_fn.assert_any_call('Username: test_account', prefix='#')
-        log_fn.assert_any_call('Bag storage: 36/350', prefix='#')
-        log_fn.assert_any_call('Pokemon storage: 2/250', prefix='#')
-        log_fn.assert_any_call('Stardust: 20,000', prefix='#')
-        log_fn.assert_any_call('Pokecoins: 10', prefix='#')
-        log_fn.assert_any_call('Poke Balls: 11', prefix='#')
-        log_fn.assert_any_call('Great Balls: 12', prefix='#')
-        log_fn.assert_any_call('Ultra Balls: 13', prefix='#')
-        log_fn.assert_any_call('-- Level: 14', prefix='#')
-        log_fn.assert_any_call('-- Experience: 15', prefix='#')
-        log_fn.assert_any_call('-- Experience until next level: 985', prefix='#')
-        log_fn.assert_any_call('-- Pokemon captured: 17', prefix='#')
-        log_fn.assert_any_call('-- Pokestops visited: 18', prefix='#')
+        assert logger.log.call_count == 15
+        self._assert_log_call(logger.log, 'Username: test_account')
+        self._assert_log_call(logger.log, 'Bag storage: 36/350')
+        self._assert_log_call(logger.log, 'Pokemon storage: 2/250')
+        self._assert_log_call(logger.log, 'Stardust: 20,000')
+        self._assert_log_call(logger.log, 'Pokecoins: 10')
+        self._assert_log_call(logger.log, 'Poke Balls: 11')
+        self._assert_log_call(logger.log, 'Great Balls: 12')
+        self._assert_log_call(logger.log, 'Ultra Balls: 13')
+        self._assert_log_call(logger.log, '-- Level: 14')
+        self._assert_log_call(logger.log, '-- Experience: 15')
+        self._assert_log_call(logger.log, '-- Experience until next level: 985')
+        self._assert_log_call(logger.log, '-- Pokemon captured: 17')
+        self._assert_log_call(logger.log, '-- Pokestops visited: 18')
 
         assert pgo.call_stack_size() == 0
 
-    @staticmethod
-    @patch('pokemongo_bot.logger.log', return_value=None)
-    def test_print_stats_no_update(log_fn):
+    def test_print_stats_no_update(self):
         config = create_test_config({})
         api_wrapper = create_mock_api_wrapper(config)
-        player_service = Player(api_wrapper)
+        logger = Mock()
+        logger.log = Mock()
+        player_service = Player(api_wrapper, logger)
 
         api_wrapper.call = Mock(return_value=None)
 
-        log_fn.return_value = None
+        logger.log.return_value = None
 
         player_service.print_stats()
 
-        log_fn.assert_called_once_with('Failed to retrieve player and inventory stats', color='red', prefix='#')
+        self._assert_log_call(logger.log, 'Failed to retrieve player and inventory stats', color='red')
 
     def test_heartbeat(self):
         config = create_test_config({})
         api_wrapper = create_mock_api_wrapper(config)
-        player_service = Player(api_wrapper)
+        logger = Mock()
+        logger.log = Mock()
+        player_service = Player(api_wrapper, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -221,7 +238,6 @@ class PlayerTest(unittest.TestCase):
         player_service.heartbeat()
 
         assert pgo.call_stack_size() == 0
-
 
     @staticmethod
     def _create_generic_player_response():
@@ -321,3 +337,7 @@ class PlayerTest(unittest.TestCase):
                 ],
             }
         }
+
+    @staticmethod
+    def _assert_log_call(log_fn, text, color='black'):
+        log_fn.assert_any_call(text, prefix='#', color=color)

@@ -1,18 +1,17 @@
-from app import service_container
-from pokemongo_bot import logger
+from app import kernel
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.navigation.destination import Destination
 from pokemongo_bot.navigation.navigator import Navigator
-from pokemongo_bot.event_manager import manager
 
 
-@service_container.register('camper_navigator', ['@config', '@api_wrapper'])
+@kernel.container.register('camper_navigator', ['@config', '@api_wrapper', '@logger'])
 class CamperNavigator(Navigator):
-    def __init__(self, config, api_wrapper):
-        # type: (Namespace, PoGoApi) -> None
+    def __init__(self, config, api_wrapper, logger):
+        # type: (Namespace, PoGoApi, Logger) -> None
         super(CamperNavigator, self).__init__(config, api_wrapper)
 
         self.camping_sites = []
+        self.logger = logger
 
         if config.navigator_campsite is not None:
             lat, lng = config.navigator_campsite.split(',')
@@ -34,9 +33,8 @@ class CamperNavigator(Navigator):
 
             sleep(5)
         except IndexError:
-            logger.log("[#] No campsite location found", color="red")
+            self.logger.log("No campsite location found", color="red", prefix="Camper")
 
-    @manager.on("set_campsite", priority=0)
     def set_campsite(self, longitude, latitude):
         # type: (float, float) -> None
         self.camping_sites.append((longitude, latitude))

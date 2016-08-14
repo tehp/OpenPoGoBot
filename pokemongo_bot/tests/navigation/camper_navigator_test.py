@@ -1,5 +1,7 @@
 import unittest
 
+from mock import Mock
+
 from api.worldmap import Cell
 from pokemongo_bot import CamperNavigator
 from pokemongo_bot.navigation.destination import Destination
@@ -15,7 +17,9 @@ class CamperNavigatorTest(unittest.TestCase):
         })
         api_wrapper = create_mock_api_wrapper(config)
 
-        navigator = CamperNavigator(config, api_wrapper)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        navigator = CamperNavigator(config, api_wrapper, logger)
         map_cells = self._create_map_cells()
 
         destinations = list()
@@ -39,7 +43,9 @@ class CamperNavigatorTest(unittest.TestCase):
         })
         api_wrapper = create_mock_api_wrapper(config)
 
-        navigator = CamperNavigator(config, api_wrapper)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        navigator = CamperNavigator(config, api_wrapper, logger)
         map_cells = self._create_map_cells()
 
         destinations = list()
@@ -62,7 +68,9 @@ class CamperNavigatorTest(unittest.TestCase):
         })
         api_wrapper = create_mock_api_wrapper(config)
 
-        navigator = CamperNavigator(config, api_wrapper)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        navigator = CamperNavigator(config, api_wrapper, logger)
         navigator.pointer = 100
         map_cells = self._create_map_cells()
 
@@ -80,7 +88,9 @@ class CamperNavigatorTest(unittest.TestCase):
         })
         api_wrapper = create_mock_api_wrapper(config)
 
-        navigator = CamperNavigator(config, api_wrapper)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        navigator = CamperNavigator(config, api_wrapper, logger)
         map_cells = self._create_map_cells()
 
         navigator.set_campsite(51.5060435, -0.073983)

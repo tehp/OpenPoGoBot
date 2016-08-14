@@ -44,6 +44,9 @@ from pokemongo_bot.event_manager import manager
 from pokemongo_bot.plugins import PluginManager
 
 # Disable HTTPS certificate verification
+from app import kernel
+import pokemongo_bot
+
 if sys.version_info >= (2, 7, 9):
     # pylint: disable=protected-access
     ssl._create_default_https_context = ssl._create_unverified_context  # type: ignore
@@ -78,36 +81,20 @@ def main():
     if not config:
         return
 
-    logger.log('[x] PokemonGO Bot v1.0', 'green')
-    logger.log('[x] Configuration initialized', 'yellow')
+    kernel.import_config(config)
+    for plugin in config.exclude_plugins:
+        kernel.disable_plugin(plugin)
+    kernel.boot()
 
     try:
-        service_container.register_singleton('config', config)
-        service_container.set_parameter('config', config)
-        service_container.register_singleton('pgoapi', PGoApi())
-        service_container.register_singleton('plugin_manager', PluginManager('./plugins'))
-        service_container.register_singleton('event_manager', manager)
-        service_container.register_singleton('google_maps', googlemaps.Client(key=config.gmapkey))
-
-        if config.path_finder in ['google', 'direct']:
-            service_container.set_parameter('path_finder', config.path_finder + '_path_finder')
-        else:
-            raise Exception('You must provide a valid path finder')
-
-        if config.navigator in ['fort', 'waypoint', 'camper']:
-            service_container.set_parameter('navigator', config.navigator + '_navigator')
-        else:
-            raise Exception('You must provide a valid navigator')
-
-        bot = service_container.get('pokemongo_bot')
+        bot = kernel.container.get('pokemongo_bot')
         bot.start()
-
-        logger.log('[x] Starting PokemonGo Bot....', 'green')
 
         while True:
             bot.run()
 
     except KeyboardInterrupt:
+        logger = kernel.container.get('logger')
         logger.log('[x] Exiting PokemonGo Bot', 'red')
 
 

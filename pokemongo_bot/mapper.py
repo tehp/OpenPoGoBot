@@ -5,18 +5,18 @@ import json
 from googlemaps.exceptions import ApiError
 from s2sphere import CellId, LatLng  # type: ignore
 
-from app import service_container
-from pokemongo_bot import logger
+from app import kernel
 from pokemongo_bot.utils import distance
 
 
-@service_container.register('mapper', ['@config', '@api_wrapper', '@google_maps'])
+@kernel.container.register('mapper', ['@config', '@api_wrapper', '@google_maps', '@logger'])
 class Mapper(object):
-    def __init__(self, config, api_wrapper, google_maps):
+    def __init__(self, config, api_wrapper, google_maps, logger):
         # type: (Namespace, PoGoApi, Client) -> None
         self.config = config
         self.api_wrapper = api_wrapper
         self.google_maps = google_maps
+        self.logger = logger
 
     def get_cells(self, lat, lng):
         # type: (float, float) -> List[Cell]
@@ -64,9 +64,9 @@ class Mapper(object):
                 else:
                     raise ValueError
             except ApiError:
-                logger.log("Could not fetch altitude from google. Trying geolocator.", prefix='Logger', color='yellow')
+                self.logger.log("Could not fetch altitude from google. Trying geolocator.", prefix='Logger', color='yellow')
             except ValueError:
-                logger.log("Location was not Lat/Lng. Trying geolocator.", prefix='Logger', color='yellow')
+                self.logger.log("Location was not Lat/Lng. Trying geolocator.", prefix='Logger', color='yellow')
 
         # Fallback to geolocation if no Lat/Lng can be found
         loc = self.google_maps.geocode(location)
