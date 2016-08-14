@@ -116,7 +116,7 @@ def throw_pokeball(bot, encounter_id, pokeball, spawn_point_id, pokemon, pos):
                                   normalized_hit_position=1)
     response = bot.api_wrapper.call()
     if response is None:
-        return False, None
+        return False
     pokemon_catch_response = response["encounter"]
     status = pokemon_catch_response.status
     pokemon_name = bot.pokemon_list[pokemon.pokemon_id - 1]["Name"]

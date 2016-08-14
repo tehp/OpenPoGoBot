@@ -2,7 +2,6 @@ from api.json_encodable import JSONEncodable
 
 
 class Egg(JSONEncodable):
-
     def __init__(self, data):
         self.unique_id = data.get("id", 0)
         self.walked_distance = data.get("egg_km_walked_start", 0.0)
@@ -13,9 +12,7 @@ class Egg(JSONEncodable):
 
 
 class Pokemon(JSONEncodable):
-
     def __init__(self, data):
-        self.data = data
         self.unique_id = data.get("id", 0)
         self.pokemon_id = data.get("pokemon_id", 0)
         self.hp = data.get("individual_stamina", 0)
@@ -35,8 +32,13 @@ class Pokemon(JSONEncodable):
         self.captured_cell_id = data.get("captured_cell_id", 0)
         self.height = data.get("height_m", 0.0)
         self.weight = data.get("weight_kg", 0.0)
+        self.origin = data.get("origin", 0)
+
+        self.favorite = data.get("favorite", 0) == 1
+        self.nickname = data.get("nickname", None)
 
         self.favorite = data.get("favorite", 0) == 1
         self.nickname = data.get("nickname", None)
 
         self.deployed_fort_id = data.get("deployed_fort_id", None)
+        self.from_fort = data.get("from_fort", None)

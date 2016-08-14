@@ -8,7 +8,7 @@ class InventoryParser(JSONEncodable):
         data = data.get("inventory_delta", {})
         self.last_updated = data.get("new_timestamp_ms", 0)
 
-        items = data.get("inventory_items", 0)
+        items = data.get("inventory_items", [])
         self.items = {"count": 0}
         self.candy = {}
         self.pokedex_entries = {}
