@@ -1,0 +1,68 @@
+#####################################################################
+#   ____                   _____       _____       ____        _    #
+#  / __ \                 |  __ \     / ____|     |  _ \      | |   #
+# | |  | |_ __   ___ _ __ | |__) |__ | |  __  ___ | |_) | ___ | |_  #
+# | |  | | '_ \ / _ \ '_ \|  ___/ _ \| | |_ |/ _ \|  _ < / _ \| __| #
+# | |__| | |_) |  __/ | | | |  | (_) | |__| | (_) | |_) | (_) | |_  #
+#  \____/| .__/ \___|_| |_|_|   \___/ \_____|\___/|____/ \___/ \__| #
+#        | |                                                        #
+#        |_|                                                        #
+#                                                                   #
+#      This is an example configuration file for OpenPoGoBot.       #
+#      Please read and change all options to suit your setup.       #
+#                                                                   #
+#####################################################################
+
+debug: false
+load_library: "encrypt.dll"
+
+login:
+    # Choose whether to login using Google (google) or Pokemon Trainer Club (ptc)
+    auth_service: "google"
+
+    # Should be self explanatory
+    username: "YOURACCOUNT@gmail.com"
+    password: "YOURPASSWORD"
+
+mapping:
+    # Required, see https://developers.google.com/maps/documentation/javascript/get-api-key for details
+    gmapkey: "GOOGLE API KEY"
+
+    # Can be a string or a set of GPS coordinates
+    location: "SOME LOCATION"
+
+    # Use last known location instead of above specified location
+    location_cache: true
+
+    # Specify what units for distance the bot should use
+    distance_unit: "km"
+
+movement:
+    # Use Google Maps Direction API (google) or just walk directly (direct)
+    path_finder: "google"
+
+    # Select which navigation method to use
+    # fort: Navigate to nearby PokeStops
+    # waypoint: Navigate to a list of waypoints
+    # camper: Camp at one spot
+    navigator: "fort"
+
+    # Only required if using waypoint navigator; specify which waypoints to visit
+    navigator_waypoints: []
+
+    # Only required if using camping navigator; specify where to camp
+    navigator_campsite: null
+
+    # Specify how fast the bot should walk, in meters/second
+    walk_speed: 4.16
+
+plugins:
+    # Do not automatically load the specified plugins
+    exclude:
+        - web
+
+    # Load plugins that are not in the plugins/ folder
+    include: []
+
+    # Load plugin YAML config files from this folder
+    config: "config/plugins"

@@ -38,7 +38,7 @@ class Mapper(object):
         # Passing data through last-location and location
         map_objects = response_dict["worldmap"]
 
-        with open("data/last-location-{}.json".format(self.config.username), "w") as outfile:
+        with open("data/last-location-{}.json".format(self.config["login"]["username"]), "w") as outfile:
             outfile.truncate()
             json.dump({"lat": lat, "lng": lng}, outfile)
 

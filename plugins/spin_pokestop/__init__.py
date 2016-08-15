@@ -33,7 +33,7 @@ def visit_near_pokestops(bot, pokestops=None):
         return
 
     # If we're debugging, don't filter pokestops so we can test if they are on cooldown
-    if not bot.config.debug:
+    if not bot.config["debug"]:
         pokestops = filtered_forts(bot.stepper.current_lat, bot.stepper.current_lng, pokestops)
 
     now = int(time.time()) * 1000
@@ -43,7 +43,7 @@ def visit_near_pokestops(bot, pokestops=None):
         if dist < 35:
             if pokestop.is_in_cooldown() is False:
                 manager.fire_with_context('pokestop_arrived', bot, pokestop=pokestop)
-            elif bot.config.debug:
+            elif bot.config["debug"]:
                 log("Nearby fort found is in cooldown for {} ({}m away)".format(format_time((pokestop.cooldown_timestamp_ms - now) / 1000),
                                                                                 ceil(dist)), color="yellow")
 
@@ -69,7 +69,7 @@ def spin_pokestop(bot, pokestop=None):
                                                 longitude=pokestop.longitude).call()
     dist = distance(bot.stepper.current_lat, bot.stepper.current_lng, pokestop.latitude, pokestop.longitude)
     log("Nearby PokeStop found \"{}\" ({} away)".format(fort_details["fort"].fort_name,
-                                                        format_dist(dist, bot.config.distance_unit)), color="yellow")
+                                                        format_dist(dist, bot.config["mapping"]["distance_unit"])), color="yellow")
 
     log("Spinning...", color="yellow")
     sleep(3)

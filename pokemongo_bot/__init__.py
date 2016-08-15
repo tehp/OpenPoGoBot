@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
-import datetime
 import json
 import logging
 import random
@@ -56,7 +55,7 @@ class PokemonGoBot(object):
 
         # load all plugin modules
         for plugin in self.plugin_manager.get_available_plugins():
-            if plugin not in self.config.exclude_plugins:
+            if plugin not in self.config["plugins"]["exclude"]:
                 self.plugin_manager.load_plugin(plugin)
             else:
                 logger.log("Not loading plugin \"{}\"".format(plugin), color="red", prefix="Plugins")
@@ -64,7 +63,7 @@ class PokemonGoBot(object):
         loaded_plugins = sorted(self.plugin_manager.get_loaded_plugins().keys())
         sleep(2)
         logger.log("Plugins loaded: {}".format(loaded_plugins), color="green", prefix="Plugins")
-        if self.config.print_events:
+        if self.config["debug"]:
             logger.log("Events available: {}".format(manager.get_registered_events()), color="green", prefix="Events")
             manager.print_all_event_pipelines()
 
@@ -77,20 +76,15 @@ class PokemonGoBot(object):
         self.stepper = Stepper(self)
         self.mapper = Mapper(self)
 
-        if self.config.navigator == 'fort':
+        navigator = self.config["movement"]["navigator"]
+        if navigator == 'fort':
             self.navigator = FortNavigator(self)  # pylint: disable=redefined-variable-type
-        elif self.config.navigator == 'waypoint':
+        elif navigator == 'waypoint':
             self.navigator = WaypointNavigator(self)  # pylint: disable=redefined-variable-type
-        elif self.config.navigator == 'camper':
+        elif navigator == 'camper':
             self.navigator = CamperNavigator(self)  # pylint: disable=redefined-variable-type
 
         self.fire('bot_initialized')
-
-        if self.config.initial_transfer:
-            self.fire("pokemon_bag_full")
-
-        if self.config.recycle_items:
-            self.fire("item_bag_full")
 
         logger.log('[#]')
         self.update_player_and_inventory()
@@ -145,7 +139,7 @@ class PokemonGoBot(object):
             level=logging.DEBUG,
             format='%(asctime)s [%(module)10s] [%(levelname)5s] %(message)s')
 
-        if self.config.debug:
+        if self.config["debug"]:
             logging.getLogger("requests").setLevel(logging.DEBUG)
             logging.getLogger("pgoapi").setLevel(logging.DEBUG)
             logging.getLogger("rpc_api").setLevel(logging.DEBUG)
@@ -156,8 +150,9 @@ class PokemonGoBot(object):
 
     def _setup_api(self):
         # instantiate api
-        self.api_wrapper = PoGoApi(provider=self.config.auth_service, username=self.config.username,
-                                   password=self.config.password, shared_lib=self.config.load_library)
+        login_info = self.config["login"]
+        self.api_wrapper = PoGoApi(provider=login_info["auth_service"], username=login_info["username"],
+                                   password=login_info["password"], shared_lib=self.config["load_library"])
         # provide player position on the earth
 
         self._set_starting_position()
@@ -251,15 +246,12 @@ class PokemonGoBot(object):
 
     def _set_starting_position(self):
 
-        if self.config.test:
-            return
-
-        if self.config.location_cache:
+        if self.config["mapping"]["location_cache"]:
             try:
                 #
                 # save location flag used to pull the last known location from
                 # the location.json
-                with open('data/last-location-%s.json' % self.config.username) as last_location_file:
+                with open('data/last-location-%s.json' % self.config["login"]["username"]) as last_location_file:
                     location_json = json.load(last_location_file)
 
                     self.position = (location_json['lat'], location_json['lng'], 0.0)
@@ -272,7 +264,7 @@ class PokemonGoBot(object):
 
                     return
             except IOError:
-                if not self.config.location:
+                if not self.config["mapping"]["location"]:
                     sys.exit("No cached Location. Please specify initial location.")
                 else:
                     self._read_config_location()
@@ -283,10 +275,10 @@ class PokemonGoBot(object):
         logger.log('')
 
     def _read_config_location(self):
-        self.position = self._get_pos_by_name(self.config.location)
+        self.position = self._get_pos_by_name(self.config["mapping"]["location_cache"])
         self.api_wrapper.set_position(*self.position)
         logger.log('')
-        logger.log(u'[x] Address found: {}'.format(self.config.location))
+        logger.log(u'[x] Address found: {}'.format(self.config["mapping"]["location_cache"]))
 
     def _get_pos_by_name(self, location_name):
         # type: (str) -> Tuple[float, float, float]
@@ -299,7 +291,7 @@ class PokemonGoBot(object):
                 pos_lng = float(parts[1])
 
                 # we need to ask google for the altitude
-                gmaps = googlemaps.Client(key=self.config.gmapkey)
+                gmaps = googlemaps.Client(key=self.config["mapping"]["gmapkey"])
                 response = gmaps.elevation((pos_lat, pos_lng))
 
                 if len(response) and "elevation" in response[0]:
@@ -312,7 +304,7 @@ class PokemonGoBot(object):
                 logger.log("[x] Location was not Lat/Lng.")
 
         # Fallback to geolocation if no Lat/Lng can be found
-        geolocator = GoogleV3(api_key=self.config.gmapkey)
+        geolocator = GoogleV3(api_key=self.config["mapping"]["gmapkey"])
         loc = geolocator.geocode(location_name, timeout=10)
 
         # self.log.info('Your given location: %s', loc.address.encode('utf-8'))

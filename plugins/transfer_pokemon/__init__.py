@@ -2,7 +2,19 @@ from api.pokemon import Pokemon
 from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.event_manager import manager
 from pokemongo_bot import logger
-from plugins.transfer_pokemon.config import release_rules
+
+
+# TODO: Use DI for config loading (requires PR #270)
+import ruamel.yaml
+import os # pylint: disable=wrong-import-order
+with open(os.path.join(os.getcwd(), 'config/plugins/transfer_pokemon.yml'), 'r') as config_file:
+    transfer_config = ruamel.yaml.load(config_file.read(), ruamel.yaml.RoundTripLoader)
+
+
+@manager.on("bot_initialized")
+def transfer_on_bot_start(bot):
+    if transfer_config["transfer_on_start"]:
+        bot.fire("pokemon_bag_full")
 
 
 def get_transfer_list(bot, transfer_list=None):
@@ -85,19 +97,22 @@ def wrap_pokemon_in_list(transfer_list=None, pokemon=None):
 def filter_pokemon_by_ignore_list(bot, transfer_list=None, filter_list=None):
     # type: (PokemonGoBot, Optional[List[Pokemon]]), Optional[List[str]] -> Dict[Str, List]
 
+    if transfer_config["use_always_keep_filter"] is False:
+        return
+
     filter_list = [] if filter_list is None else filter_list
     transfer_list = get_transfer_list(bot, transfer_list)
     if transfer_list is None:
         return False
 
-    ignore_list = bot.config.ign_init_trans.split(',')
+    always_keep_list = transfer_config["always_keep"]
 
     new_transfer_list = []
     excluded_species = set()
     for pokemon in transfer_list:
         species_num = pokemon.pokemon_id
         species_name = bot.pokemon_list[species_num - 1]["Name"]
-        if str(species_num) not in ignore_list and species_name not in ignore_list:
+        if species_name not in always_keep_list or always_keep_list[species_name] is False:
             new_transfer_list.append(pokemon)
         else:
             excluded_species.add(species_name)
@@ -117,23 +132,20 @@ def filter_pokemon_by_ignore_list(bot, transfer_list=None, filter_list=None):
 def filter_pokemon_by_cp_iv(bot, transfer_list=None, filter_list=None):
     # type: (PokemonGoBot, Optional[List[Pokemon]]), Optional[List[str]] -> Dict[Str, List]
 
+    if transfer_config["use_cp_iv_filter"] is False:
+        return
+
     filter_list = [] if filter_list is None else filter_list
+    filter_list.append("according to per-species CP/IV rules")
+
     transfer_list = get_transfer_list(bot, transfer_list)
     if transfer_list is None:
         return False
 
-    default_rules = {
-        'release_below_cp': bot.config.cp,
-        'release_below_iv': bot.config.pokemon_potential,
-        'logic': 'and',
-    }
+    cp_iv_rules = transfer_config["cp_iv_rules"]
+    default_rules = cp_iv_rules["default"]
 
     indexed_pokemon = get_indexed_pokemon(bot, transfer_list)
-
-    if release_rules:
-        filter_list.append("according to per-species CP/IV rules")
-    else:
-        filter_list.append("with CP <= {} and IV <= {}".format(bot.config.cp, bot.config.pokemon_potential))
 
     pokemon_groups = list(indexed_pokemon.keys())
     for pokemon_group in pokemon_groups:
@@ -145,10 +157,10 @@ def filter_pokemon_by_cp_iv(bot, transfer_list=None, filter_list=None):
 
         # Load rules for this group. If rule doesnt exist make one with default settings.
         pokemon_name = bot.pokemon_list[pokemon_group - 1]["Name"]
-        pokemon_rules = release_rules.get(pokemon_name, default_rules)
-        cp_threshold = pokemon_rules.get('release_below_cp', bot.config.cp)
-        iv_threshold = pokemon_rules.get('release_below_iv', bot.config.pokemon_potential)
-        rules_logic = pokemon_rules.get('logic', 'and')
+        pokemon_rules = cp_iv_rules.get(pokemon_name, default_rules)
+        cp_threshold = pokemon_rules['release_below_cp']
+        iv_threshold = pokemon_rules['release_below_iv']
+        rules_logic = pokemon_rules['logic']
 
         # only keep everything below specified CP
         group_transfer_list = []

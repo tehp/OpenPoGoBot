@@ -21,7 +21,7 @@ class Stepper(object):
         self.api_wrapper = bot.api_wrapper
         self.config = bot.config
 
-        self.speed = 4.16 if (self.config.walk is None or self.config.walk <= 0) else self.config.walk
+        self.speed = 4.16 if self.config["movement"]["walk_speed"] <= 0 else self.config["movement"]["walk_speed"]
         self.path_finder = None
 
         self.origin_lat = self.bot.position[0]
@@ -32,9 +32,9 @@ class Stepper(object):
         self.current_lng = self.origin_lng
         self.current_alt = self.origin_alt
 
-        if self.config.path_finder == 'google':
+        if self.config["movement"]["path_finder"] == 'google':
             self.path_finder = GooglePathFinder(self)  # pylint: disable=redefined-variable-type
-        elif self.config.path_finder == 'direct':
+        elif self.config["movement"]["path_finder"] == 'direct':
             self.path_finder = DirectPathFinder(self)  # pylint: disable=redefined-variable-type
 
     def start(self):
@@ -51,7 +51,7 @@ class Stepper(object):
 
         if destination.name:
             logger.log("Walking towards {} ({} away, eta {})".format(destination.name,
-                                                                     format_dist(dist, self.config.distance_unit),
+                                                                     format_dist(dist, self.config["mapping"]["distance_unit"]),
                                                                      format_time(destination.get_step_count())),
                        prefix="Navigation")
 
@@ -62,7 +62,7 @@ class Stepper(object):
             yield step
 
         if destination.name:
-            logger.log("Arrived at {} ({} away)".format(destination.name, format_dist(dist, self.config.distance_unit)), prefix="Navigation")
+            logger.log("Arrived at {} ({} away)".format(destination.name, format_dist(dist, self.config["mapping"]["distance_unit"])), prefix="Navigation")
 
         self.bot.fire("walking_finished", coords=(destination.target_lat, destination.target_lng, destination.target_alt))
 

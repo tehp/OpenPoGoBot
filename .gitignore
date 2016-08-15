@@ -26,6 +26,8 @@ web/location-*.json
 # Config files
 config.json
 release_config.json
+config/*.yml
+config/plugins/*.yml
 
 # Test files
 .coverage

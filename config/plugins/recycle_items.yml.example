@@ -1,0 +1,126 @@
+#####################################################################
+#   ____                   _____       _____       ____        _    #
+#  / __ \                 |  __ \     / ____|     |  _ \      | |   #
+# | |  | |_ __   ___ _ __ | |__) |__ | |  __  ___ | |_) | ___ | |_  #
+# | |  | | '_ \ / _ \ '_ \|  ___/ _ \| | |_ |/ _ \|  _ < / _ \| __| #
+# | |__| | |_) |  __/ | | | |  | (_) | |__| | (_) | |_) | (_) | |_  #
+#  \____/| .__/ \___|_| |_|_|   \___/ \_____|\___/|____/ \___/ \__| #
+#        | |                                                        #
+#        |_|                                                        #
+#                                                                   #
+#      This is an example configuration file for OpenPoGoBot.       #
+#      Please read and change all options to suit your setup.       #
+#                                                                   #
+#####################################################################
+
+# Set to true to recycle items when bot starts.
+recycle_on_start: false
+
+# Note that this filter will keep any unknown items.
+item_filter:
+
+    # Each category can be named whatever you want
+    pokeballs:
+        # Specifies the priority for which items should be thrown out
+        # Lower numbers are thrown out first
+        priority: 10
+
+        # How many in this category should the bot keep if we need to throw some items out
+        total_keep: 200
+
+        items:
+              # The display name of the item
+            - name: Poké Ball
+
+              # The in-game item ID
+              item_id: 1
+
+              # Specify the priority for which items should be thrown out in this category
+              priority: 1
+
+              # How many of this item should be kept; keeps the lesser of total_keep and keep
+              # If unspecified, keeps as many as possible
+              keep: 50
+
+            - name: Great Ball
+              item_id: 2
+              priority: 2
+
+            - name: Ultra Ball
+              item_id: 3
+              priority: 3
+
+            - name: Master Ball
+              item_id: 4
+              priority: 4
+
+    medicine:
+        priority: 1
+
+        total_keep: 50
+
+        items:
+            - name: Potion
+              item_id: 101
+              priority: 1
+
+            - name: Super Potion
+              item_id: 102
+              priority: 2
+
+            - name: Hyper Potion
+              item_id: 103
+              priority: 3
+
+            - name: Max Potion
+              item_id: 104
+              priority: 5
+
+            - name: Revive
+              item_id: 201
+              priority: 4
+              keep: 10
+
+            - name: Max Revive
+              item_id: 202
+              priority: 5
+              keep: 10
+
+    berries:
+        priority: 2
+
+        total_keep: 50
+
+        items:
+            - name: Razz Berry
+              item_id: 701
+              priority: 1
+
+    always_keep:
+        # Priority of 0 in a category means always keep
+        priority: 0
+
+        items:
+            - name: Lucky Egg
+              item_id: 301
+
+            - name: Incense
+              item_id: 401
+
+            - name: Lure Module
+              item_id: 501
+
+            - name: Camera
+              item_id: 801
+
+            - name: Egg Incubator ∞
+              item_id: 901
+
+            - name: Egg Incubator
+              item_id: 902
+
+            - name: Pokémon Storage Upgrade
+              item_id: 1001
+
+            - name: Item Storage Upgrade
+              item_id: 1002
