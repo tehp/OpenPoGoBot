@@ -121,10 +121,10 @@ def register_ui_events(socketio, state):
                 pokemon_name = bot.pokemon_list[pokemon_num - 1]["Name"]
                 pokemon_cp = pokemon.combat_power
                 pokemon_potential = pokemon.potential
-                log("Transferring {0} (#{1}) with CP {2} and IV {3}".format(pokemon_name,
-                                                                            pokemon_num,
-                                                                            pokemon_cp,
-                                                                            pokemon_potential), color="green")
+                log("Transferred {0} (#{1}) with CP {2} and IV {3}".format(pokemon_name,
+                                                                           pokemon_num,
+                                                                           pokemon_cp,
+                                                                           pokemon_potential), color="green")
 
     @socketio.on("evolve_pokemon", namespace="/event")
     def client_ask_for_evolve(evt):
@@ -161,7 +161,7 @@ def register_ui_events(socketio, state):
     @socketio.on("favorite_pokemon", namespace="/event")
     def client_ask_for_favorite_pokemon(evt):
         if "bot" in state:
-            logger.log("Web UI action: Favorite", "yellow", fire_event=False)
+            log("Web UI action: Favorite")
 
             bot = state["bot"]
             pkm_id = int(evt["id"])
