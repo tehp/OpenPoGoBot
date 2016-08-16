@@ -1,5 +1,3 @@
-from pokemongo_bot import logger
-
 
 # pylint: disable=unused-variable, unused-argument
 
@@ -15,9 +13,9 @@ class BotEvents(object):
         event_manager.add_listener('pokestops_found', self.pokestops_found_event, priority=-2000)
         event_manager.add_listener('pokestop_visited', self.pokestop_visited_event, priority=-2000)
 
-        event_manager.add_listener('pokemon_caught', self.pokemon_caught)
-        event_manager.add_listener('pokemon_evolved', self.pokemon_evolved)
-        event_manager.add_listener('after_transfer_pokemon', self.transfer_pokemon)
+        event_manager.add_listener('pokemon_caught', self.pokemon_caught_event, priority=-1000)
+        event_manager.add_listener('pokemon_evolved', self.pokemon_evolved_event)
+        event_manager.add_listener('after_transfer_pokemon', self.transfer_pokemon_event)
 
         event_manager.add_listener('route', self.on_route_event)
 
@@ -80,7 +78,7 @@ class BotEvents(object):
         }
         self.socketio.emit("pokestop_visited", emitted_object, namespace="/event")
 
-    def pokemon_caught(self, bot=None, pokemon=None, position=None):
+    def pokemon_caught_event(self, bot=None, pokemon=None, position=None):
         if pokemon is None:
             return
         emitted_object = {
@@ -89,7 +87,7 @@ class BotEvents(object):
         }
         self.socketio.emit("pokemon_caught", emitted_object, namespace="/event")
 
-    def pokemon_evolved(self, bot=None, pokemon=None, evolution=None):
+    def pokemon_evolved_event(self, bot=None, pokemon=None, evolution=None):
         if pokemon is None:
             return
         emitted_object = {
@@ -98,7 +96,7 @@ class BotEvents(object):
         }
         self.socketio.emit("pokemon_evolved", emitted_object, namespace="/event")
 
-    def transfer_pokemon(self, bot=None, pokemon=None):
+    def transfer_pokemon_event(self, bot=None, pokemon=None):
         if pokemon is None:
             return
         emitted_object = {

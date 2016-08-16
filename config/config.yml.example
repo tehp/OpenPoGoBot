@@ -58,8 +58,7 @@ movement:
 
 plugins:
     # Do not automatically load the specified plugins
-    exclude:
-        - socket
+    exclude: []
 
     # Plugin directories to load
     include:

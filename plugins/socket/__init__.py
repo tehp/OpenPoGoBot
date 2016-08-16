@@ -42,10 +42,12 @@ class Socket(Plugin):
         BotEvents(socketio, state, self.event_manager)
         UiEvents(socketio, state, self.event_manager, self.logger)
 
+        self.log("Starting socket server...")
+
         socketio.run(
             app,
-            host=self.config['socket_server']['host'],
-            port=self.config['socket_server']['port'],
+            host=self.config['socket_server']['host'] or '0.0.0.0',
+            port=self.config['socket_server']['port'] or 8080,
             debug=False,
             use_reloader=False,
             log_output=False
