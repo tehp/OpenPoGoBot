@@ -4,6 +4,7 @@ import json
 
 from googlemaps.exceptions import ApiError
 from s2sphere import CellId, LatLng  # type: ignore
+from pgoapi.utilities import get_cell_ids
 
 from app import kernel
 from pokemongo_bot.utils import distance
@@ -20,7 +21,9 @@ class Mapper(object):
 
     def get_cells(self, lat, lng):
         # type: (float, float) -> List[Cell]
-        cell_id = self._get_cell_id_from_latlong()
+        cell_id = self._get_cell_id_from_latlong(
+            self.config['mapping']['cell_radius']
+        )
         timestamp = [0, ] * len(cell_id)
         self.api_wrapper.get_map_objects(latitude=lat,
                                          longitude=lng,
@@ -64,27 +67,30 @@ class Mapper(object):
                 else:
                     raise ValueError
             except ApiError:
-                self.logger.log("Could not fetch altitude from google. Trying geolocator.", prefix='Logger', color='yellow')
+                self._log("Could not fetch altitude from google. Trying geolocator.", color='yellow')
             except ValueError:
-                self.logger.log("Location was not Lat/Lng. Trying geolocator.", prefix='Logger', color='yellow')
+                self._log("Location was not Lat/Lng. Trying geolocator.", color='yellow')
 
         # Fallback to geolocation if no Lat/Lng can be found
         loc = self.google_maps.geocode(location)
 
         return loc.latitude, loc.longitude, loc.altitude
 
-    def _get_cell_id_from_latlong(self, radius=10):
+    def _log(self, text, color='black'):
+        self.logger.log(text, color=color, prefix='Mapper')
+
+    def _get_cell_id_from_latlong(self, radius=1000):
         # type: (Optional[int]) -> List[str]
         position_lat, position_lng, _ = self.api_wrapper.get_position()
-        origin = CellId.from_lat_lng(LatLng.from_degrees(position_lat, position_lng)).parent(15)
-        walk = [origin.id()]
 
-        # 10 before and 10 after
-        next_cell = origin.next()
-        prev_cell = origin.prev()
-        for _ in range(radius):
-            walk.append(prev_cell.id())
-            walk.append(next_cell.id())
-            next_cell = next_cell.next()
-            prev_cell = prev_cell.prev()
-        return sorted(walk)
+        cells = get_cell_ids(position_lat, position_lng, radius)
+
+        if self.config['debug']:
+            self._log('Cells:', color='yellow')
+            self._log('Origin: {},{}'.format(position_lat, position_lng), color='yellow')
+            for cell in cells:
+                cell_id = CellId(cell)
+                lat_lng = cell_id.to_lat_lng()
+                self._log('Cell  : {},{}'.format(lat_lng.lat().degrees, lat_lng.lng().degrees), color='yellow')
+
+        return cells

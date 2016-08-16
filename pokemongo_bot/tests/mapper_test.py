@@ -5,6 +5,7 @@ import unittest
 from googlemaps import Client
 from googlemaps.exceptions import ApiError
 from mock import Mock
+from mock import call
 
 from pokemongo_bot.mapper import Mapper
 from pokemongo_bot.tests import create_core_test_config, create_mock_api_wrapper, test_account_name
@@ -27,9 +28,13 @@ class MapperTest(unittest.TestCase):
     def test_get_cells(self):
         account = test_account_name()
         config = create_core_test_config({
+            "debug": True,
             "login": {
                 "username": account,
             },
+            "mapping": {
+                "cell_radius": 500
+            }
         })
         api_wrapper = create_mock_api_wrapper(config)
         google_maps = Mock(spec=Client)
@@ -72,6 +77,9 @@ class MapperTest(unittest.TestCase):
         config = create_core_test_config({
             "login": {
                 "username": account
+            },
+            "mapping": {
+                "cell_radius": 500
             }
         })
         api_wrapper = create_mock_api_wrapper(config)

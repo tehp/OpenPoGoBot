@@ -37,6 +37,10 @@ mapping:
     # Specify what units for distance the bot should use
     distance_unit: "km"
 
+    # The radius (in meters) to fetch cell data for. Cell data includes pokestops and nearby pokemon
+    # Max value is 1500
+    cell_radius: 500
+
 movement:
     # Use Google Maps Direction API (google) or just walk directly (direct)
     path_finder: "google"
