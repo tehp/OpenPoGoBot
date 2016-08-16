@@ -1,39 +1,40 @@
-from pokemongo_bot import logger
-from pokemongo_bot import sleep
+from app import kernel
+from pokemongo_bot.human_behaviour import sleep
 from pokemongo_bot.navigation.destination import Destination
 from pokemongo_bot.navigation.navigator import Navigator
-from pokemongo_bot.event_manager import manager
 
 
+@kernel.container.register('camper_navigator', ['@config.core', '@api_wrapper', '@logger'])
 class CamperNavigator(Navigator):
-    def __init__(self, bot):
-        # type: (PokemonGoBot) -> None
-        super(CamperNavigator, self).__init__(bot)
+    def __init__(self, config, api_wrapper, logger):
+        # type: (Namespace, PoGoApi, Logger) -> None
+        super(CamperNavigator, self).__init__(config, api_wrapper)
 
-        if bot.config.navigator_campsite is None:
-            self.camping_sites = [(bot.position[0], bot.position[1])]
-        else:
-            lat, lng = bot.config.navigator_campsite.split(',')
-            self.camping_sites = [(float(lat), float(lng))]
+        self.camping_sites = []
+        self.logger = logger
+
+        if config['movement']['navigator_campsite'] is not None:
+            lat, lng = config['movement']['navigator_campsite']
+            self.camping_sites.append((float(lat), float(lng)))
 
         self.pointer = 0
 
     def navigate(self, map_cells):
         # type: (List[Cell]) -> List[Direction]
-        try:
-            camp_site = self.camping_sites[self.pointer]
+        if not len(self.camping_sites):
+            current_lat, current_lng, _ = self.api_wrapper.get_position()
+            self.camping_sites.append((current_lat, current_lng))
 
-            lat, lng = camp_site
+        try:
+            lat, lng = self.camping_sites[self.pointer]
             position = (lat, lng, 0.0)
 
             yield Destination(*position, name="Camping position at {},{}".format(lat, lng), exact_location=True)
 
             sleep(5)
-
         except IndexError:
-            logger.log("[#] No campsite location found", color="red")
+            self.logger.log("No campsite location found", color="red", prefix="Camper")
 
-    @manager.on("set_campsite", priority=0)
     def set_campsite(self, longitude, latitude):
         # type: (float, float) -> None
         self.camping_sites.append((longitude, latitude))

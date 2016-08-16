@@ -1,16 +1,14 @@
 import unittest
 
 from pokemongo_bot.navigation.path_finder import DirectPathFinder
-from pokemongo_bot.tests import create_mock_bot
+from pokemongo_bot.tests import create_core_test_config
 
 
 class DirectPathFinderTest(unittest.TestCase):
-    def test_path(self):  # pylint: disable=no-self-use
-        bot = create_mock_bot(None)
-
-        stepper = bot.stepper
-
-        path_finder = DirectPathFinder(stepper)
+    @staticmethod
+    def test_path():
+        config = create_core_test_config()
+        path_finder = DirectPathFinder(config)
 
         path = path_finder.path(51.5043872, -0.0741802, 51.5060435, -0.073983)
 

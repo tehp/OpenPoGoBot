@@ -59,10 +59,11 @@ movement:
 plugins:
     # Do not automatically load the specified plugins
     exclude:
-        - web
+        - socket
 
-    # Load plugins that are not in the plugins/ folder
-    include: []
+    # Plugin directories to load
+    include:
+        - ./plugins
 
     # Load plugin YAML config files from this folder
     config: "config/plugins"

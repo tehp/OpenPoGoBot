@@ -23,12 +23,16 @@ class Player(JSONEncodable):
         self.prev_level_xp = 0
         self.experience = 0
         self.level = 1
+        self.hatched_eggs = []
 
     def update_hatched_eggs(self, data):
         for stardust in data.get("stardust_awarded", []):
             self.stardust += stardust
         for xp in data.get("experience_awarded", []):
             self.experience += xp
+
+        if len(data.get("pokemon_id", [])) > 0:
+            self.hatched_eggs.append(data.get("pokemon_id", []))
 
     def update_get_player(self, data):
         data = data.get("player_data", {})

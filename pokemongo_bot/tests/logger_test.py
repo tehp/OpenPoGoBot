@@ -1,27 +1,34 @@
+from __future__ import print_function
 import unittest
-import sys
-from io import StringIO
 
 from mock import Mock
 
 import pokemongo_bot
+from pokemongo_bot import EventManager
+from pokemongo_bot import Logger
 
 
 class LoggerTest(unittest.TestCase):
-    def setUp(self):
-        self.out = StringIO()
-        sys.stdout = self.out
-
     @staticmethod
     def test_log_by_event():
-        pokemongo_bot.event_manager.manager.fire = Mock()
+        event_manager = EventManager()
+        logger = Logger(event_manager)
 
-        pokemongo_bot.logger.log("log row", color="yellow", prefix="test", fire_event=True)
+        event_manager.fire = Mock()
 
-        pokemongo_bot.event_manager.manager.fire.assert_called_once_with("logging", text="log row", color="yellow", prefix="test")
+        logger.log("log row", color="yellow", prefix="test", fire_event=True)
 
-    def test_log_by_call(self):
-        pokemongo_bot.logger.log("log row", color="yellow", prefix="test", fire_event=False)
+        event_manager.fire.assert_called_once_with("logging", text="log row", color="yellow", prefix="test")
 
-        output = self.out.getvalue().strip()
+    @staticmethod
+    def test_log_by_call():
+        import sys
+        from io import StringIO
+        out = StringIO()
+        sys.stdout = out
+
+        logger = Logger(Mock())
+
+        logger.log("log row", color="yellow", prefix="test", fire_event=False)
+        output = out.getvalue().strip()
         assert "[test] log row" in output

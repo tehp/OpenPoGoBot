@@ -2,7 +2,7 @@ import unittest
 from mock import patch, Mock, MagicMock
 
 from pokemongo_bot.navigation.path_finder import GooglePathFinder
-from pokemongo_bot.tests import create_mock_bot
+from pokemongo_bot.tests import create_core_test_config
 
 
 class GooglePathFinderTest(unittest.TestCase):
@@ -10,110 +10,87 @@ class GooglePathFinderTest(unittest.TestCase):
     @staticmethod
     def test_path():
 
-        with patch('googlemaps.Client') as GoogleMapsClient:
-            client = Mock()
-            client.directions = MagicMock(return_value=[
-                {
-                    "legs": [
-                        {
-                            "steps": [
-                                {
-                                    "end_location": {
-                                        "lat": 51.5043872,
-                                        "lng": -0.0741802
-                                    }
-                                },
-                                {
-                                    "end_location": {
-                                        "lat": 51.5050996,
-                                        "lng": -0.0747055
-                                    }
+        client = Mock()
+        client.directions = MagicMock(return_value=[
+            {
+                "legs": [
+                    {
+                        "steps": [
+                            {
+                                "end_location": {
+                                    "lat": 51.5043872,
+                                    "lng": -0.0741802
                                 }
-                            ]
-                        },
-                        {
-                            "steps": [
-                                {
-                                    "end_location": {
-                                        "lat": 51.5060607,
-                                        "lng": -0.0746535
-                                    }
+                            },
+                            {
+                                "end_location": {
+                                    "lat": 51.5050996,
+                                    "lng": -0.0747055
                                 }
-                            ]
-                        }
-                    ]
-                }
-            ])
-            GoogleMapsClient.return_value = client
-            bot = create_mock_bot({
-                "gmapkey": "abc123"
-            })
-            stepper = bot.stepper
+                            }
+                        ]
+                    },
+                    {
+                        "steps": [
+                            {
+                                "end_location": {
+                                    "lat": 51.5060607,
+                                    "lng": -0.0746535
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        ])
 
-            path_finder = GooglePathFinder(stepper)
-            path = path_finder.path(51.5043872, -0.0741802, 51.5060435, -0.073983)
+        path_finder = GooglePathFinder(create_core_test_config(), client)
 
-            assert len(path) == 4
+        path = path_finder.path(51.5043872, -0.0741802, 51.5060435, -0.073983)
 
-            lat, lng = path[0]
-            assert lat == 51.5043872
-            assert lng == -0.0741802
+        assert len(path) == 4
 
-            lat, lng = path[1]
-            assert lat == 51.5050996
-            assert lng == -0.0747055
+        lat, lng = path[0]
+        assert lat == 51.5043872
+        assert lng == -0.0741802
 
-            lat, lng = path[2]
-            assert lat == 51.5060607
-            assert lng == -0.0746535
+        lat, lng = path[1]
+        assert lat == 51.5050996
+        assert lng == -0.0747055
 
-            lat, lng = path[3]
-            assert lat == 51.5060435
-            assert lng == -0.073983
+        lat, lng = path[2]
+        assert lat == 51.5060607
+        assert lng == -0.0746535
+
+        lat, lng = path[3]
+        assert lat == 51.5060435
+        assert lng == -0.073983
 
     @staticmethod
     def test_path_no_route():
+        client = Mock()
+        client.directions = MagicMock(return_value=[])
 
-        with patch('googlemaps.Client') as GoogleMapsClient:
-            client = Mock()
-            client.directions = MagicMock(return_value=[])
-            GoogleMapsClient.return_value = client
-            bot = create_mock_bot({
-                "gmapkey": "abc123"
-            })
-            stepper = bot.stepper
+        path_finder = GooglePathFinder(create_core_test_config(), client)
+        path = path_finder.path(51.5043872, -0.0741802, 51.5060435, -0.073983)
 
-            path_finder = GooglePathFinder(stepper)
-            path = path_finder.path(51.5043872, -0.0741802, 51.5060435, -0.073983)
+        assert len(path) == 1
 
-            assert len(path) == 1
-
-            lat, lng = path[0]
-            assert lat == 51.5060435
-            assert lng == -0.073983
+        lat, lng = path[0]
+        assert lat == 51.5060435
+        assert lng == -0.073983
 
     @staticmethod
     def test_path_log():
 
-        with patch('googlemaps.Client') as GoogleMapsClient:
-            client = Mock()
-            client.directions = MagicMock(return_value=[])
-            GoogleMapsClient.return_value = client
+        client = Mock()
+        client.directions = MagicMock(return_value=[])
 
-            with patch('pokemongo_bot.logger') as logger:
-                logger.log = MagicMock(return_value=None)
+        path_finder = GooglePathFinder(create_core_test_config(), client)
+        path = path_finder.path(51.5043872, -0.0741802, 51.5060435, -0.073983)
 
-                bot = create_mock_bot({
-                    "gmapkey": "abc123",
-                    "debug": True
-                })
-                stepper = bot.stepper
+        assert len(path) == 1
 
-                path_finder = GooglePathFinder(stepper)
-                path = path_finder.path(51.5043872, -0.0741802, 51.5060435, -0.073983)
-
-                assert len(path) == 1
-
-                lat, lng = path[0]
-                assert lat == 51.5060435
-                assert lng == -0.073983
+        lat, lng = path[0]
+        assert lat == 51.5060435
+        assert lng == -0.073983

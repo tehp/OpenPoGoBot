@@ -81,50 +81,16 @@ pip install -r requirements.txt
 ```
 
 ## Usage
-
 ```
-$ python pokecli.py [flags]
+$ python pokecli.py [path to config yml]
 ```
 
-####  Flags
-| Flag                            | Short Flag           | Description                                                                                                                                                                                 |
-|---------------------------------|----------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `--help`                        | `-h`                 | Show this help message and exit                                                                                                                                                             |
-| `--config-json`                 | `-j`                 | Load a config JSON file. Any arguments specified on command line override those specified in the file.                                                                                      |
-| `--auth-service [AUTH_SERVICE]` | `-a [AUTH_SERVICE]`  | Auth Service (`ptc` or `google`)                                                                                                                                                            |
-| `--username [USERNAME]`         | `-u [USERNAME]`      | Username                                                                                                                                                                                    |
-| `--password [PASSWORD]`         | `-p [PASSWORD]`      | Password                                                                                                                                                                                    |
-| `--location [LOCATION]`         | `-l [LOCATION]`      | Location (address or `'xx.yyyy,zz.ttttt'`)                                                                                                                                                  |
-| `--location-cache`              | `-lc`                | Bot will start at last known location                                                                                                                                                       |
-| `--walk [SPEED]`                | `-w [SPEED]`         | Walk instead of teleport with given speed in meters per second (max `4.16` because of walking end on 15km/h)                                                                                |
-| `--distance-unit [UNIT]`        | `-du [UNIT]`         | Set the unit to display distance in (e.g. `km` for kilometers, `mi` for miles, `ft` for feet)                                                                                               |
-| `--initial-transfer`            | `-it`                | Start the bot with a Pokémon clean-up, keeping only the higher CP/IV versions of each Pokémon. It respects `--combat-power` (CP) and `--pokemon-potential` (IV) as upper limits to release. |
-| `--ign-init-trans [LIST]`       | `-ig [LIST]`         | Pass a list of pokemon to ignore during initial transfer (e.g. `017,049,001`)                                                                                                               |
-| `--max-steps [MAX_STEP]`        | `-ms [MAX_STEP]`     | Set the steps around your initial location, e.g. `5` means 25 cells around your location (default: `5`)                                                                                     |
-| `--combat-power [COMBAT_POWER]` | `-cp [COMBAT_POWER]` | Transfer Pokemon that have CP less than this value (default 100)",                                                                                                                          |
-| `--pokemon-potential [IV]`      | `-iv [IV]`           | Set the ratio for the IV values to transfer, e.g. `0.4` will transfer a Pokémon with IV 0.3 (default: `0.4`)                                                                                |
-| `--recycle-items`               | `-ri`                | Recycle unneeded items automatically                                                                                                                                                        |
-| `--exclude-plugins [LIST]`      | `-ep [LIST]`         | Pass a list of plugins to exclude from the loading process (e.g, `logger,socket`).                                                                                                             |
-| `--gmapkey [KEY]`               | `-k [KEY]`           | Set a Google Maps API key to use                                                                                                                                                            |
-| `--google-directions`           | `-gd`                | Use directions from the Google Maps API to navigate                                                                                                                                         |
-| `--debug`                       | `-d`                 | Enable Debug Mode                                                                                                                                                                           |
-| `--test`                        | `-t`                 | Only parse the specified location                                                                                                                                                           |
-| `--print-events`                | `-pe`                | Print event pipelines                                                                                                                                                                       |
-| `--incubation-fill`             | `-if`                | Fill incubators with eggs                                                                                                                                                                   |
-| `--incubation-use-all`          | `-ia`                | Use all incubators (instead of only the unlimited one)                                                                                                                                      |
-| `--incubation-priority`         | `-ip`                | Priority of eggs to be incubated. Comma separated list of `-ip='10km,5km,2km'`                                                                                                              |
-| `--incubation-restrict`         | `-ir`                | Restrict an egg to an incubator. List of <distance=incubator_id>. E.g. `-ir='10km=901,5km=902'`                                                                                             |
-| `--load-library [LIB]`          | `-lib [LIB]`         | Load the `encrypt` shared library for signing Signature fields in requests from the specified path.                                                                                         |
-
+__What happened to the command line arguments?!__
+The command line arguments have been removed in favour of yml config files.
 
 ### Command Line Example
-Pokemon Trainer Club (PTC) account:
 ```
-$ python2 pokecli.py -a ptc -u tejado -p 1234 --location "New York, Washington Square"
-```
-Google Account:
-```
-$ python2 pokecli.py -a google -u tejado -p 1234 --location "New York, Washington Square"
+$ python pokecli.py config/config.yml
 ```
 
 ### Bot Configuration via JSON

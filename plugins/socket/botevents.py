@@ -1,14 +1,28 @@
 from pokemongo_bot import logger
-from pokemongo_bot.event_manager import manager
+
 
 # pylint: disable=unused-variable, unused-argument
 
-def register_bot_events(socketio, state):
+class BotEvents(object):
+    def __init__(self, socketio, state, event_manager):
+        self.socketio = socketio
+        self.state = state
 
-    @manager.on("bot_initialized")
-    def bot_initialized(bot):
-        info = bot.update_player_and_inventory()
-        player = info["player"]
+        event_manager.add_listener('bot_initialized', self.bot_initialized)
+        event_manager.add_listener('position_updated', self.position_update)
+
+        event_manager.add_listener('gyms_found', self.gyms_found_event, priority=-2000)
+        event_manager.add_listener('pokestops_found', self.pokestops_found_event, priority=-2000)
+        event_manager.add_listener('pokestop_visited', self.pokestop_visited_event, priority=-2000)
+
+        event_manager.add_listener('pokemon_caught', self.pokemon_caught)
+        event_manager.add_listener('pokemon_evolved', self.pokemon_evolved)
+        event_manager.add_listener('after_transfer_pokemon', self.transfer_pokemon)
+
+        event_manager.add_listener('route', self.on_route_event)
+
+    def bot_initialized(self, bot):
+        player = bot.player_service.get_player()
         emitted_object = {
             "username": player.username,
             "level": player.level,
@@ -20,7 +34,7 @@ def register_bot_events(socketio, state):
                 "prev_level_xp": player.prev_level_xp,
                 "experience": player.experience
             },
-            "coordinates": bot.get_position(),
+            "coordinates": bot.api_wrapper.get_position(),
             "storage": {
                 "max_item_storage": player.max_item_storage,
                 "max_pokemon_storage": player.max_pokemon_storage
@@ -28,78 +42,70 @@ def register_bot_events(socketio, state):
         }
 
         # reinit state
-        state.update(emitted_object)
-        state["bot"] = bot
+        self.state.update(emitted_object)
+        self.state["bot"] = bot
 
-        socketio.emit("bot_initialized", emitted_object, namespace="/event")
+        self.socketio.emit("bot_initialized", emitted_object, namespace="/event")
 
-    @manager.on("position_updated")
-    def position_update(bot, coordinates=None):
+    def position_update(self, bot, coordinates=None):
         if coordinates is None:
             return
         emitted_object = {
             "coordinates": coordinates
         }
-        state["coordinates"] = coordinates
-        socketio.emit("position", emitted_object, namespace="/event")
+        self.state["coordinates"] = coordinates
+        self.socketio.emit("position", emitted_object, namespace="/event")
 
-    @manager.on("gyms_found", priority=-2000)
-    def gyms_found_event(bot=None, gyms=None):
+    def gyms_found_event(self, bot=None, gyms=None):
         if gyms is None or len(gyms) == 0:
             return
         emitted_object = {
             "gyms": gyms
         }
-        socketio.emit("gyms", emitted_object, namespace="/event")
+        self.socketio.emit("gyms", emitted_object, namespace="/event")
 
-    @manager.on("pokestops_found", priority=-2000)
-    def pokestops_found_event(bot=None, pokestops=None):
+    def pokestops_found_event(self, bot=None, pokestops=None):
         if pokestops is None or len(pokestops) == 0:
             return
         emitted_object = {
             "pokestops": pokestops
         }
-        socketio.emit("pokestops", emitted_object, namespace="/event")
+        self.socketio.emit("pokestops", emitted_object, namespace="/event")
 
-    @manager.on("pokestop_visited", priority=-2000)
-    def pokestop_visited_event(bot=None, pokestop=None):
+    def pokestop_visited_event(self, bot=None, pokestop=None):
         if pokestop is None:
             return
         emitted_object = {
             "pokestop": pokestop
         }
-        socketio.emit("pokestop_visited", emitted_object, namespace="/event")
+        self.socketio.emit("pokestop_visited", emitted_object, namespace="/event")
 
-    @manager.on("pokemon_caught")
-    def pokemon_caught(bot=None, pokemon=None, position=None):
+    def pokemon_caught(self, bot=None, pokemon=None, position=None):
         if pokemon is None:
             return
         emitted_object = {
             "pokemon": pokemon,
             "position": position
         }
-        socketio.emit("pokemon_caught", emitted_object, namespace="/event")
+        self.socketio.emit("pokemon_caught", emitted_object, namespace="/event")
 
-    @manager.on("pokemon_evolved")
-    def pokemon_evolved(bot=None, pokemon=None, evolution=None):
+    def pokemon_evolved(self, bot=None, pokemon=None, evolution=None):
         if pokemon is None:
             return
         emitted_object = {
             "pokemon": pokemon,
             "evolution": evolution
         }
-        socketio.emit("pokemon_evolved", emitted_object, namespace="/event")
+        self.socketio.emit("pokemon_evolved", emitted_object, namespace="/event")
 
-    @manager.on("after_transfer_pokemon")
-    def transfer_pokemon(bot=None, pokemon=None):
+    def transfer_pokemon(self, bot=None, pokemon=None):
         if pokemon is None:
             return
         emitted_object = {
             "pokemon": pokemon
         }
-        socketio.emit("transfered_pokemon", emitted_object, namespace="/event")
+        self.socketio.emit("transfered_pokemon", emitted_object, namespace="/event")
 
-    @manager.on("route")
-    def on_route_event(bot=None, route=None):
+    def on_route_event(self, bot=None, route=None):
         if route is not None:
-            socketio.emit("route", route, namespace="/event")
+            self.socketio.emit("route", route, namespace="/event")

@@ -1,21 +1,25 @@
 import unittest
 
+from mock import Mock
+
 from api.worldmap import Cell
 from pokemongo_bot import CamperNavigator
 from pokemongo_bot.navigation.destination import Destination
-from pokemongo_bot.tests import create_mock_bot
+from pokemongo_bot.tests import create_core_test_config, create_mock_api_wrapper
 
 
 class CamperNavigatorTest(unittest.TestCase):
-
     def test_navigate_campsite(self):
-        bot = create_mock_bot({
-            "walk": 5,
-            "max_steps": 2,
-            "navigator_campsite": "{},{}".format(51.5043872, -0.0741802)
+        config = create_core_test_config({
+            "movement": {
+                "navigator_campsite": [51.5043872, -0.0741802]
+            }
         })
+        api_wrapper = create_mock_api_wrapper(config)
 
-        navigator = CamperNavigator(bot)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        navigator = CamperNavigator(config, api_wrapper, logger)
         map_cells = self._create_map_cells()
 
         destinations = list()
@@ -31,13 +35,19 @@ class CamperNavigatorTest(unittest.TestCase):
         assert len(destinations) == 1
 
     def test_navigate_campsite_last_position(self):
-        bot = create_mock_bot({
-            "walk": 5,
-            "max_steps": 2,
-            "navigator_campsite": None
+        config = create_core_test_config({
+            "movement": {
+                "navigator_campsite": None
+            },
+            "mapping": {
+                "location": "0,0"
+            }
         })
+        api_wrapper = create_mock_api_wrapper(config)
 
-        navigator = CamperNavigator(bot)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        navigator = CamperNavigator(config, api_wrapper, logger)
         map_cells = self._create_map_cells()
 
         destinations = list()
@@ -53,13 +63,16 @@ class CamperNavigatorTest(unittest.TestCase):
         assert len(destinations) == 1
 
     def test_navigate_campsite_invalid_index(self):
-        bot = create_mock_bot({
-            "walk": 5,
-            "max_steps": 2,
-            "navigator_campsite": "{},{}".format(51.5043872, -0.0741802)
+        config = create_core_test_config({
+            "movement": {
+                "navigator_campsite": [51.5043872, -0.0741802]
+            },
         })
+        api_wrapper = create_mock_api_wrapper(config)
 
-        navigator = CamperNavigator(bot)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        navigator = CamperNavigator(config, api_wrapper, logger)
         navigator.pointer = 100
         map_cells = self._create_map_cells()
 
@@ -70,13 +83,16 @@ class CamperNavigatorTest(unittest.TestCase):
         assert len(destinations) == 0
 
     def test_navigate_campsite_add_before_start(self):
-        bot = create_mock_bot({
-            "walk": 5,
-            "max_steps": 2,
-            "navigator_campsite": "{},{}".format(51.5043872, -0.0741802)
+        config = create_core_test_config({
+            "movement": {
+                "navigator_campsite": [51.5043872, -0.0741802]
+            },
         })
+        api_wrapper = create_mock_api_wrapper(config)
 
-        navigator = CamperNavigator(bot)
+        logger = Mock()
+        logger.log = Mock(return_value=None)
+        navigator = CamperNavigator(config, api_wrapper, logger)
         map_cells = self._create_map_cells()
 
         navigator.set_campsite(51.5060435, -0.073983)

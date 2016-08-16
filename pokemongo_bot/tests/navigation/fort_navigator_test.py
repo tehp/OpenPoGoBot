@@ -5,23 +5,20 @@ from mock import MagicMock
 from api.worldmap import Cell
 from pokemongo_bot import FortNavigator
 from pokemongo_bot.navigation.destination import Destination
-from pokemongo_bot.tests import create_mock_bot
+from pokemongo_bot.tests import create_mock_api_wrapper, create_core_test_config
 
 
 class FortNavigatorTest(unittest.TestCase):
 
     def test_navigate_pokestops_known(self):
-        bot = create_mock_bot({
-            "walk": 5,
-            "max_steps": 2
-        })
-        api_wrapper = bot.api_wrapper
-        pgoapi = api_wrapper._api  # pylint: disable=protected-access
+        config = create_core_test_config()
+        api_wrapper = create_mock_api_wrapper(config)
+        navigator = FortNavigator(config, api_wrapper)
 
+        pgoapi = api_wrapper.get_api()
         pgoapi.set_response('fort_details', self._create_pokestop("Test Stop", 51.5043872, -0.0741802))
         pgoapi.set_response('fort_details', self._create_pokestop("Test Stop 2", 51.5060435, -0.073983))
 
-        navigator = FortNavigator(bot)
         map_cells = self._create_map_cells()
 
         destinations = list()
@@ -43,15 +40,13 @@ class FortNavigatorTest(unittest.TestCase):
         assert pgoapi.call_stack_size() == 0
 
     def test_navigate_pokestops_unknown(self):
-        bot = create_mock_bot({
-            "walk": 5,
-            "max_steps": 2
-        })
-        api_wrapper = bot.api_wrapper
+        config = create_core_test_config()
+        api_wrapper = create_mock_api_wrapper(config)
         api_wrapper.call = MagicMock(return_value=None)
-        pgoapi = api_wrapper._api  # pylint: disable=protected-access
+        navigator = FortNavigator(config, api_wrapper)
 
-        navigator = FortNavigator(bot)
+        pgoapi = api_wrapper.get_api()
+
         map_cells = self._create_map_cells()
 
         destinations = list()

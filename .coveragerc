@@ -2,3 +2,4 @@
 omit=
     pokemongo_bot/tests/*
     plugins/*/tests/*
+    app/tests/*
