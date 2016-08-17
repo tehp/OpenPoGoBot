@@ -27,9 +27,11 @@ class Player(object):
         self._logged_in = self._api_wrapper.login()
         return self._logged_in
 
-    def update(self):
+    def update(self, do_sleep=True):
         response_dict = self._api_wrapper.get_player().get_inventory().call()
-        sleep(2)
+
+        if do_sleep:
+            sleep(2)
 
         if response_dict is None:
             self._log('Failed to retrieve player and inventory stats', color='red')
@@ -113,7 +115,7 @@ class Player(object):
         self._api_wrapper.get_hatched_eggs()
         self._api_wrapper.check_awarded_badges()
 
-        self.update()
+        self.update(do_sleep=False)
 
         if len(self._player.hatched_eggs):
             self._player.hatched_eggs.pop(0)

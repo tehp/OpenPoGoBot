@@ -50,8 +50,8 @@ class Kernel(object):
         self._disabled_plugins.append(plugin_name)
 
     def boot(self):
-        self.load_config()
         # type: () -> None
+        self.load_config()
         self._plugin_manager = PluginManager(self._configs['core']['plugins']['include'])
         for plugin in self._plugin_manager.get_available_plugins():
             if plugin not in self._disabled_plugins:
