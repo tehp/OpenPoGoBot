@@ -35,12 +35,13 @@ class Kernel(object):
             self.disable_plugin(plugin)
 
         config_dir = os.path.dirname(self._config_file)
-        for node in os.listdir(os.path.join(config_dir, 'plugins')):
-            location = os.path.join(config_dir, 'plugins', node)
-            if os.path.isfile(location) and node[-4:].lower() == '.yml':
-                with open(location, 'r') as config_file:
-                    module_name = node[:-4]
-                    self._configs[module_name] = ruamel.yaml.load(config_file.read(), ruamel.yaml.RoundTripLoader)
+        for plugin_config_dir in self._configs['core']['plugins']['config']:
+            for node in os.listdir(os.path.join(config_dir, plugin_config_dir)):
+                location = os.path.join(config_dir, plugin_config_dir, node)
+                if os.path.isfile(location) and node[-4:].lower() == '.yml':
+                    with open(location, 'r') as config_file:
+                        module_name = node[:-4]
+                        self._configs[module_name] = ruamel.yaml.load(config_file.read(), ruamel.yaml.RoundTripLoader)
 
     def get_config(self):
         return self._configs

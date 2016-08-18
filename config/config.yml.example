@@ -68,5 +68,7 @@ plugins:
     include:
         - ./plugins
 
-    # Load plugin YAML config files from this folder
-    config: "config/plugins"
+    # Load plugin YAML config files from these directories, relative to the main config file directory.
+    # Later directories will override configs in previous directories.
+    config:
+        - "plugins"

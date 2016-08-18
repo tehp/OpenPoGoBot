@@ -66,4 +66,5 @@ plugins:
         - ./app/tests/plugins
 
     # Load plugin YAML config files from this folder
-    config: "config/plugins"
+    config:
+        - "plugins"
