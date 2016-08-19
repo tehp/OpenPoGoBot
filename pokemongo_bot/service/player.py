@@ -3,10 +3,11 @@ from pokemongo_bot.item_list import Item
 from pokemongo_bot.human_behaviour import sleep
 
 
-@kernel.container.register('player_service', ['@api_wrapper', '@logger'])
+@kernel.container.register('player_service', ['@api_wrapper', '@event_manager', '@logger'])
 class Player(object):
-    def __init__(self, api_wrapper, logger):
+    def __init__(self, api_wrapper, event_manager, logger):
         self._api_wrapper = api_wrapper
+        self._event_manager = event_manager
         self._logger = logger
         self._logged_in = False
 
@@ -48,6 +49,8 @@ class Player(object):
         for item_id in self._inventory:
             if item_id in self._pokeballs:
                 self._pokeballs[item_id] = self._inventory[item_id]
+
+        self._event_manager.fire('service_player_updated', data=self)
 
         return True
 

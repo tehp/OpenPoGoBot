@@ -28,13 +28,13 @@ class BotTest(unittest.TestCase):
 
         config_namespace = create_core_test_config()
         api_wrapper = create_mock_api_wrapper(config_namespace)
-        player_service = Player(api_wrapper, logger)
+        event_manager = EventManager()
+        player_service = Player(api_wrapper, event_manager, logger)
         pokemon_service = PokemonService(api_wrapper)
         mapper = Mapper(config_namespace, api_wrapper, Mock(), logger)
         path_finder = DirectPathFinder(config_namespace)
         stepper = Stepper(config_namespace, api_wrapper, path_finder, logger)
         navigator = FortNavigator(config_namespace, api_wrapper)
-        event_manager = EventManager()
 
         bot = PokemonGoBot(config_namespace, api_wrapper, player_service, pokemon_service, event_manager, mapper, stepper, navigator, logger)
 
@@ -324,13 +324,13 @@ class BotTest(unittest.TestCase):
         logger.log = Mock()
         config_namespace = create_core_test_config(config)
         api_wrapper = create_mock_api_wrapper(config_namespace)
-        player_service = Player(api_wrapper, logger)
+        event_manager = Mock()
+        player_service = Player(api_wrapper, event_manager, logger)
         pokemon_service = PokemonService(api_wrapper)
         mapper = Mapper(config_namespace, api_wrapper, Mock(), logger)
         path_finder = DirectPathFinder(config_namespace)
         stepper = Stepper(config_namespace, api_wrapper, path_finder, logger)
         navigator = FortNavigator(config_namespace, api_wrapper)
-        event_manager = Mock()
 
         return PokemonGoBot(
             config_namespace,

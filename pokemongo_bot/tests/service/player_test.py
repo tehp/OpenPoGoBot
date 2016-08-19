@@ -5,6 +5,7 @@ from mock import Mock, patch
 from api.player import Player as PlayerData
 from pokemongo_bot.item_list import Item
 from pokemongo_bot.service.player import Player
+from pokemongo_bot.event_manager import EventManager
 from pokemongo_bot.tests import create_core_test_config, create_mock_api_wrapper
 
 
@@ -13,9 +14,10 @@ class PlayerTest(unittest.TestCase):
     def test_login_success():
         config = create_core_test_config()
         api_wrapper = create_mock_api_wrapper(config)
+        event_manager = Mock()
         logger = Mock()
         logger.log = Mock()
-        player_service = Player(api_wrapper, logger)
+        player_service = Player(api_wrapper, event_manager, logger)
 
         api_wrapper.get_api().login = Mock(return_value=True)
 
@@ -25,9 +27,10 @@ class PlayerTest(unittest.TestCase):
     def test_login_failure():
         config = create_core_test_config()
         api_wrapper = create_mock_api_wrapper(config)
+        event_manager = Mock()
         logger = Mock()
         logger.log = Mock()
-        player_service = Player(api_wrapper, logger)
+        player_service = Player(api_wrapper, event_manager, logger)
 
         api_wrapper.get_api().login = Mock(return_value=False)
 
@@ -36,9 +39,10 @@ class PlayerTest(unittest.TestCase):
     def test_get_player(self):
         config = create_core_test_config()
         api_wrapper = create_mock_api_wrapper(config)
+        event_manager = Mock()
         logger = Mock()
         logger.log = Mock()
-        player_service = Player(api_wrapper, logger)
+        player_service = Player(api_wrapper, event_manager, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -53,9 +57,10 @@ class PlayerTest(unittest.TestCase):
     def test_get_inventory(self):
         config = create_core_test_config()
         api_wrapper = create_mock_api_wrapper(config)
+        event_manager = Mock()
         logger = Mock()
         logger.log = Mock()
-        player_service = Player(api_wrapper, logger)
+        player_service = Player(api_wrapper, event_manager, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -69,9 +74,10 @@ class PlayerTest(unittest.TestCase):
     def test_get_pokemon(self):
         config = create_core_test_config()
         api_wrapper = create_mock_api_wrapper(config)
+        event_manager = Mock()
         logger = Mock()
         logger.log = Mock()
-        player_service = Player(api_wrapper, logger)
+        player_service = Player(api_wrapper, event_manager, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -85,9 +91,10 @@ class PlayerTest(unittest.TestCase):
     def test_get_candies(self):
         config = create_core_test_config()
         api_wrapper = create_mock_api_wrapper(config)
+        event_manager = Mock()
         logger = Mock()
         logger.log = Mock()
-        player_service = Player(api_wrapper, logger)
+        player_service = Player(api_wrapper, event_manager, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -102,9 +109,10 @@ class PlayerTest(unittest.TestCase):
     def test_get_candy(self):
         config = create_core_test_config()
         api_wrapper = create_mock_api_wrapper(config)
+        event_manager = Mock()
         logger = Mock()
         logger.log = Mock()
-        player_service = Player(api_wrapper, logger)
+        player_service = Player(api_wrapper, event_manager, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -118,9 +126,10 @@ class PlayerTest(unittest.TestCase):
     def test_get_candy_key_error(self):
         config = create_core_test_config()
         api_wrapper = create_mock_api_wrapper(config)
+        event_manager = Mock()
         logger = Mock()
         logger.log = Mock()
-        player_service = Player(api_wrapper, logger)
+        player_service = Player(api_wrapper, event_manager, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -134,9 +143,10 @@ class PlayerTest(unittest.TestCase):
     def test_add_candy(self):
         config = create_core_test_config()
         api_wrapper = create_mock_api_wrapper(config)
+        event_manager = Mock()
         logger = Mock()
         logger.log = Mock()
-        player_service = Player(api_wrapper, logger)
+        player_service = Player(api_wrapper, event_manager, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -154,9 +164,10 @@ class PlayerTest(unittest.TestCase):
     def test_add_candy_new(self):
         config = create_core_test_config()
         api_wrapper = create_mock_api_wrapper(config)
+        event_manager = Mock()
         logger = Mock()
         logger.log = Mock()
-        player_service = Player(api_wrapper, logger)
+        player_service = Player(api_wrapper, event_manager, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -174,9 +185,10 @@ class PlayerTest(unittest.TestCase):
     def test_get_pokeballs(self):
         config = create_core_test_config()
         api_wrapper = create_mock_api_wrapper(config)
+        event_manager = Mock()
         logger = Mock()
         logger.log = Mock()
-        player_service = Player(api_wrapper, logger)
+        player_service = Player(api_wrapper, event_manager, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -200,9 +212,10 @@ class PlayerTest(unittest.TestCase):
     def test_print_stats(self):
         config = create_core_test_config()
         api_wrapper = create_mock_api_wrapper(config)
+        event_manager = Mock()
         logger = Mock()
         logger.log = Mock()
-        player_service = Player(api_wrapper, logger)
+        player_service = Player(api_wrapper, event_manager, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -232,9 +245,10 @@ class PlayerTest(unittest.TestCase):
     def test_print_stats_no_update(self):
         config = create_core_test_config()
         api_wrapper = create_mock_api_wrapper(config)
+        event_manager = Mock()
         logger = Mock()
         logger.log = Mock()
-        player_service = Player(api_wrapper, logger)
+        player_service = Player(api_wrapper, event_manager, logger)
 
         api_wrapper.call = Mock(return_value=None)
 
@@ -247,9 +261,10 @@ class PlayerTest(unittest.TestCase):
     def test_heartbeat(self):
         config = create_core_test_config()
         api_wrapper = create_mock_api_wrapper(config)
+        event_manager = Mock()
         logger = Mock()
         logger.log = Mock()
-        player_service = Player(api_wrapper, logger)
+        player_service = Player(api_wrapper, event_manager, logger)
 
         pgo = api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())

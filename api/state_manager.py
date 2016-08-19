@@ -29,7 +29,8 @@ class StateManager(object):
             "GET_HATCHED_EGGS": self._parse_get_hatched_eggs,
             "EVOLVE_POKEMON": self._parse_evolution,
             "DOWNLOAD_ITEM_TEMPLATES": self._identity,
-            "SET_FAVORITE_POKEMON": self._identity
+            "SET_FAVORITE_POKEMON": self._identity,
+            "LEVEL_UP_REWARDS": self._identity
         }
 
         # Maps methods to the state objects that they refresh.
@@ -50,7 +51,8 @@ class StateManager(object):
             "RECYCLE_INVENTORY_ITEM": [],
             "EVOLVE_POKEMON": ["evolution"],
             "DOWNLOAD_ITEM_TEMPLATES": ["DOWNLOAD_ITEM_TEMPLATES"],
-            "SET_FAVORITE_POKEMON": ["SET_FAVORITE_POKEMON"]
+            "SET_FAVORITE_POKEMON": ["SET_FAVORITE_POKEMON"],
+            "LEVEL_UP_REWARDS": []
         }
 
         # Maps methods to the state objects that they invalidate.
@@ -75,7 +77,8 @@ class StateManager(object):
             "RECYCLE_INVENTORY_ITEM": ["inventory"],
             "EVOLVE_POKEMON": ["player", "inventory", "pokemon", "pokedex", "candy"],
             "DOWNLOAD_ITEM_TEMPLATES": [],
-            "SET_FAVORITE_POKEMON": ["pokemon"]
+            "SET_FAVORITE_POKEMON": ["pokemon"],
+            "LEVEL_UP_REWARDS": ["inventory"]
         }
 
         self.current_state = {}

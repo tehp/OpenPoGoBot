@@ -5,9 +5,9 @@
 [![Dependency Status](https://www.versioneye.com/user/projects/57ac766d89a974004123d9f4/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/57ac766d89a974004123d9f4)
 
   A quick note:
-  
+
   This is a fork of the project [PokemonGo-Bot](https://github.com/PokemonGoF/PokemonGo-Bot) by [PokemonGoF](https://github.com/PokemonGoF).
-  
+
   The goal of this fork is to progress the bot in an organized manner, and to promote a clean and functional codebase. As a result, OpenPoGoBot will be more reliable and secure than PokemonGo-Bot.
 
 --------
@@ -112,7 +112,7 @@ Edit this file however you want, but keep in mind:
 
 1. Pokemon names should always be capitalized and are case-sensitive
 2. The ``any`` configuration effects every pokemon
-   
+
 
 ## FAQ
 
@@ -121,7 +121,7 @@ Here's the [introduction](http://bulbapedia.bulbagarden.net/wiki/Individual_valu
 ### Losing Starter Pokemon and others
 You can use -cp 1 to protect your first stage low CP pokemon.
 ### Set GEO Location
-Use either `-l "lat, long"` or `--location "lat, long"` 
+Use either `-l "lat, long"` or `--location "lat, long"`
 ### Google login issues (Login Error, Server busy)?
 
 Try to generate an [app password](!https://support.google.com/accounts/answer/185833?hl=en) and set is as
@@ -169,6 +169,7 @@ Here are the available plugins:
 
 |     **Plugins**    |
 |:------------------:|
+| `collect_rewards`  |
 | `catch_pokemon`    |
 | `egg_incubator`    |
 | `recycle_items`    |
