@@ -48,6 +48,9 @@ class PokemonGoBot(object):
         self.position = (0.0, 0.0, 0.0)
         self.last_session_check = time.gmtime()
 
+        self.break_nav = False
+        event_manager.add_listener("reset_navigation", self.reset_navigation)
+
         self.logger.log('[x] PokemonGO Bot v1.0', color='green')
         self.logger.log('[x] Configuration initialized', color='yellow')
 
@@ -105,6 +108,10 @@ class PokemonGoBot(object):
             position_lat = self.stepper.current_lat
             position_lng = self.stepper.current_lng
 
+            if self.break_nav:
+                self.break_nav = False
+                return
+
             steps = self.stepper.get_route_between(
                 position_lat,
                 position_lng,
@@ -120,6 +127,10 @@ class PokemonGoBot(object):
                       coords=(destination.target_lat, destination.target_lng, destination.target_alt))
 
             for step in self.stepper.step(destination):
+                if self.break_nav:
+                    self.break_nav = False
+                    return
+
                 self.fire("position_updated", coordinates=step)
                 self.player_service.heartbeat()
 
@@ -129,6 +140,10 @@ class PokemonGoBot(object):
                         self.stepper.current_lng
                     )
                 )
+
+                if self.break_nav:
+                    self.break_nav = False
+                    return
 
             self.fire("walking_finished",
                       coords=(destination.target_lat, destination.target_lng, destination.target_alt))
@@ -186,3 +201,6 @@ class PokemonGoBot(object):
         if player is None:
             return "Unknown"
         return player.username
+
+    def reset_navigation(self):
+        self.break_nav = True

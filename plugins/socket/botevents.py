@@ -2,11 +2,12 @@
 # pylint: disable=unused-variable, unused-argument
 
 class BotEvents(object):
-    def __init__(self, socketio, state, event_manager):
+    def __init__(self, bot, socketio, state, event_manager):
         self.socketio = socketio
         self.state = state
+        self.bot = bot
 
-        event_manager.add_listener('bot_initialized', self.bot_initialized)
+        event_manager.add_listener('bot_initialized', self.bot_initialized, priority=-100)
         event_manager.add_listener('position_updated', self.position_update)
 
         event_manager.add_listener('gyms_found', self.gyms_found_event, priority=-2000)
@@ -17,7 +18,10 @@ class BotEvents(object):
         event_manager.add_listener('pokemon_evolved', self.pokemon_evolved_event)
         event_manager.add_listener('after_transfer_pokemon', self.transfer_pokemon_event)
 
+        event_manager.add_listener('player_level_up', self.player_level_up_event)
+
         event_manager.add_listener('route', self.on_route_event)
+        event_manager.add_listener('manual_destination_reached', self.manual_destination_reached_event)
 
     def bot_initialized(self, bot):
         player = bot.player_service.get_player()
@@ -41,7 +45,6 @@ class BotEvents(object):
 
         # reinit state
         self.state.update(emitted_object)
-        self.state["bot"] = bot
 
         self.socketio.emit("bot_initialized", emitted_object, namespace="/event")
 
@@ -104,6 +107,15 @@ class BotEvents(object):
         }
         self.socketio.emit("transfered_pokemon", emitted_object, namespace="/event")
 
+    def player_level_up_event(self, level=None):
+        emitted_object = {
+            "level": level
+        }
+        self.socketio.emit("player_level_up", emitted_object, namespace="/event")
+
     def on_route_event(self, bot=None, route=None):
         if route is not None:
             self.socketio.emit("route", route, namespace="/event")
+
+    def manual_destination_reached_event(self, bot=None):
+        self.socketio.emit("manual_destination_reached_event")

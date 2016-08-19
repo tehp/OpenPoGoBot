@@ -38,7 +38,6 @@ class Event(object):
 
     def remove_listener(self, listener):
         for priority in self.listeners:
-            print(self.listeners[priority])
             self.listeners[priority].remove(listener)
         self.num_listeners -= 1
 
