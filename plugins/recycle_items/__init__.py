@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from app import Plugin
 from app import kernel
+from pokemongo_bot.human_behaviour import sleep
 
 
 @kernel.container.register('recycle_items', ['@config.recycle_items', '@event_manager', '@logger'], tags=['plugin'])
@@ -77,6 +78,8 @@ class RecycleItems(Plugin):
             self.log("Recycling {} {}{}".format(quantity, item_name, "s" if quantity > 1 else ""), color="green")
             bot.api_wrapper.recycle_inventory_item(item_id=item_type, count=quantity).call()
             recycled_items += quantity
+
+            sleep(2)
 
         if recycled_items > 0:
             self.log("Recycled {} items.".format(recycled_items), color="green")
