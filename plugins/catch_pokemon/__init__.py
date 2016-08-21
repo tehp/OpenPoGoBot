@@ -252,7 +252,7 @@ class CatchPokemon(Plugin):
 
 
     def get_spin(self, med):
-        if random.random() < float(self.config["throw"]["spin"]):
+        if random.random() > float(self.config["throw"]["spin"]):
             return 0
 
         val = random.gauss(med, 0.15)
