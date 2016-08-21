@@ -196,23 +196,17 @@ class CatchPokemon(Plugin):
     def throw_pokeball(self, bot, encounter_id, pokeball, spawn_point_id, pokemon, pos):
         # type: (PokemonGoBot, int, int, str, Pokemon) -> bool
 
-        if random.random() > self.config["throw"]["spin"]:
-            spin_modifier = 1
-        else:
-            spin_modifier = 0
+        (reticle, spin, hit) = self.generate_throw()
 
-        normalized_hit_position = self.get_hit()
-
-        print("spin: " + str(spin_modifier))
-        print("hit: " + str(normalized_hit_position))
+        print("Throw: %f, %f, %f" % (reticle, spin, hit))
 
         bot.api_wrapper.catch_pokemon(encounter_id=encounter_id,
                                       pokeball=pokeball,
-                                      normalized_reticle_size=1.950 - random.random() / 200,
+                                      normalized_reticle_size=reticle,
                                       spawn_point_id=spawn_point_id,
                                       hit_pokemon=True,
-                                      spin_modifier=spin_modifier,
-                                      normalized_hit_position=normalized_hit_position)
+                                      spin_modifier=spin,
+                                      normalized_hit_position=hit)
         response = bot.api_wrapper.call()
         if response is None:
             return False
@@ -240,23 +234,32 @@ class CatchPokemon(Plugin):
             bot.fire("pokemon_caught", pokemon=pokemon, position=pos)
             return False
 
-    def get_spin(self):
-        val = random.gauss(0.8, 0.15)
-        while val < 0 or val > 1:
-            val = random.gauss(0.8, 0.15)
-        return val
-
-    def get_hit(self):
+    def generate_throw(self):
         if self.config["throw"]["skill"] == "perfect":
-            return 1
+            return (1.7 + 0.25 * random.random(), 1, 1)
+        elif self.config["throw"]["skill"] == "better":
+            return (
+                1.5 + 0.45 * random.random(),
+                self.get_spin(0.8),
+                self.get_hit(0.8)
+            )
         else:
-            if self.config["throw"]["skill"] == "better":
-                med = 0.9
-            else:
-                med = 0.8
+            return (
+                1.2 + 0.75 * random.random(),
+                self.get_spin(0.6),
+                self.get_hit(0.5)
+            )
 
+
+    def get_spin(self, med):
+        if random.random() < float(self.config["throw"]["spin"]):
+            return 0
+
+        val = random.gauss(med, 0.15)
+        while val < 0 or val > 1:
             val = random.gauss(med, 0.15)
-            while val < 0 or val > 1:
-                val = random.gauss(med, 0.15)
-            return val
 
+        return val if val > 0.5 else 0
+
+    def get_hit(self, med):
+        return 1 if random.gauss(med, 0.15) >= 0.5 else 0

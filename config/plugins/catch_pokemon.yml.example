@@ -14,17 +14,15 @@
 #####################################################################
 
 # Configure lure pokemon at pokestop
-# catch=true catch lured pokemon while passing by
-# wait wait for lure to expire before moving on (not implemented yet)
+# wait_at_pokestop wait for lure to expire before moving on (not implemented yet)
 lure:
-    catch: true
-    wait: false
+    wait_at_pokestop: false
 
 # Configure pokeball throw
 throw:
-    # probability of user to spin the ball
+    # probability of user to spin the ball (ignored if perfect)
     spin: 0.7
 
     # type of catcher (average, good, perfect)
     # good, better, perfect
-    skill: perfect
+    skill: better
