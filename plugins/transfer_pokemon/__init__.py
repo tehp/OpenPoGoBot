@@ -118,7 +118,7 @@ class TransferPokemon(Plugin):
         for pokemon in transfer_list:
             species_num = pokemon.pokemon_id
             species_name = bot.pokemon_list[species_num - 1]["Name"]
-            if species_name not in always_keep_list or species_name in always_keep_list and isinstance(always_keep_list[species_name], list) and "keep" in always_keep_list[species_name] and always_keep_list[species_name]["keep"] is False:
+            if species_name not in always_keep_list or isinstance(always_keep_list[species_name], dict) and "keep" in always_keep_list[species_name] and always_keep_list[species_name]["keep"] is False:
                 new_transfer_list.append(pokemon)
             else:
                 excluded_species.add(species_name)
