@@ -118,4 +118,4 @@ class BotEvents(object):
             self.socketio.emit("route", route, namespace="/event")
 
     def manual_destination_reached_event(self, bot=None):
-        self.socketio.emit("manual_destination_reached_event")
+        self.socketio.emit("manual_destination_reached")
