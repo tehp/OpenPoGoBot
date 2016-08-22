@@ -76,7 +76,12 @@ Note that if you are running a 32-bit version of Python, you must have a 32-bit 
 git clone --recursive https://www.github.com/OpenPoGo/OpenPoGoBot
 cd OpenPoGoBot
 virtualenv env
-source env/bin/activate
+
+## For Linux Users
+source env/Scripts/activate
+## For Windows Users
+env/Scripts/activate.bat
+
 pip install -r requirements.txt
 ```
 
