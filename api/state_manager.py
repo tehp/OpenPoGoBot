@@ -29,6 +29,7 @@ class StateManager(object):
             "GET_HATCHED_EGGS": self._parse_get_hatched_eggs,
             "EVOLVE_POKEMON": self._parse_evolution,
             "DOWNLOAD_ITEM_TEMPLATES": self._identity,
+            "DOWNLOAD_REMOTE_CONFIG_VERSION": self._identity,
             "SET_FAVORITE_POKEMON": self._identity,
             "LEVEL_UP_REWARDS": self._identity
         }
@@ -41,7 +42,9 @@ class StateManager(object):
             "USE_ITEM_EGG_INCUBATOR": ["egg_incubators"],
             "GET_HATCHED_EGGS": [],
             "CHECK_AWARDED_BADGES": [],
+            "CHECK_CHALLENGE": [],
             "DOWNLOAD_SETTINGS": [],
+            "DOWNLOAD_REMOTE_CONFIG_VERSION": ["DOWNLOAD_REMOTE_CONFIG_VERSION"],
             "GET_MAP_OBJECTS": ["worldmap"],
             "ENCOUNTER": ["encounter"],
             "RELEASE_POKEMON": [],
@@ -66,7 +69,9 @@ class StateManager(object):
             "USE_ITEM_EGG_INCUBATOR": ["egg_incubators"],
             "GET_HATCHED_EGGS": [],
             "CHECK_AWARDED_BADGES": [],
+            "CHECK_CHALLENGE": [],
             "DOWNLOAD_SETTINGS": [],
+            "DOWNLOAD_REMOTE_CONFIG_VERSION": [],
             "GET_MAP_OBJECTS": ["worldmap"],
             "ENCOUNTER": ["encounter", "player", "pokedex"],
             "RELEASE_POKEMON": ["pokemon", "candy"],

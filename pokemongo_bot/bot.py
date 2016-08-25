@@ -57,6 +57,8 @@ class PokemonGoBot(object):
     def start(self):
         self._setup_logging()
         self._setup_api()
+        self.player_service.init()
+
         random.seed()
 
         self.stepper.start(*self.position)

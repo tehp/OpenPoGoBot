@@ -1,3 +1,7 @@
+import os
+from datetime import date
+import json
+
 from app import kernel
 from pokemongo_bot.item_list import Item
 from pokemongo_bot.human_behaviour import sleep
@@ -28,8 +32,31 @@ class Player(object):
         self._logged_in = self._api_wrapper.login()
         return self._logged_in
 
+    def init(self):
+        # mimic app
+        self._api_wrapper.get_player().check_challenge()
+        self._api_wrapper.call()
+
+        self._api_wrapper.get_player().check_challenge()
+        self._api_wrapper.call()
+
+        self._api_wrapper.download_remote_config_version(plateform="ANDROID", app_version=3300)
+        self._api_wrapper.get_inventory()
+        self._api_wrapper.check_challenge()
+        self._api_wrapper.check_awarded_badges()
+        self._api_wrapper.get_hatched_eggs()
+
+        response_dict = self._api_wrapper.call()
+        item_template_update = response_dict["DOWNLOAD_REMOTE_CONFIG_VERSION"]["item_templates_timestamp_ms"]
+        self.get_item_templates(item_template_update)
+
     def update(self, do_sleep=True):
-        response_dict = self._api_wrapper.get_player().get_inventory().call()
+        self._api_wrapper.get_inventory()
+        self._api_wrapper.check_challenge()
+        self._api_wrapper.check_awarded_badges()
+        self._api_wrapper.get_hatched_eggs()
+
+        response_dict = self._api_wrapper.call()
 
         if do_sleep:
             sleep(2)
@@ -53,6 +80,31 @@ class Player(object):
         self._event_manager.fire('service_player_updated', data=self)
 
         return True
+
+    def get_item_templates(self, timestamp=None):
+        item_templates = None
+        if timestamp is not None:
+            last = 0
+            if os.path.isfile("data/item_templates.json"):
+                with open('data/item_templates.json') as data_file:
+                    item_templates = json.load(data_file)
+                    last = item_templates["timestamp_ms"]
+
+            if last < timestamp:
+                print "get item templates"
+                response_dict = self._api_wrapper.download_item_templates().call()
+                item_templates = response_dict["DOWNLOAD_ITEM_TEMPLATES"]
+                with open('data/item_templates.json', 'w') as outfile:
+                    json.dump(item_templates, outfile)
+            else:
+                print "item templates ok"
+
+        if item_templates is None:
+            with open('data/item_templates.json') as data_file:
+                item_templates = json.load(data_file)
+
+        item_templates = item_templates["item_templates"]
+        return item_templates
 
     def get_player(self):
         self.update()
@@ -115,9 +167,6 @@ class Player(object):
             self._log('-- Pokestops visited: {:,}'.format(self._player.poke_stop_visits))
 
     def heartbeat(self):
-        self._api_wrapper.get_hatched_eggs()
-        self._api_wrapper.check_awarded_badges()
-
         self.update(do_sleep=False)
 
         if len(self._player.hatched_eggs):
@@ -129,9 +178,6 @@ class Player(object):
         if len(self._player.hatched_eggs):
             self._player.hatched_eggs.pop(0)
             self._log("[Egg] Hatched an egg!", "green")
-
-    def check_awarded_badges(self):
-        self._api_wrapper.check_awarded_badges().call()
 
     def _log(self, text, color='black'):
         self._logger.log(text, color=color, prefix='#')
