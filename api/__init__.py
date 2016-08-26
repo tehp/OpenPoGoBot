@@ -34,7 +34,7 @@ class PoGoApi(object):
     def login(self):
         try:
             provider, username, password = self.provider, self.username, self.password
-            return self._api.login(provider, username, password, app_simulation=True)
+            return self._api.login(provider, username, password, app_simulation=False)
         except TypeError:
             return False
 

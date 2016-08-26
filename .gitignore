@@ -42,3 +42,4 @@ encrypt.dll
 *.so
 *.o
 encrypt.c
+data/item_templates.json

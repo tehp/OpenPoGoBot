@@ -24,6 +24,17 @@ login:
     username: "YOURACCOUNT@gmail.com"
     password: "YOURPASSWORD"
 
+device_info:
+    # leave device id blank for generating a new one at each session
+    device_id: ""
+    device_brand: "Apple"
+    device_model: "iPhone"
+    device_model_boot: "iPhone8,2"
+    hardware_manufacturer: "Apple"
+    hardware_model: "N71AP"
+    firmware_brand: "iPhone OS"
+    firmware_type: "9.3.5"
+
 mapping:
     # Required, see https://developers.google.com/maps/documentation/javascript/get-api-key for details
     gmapkey: "GOOGLE API KEY"
