@@ -98,6 +98,10 @@ class PoGoApi(object):
             # build the request
             for method in uncached_method_keys:
                 my_args, my_kwargs = methods[method]
+                if method == "DOWNLOAD_SETTINGS":
+                    dlhash = self.state.get_state().get("dl_settings_hash")
+                    if dlhash is not None:
+                        my_kwargs["hash"] = dlhash
                 getattr(request, method)(*my_args, **my_kwargs)
 
             # random request delay to prevent status code 52: too many requests
@@ -145,5 +149,6 @@ class PoGoApi(object):
                 responses = results.get("responses", {})
                 for key in responses:
                     self.state.update_with_response(key, responses[key])
+
                 return self.state.get_state()
         return None
