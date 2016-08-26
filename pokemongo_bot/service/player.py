@@ -39,7 +39,7 @@ class Player(object):
         self._api_wrapper.get_player().call()
         # self._api_wrapper.get_player().check_challenge().call()
 
-        self._api_wrapper.download_remote_config_version(plateform="ANDROID", app_version=3300)
+        self._api_wrapper.download_remote_config_version(plateform="IOS", app_version=3300)
         self._api_wrapper.get_inventory()
         self._api_wrapper.check_awarded_badges()
         self._api_wrapper.download_settings()
@@ -50,7 +50,7 @@ class Player(object):
 
         self.dl_settings_hash = response_dict["DOWNLOAD_SETTINGS"]["hash"]
 
-        self._api_wrapper.get_asset_digest(plateform="ANDROID", app_version=3300)
+        self._api_wrapper.get_asset_digest(plateform="IOS", app_version=3300)
         self._api_wrapper.get_inventory()
         # self._api_wrapper.check_challenge()
         self._api_wrapper.check_awarded_badges()
