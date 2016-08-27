@@ -310,6 +310,8 @@ class BotTest(unittest.TestCase):
         pgo.set_response('get_player', self._create_generic_player_response())
         pgo.set_response('get_inventory', self._create_generic_inventory_response())
 
+        bot.start()
+
         assert (bot.get_username()) == 'test_account'
 
     def test_get_username_unknown(self):
