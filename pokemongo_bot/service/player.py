@@ -34,6 +34,10 @@ class Player(object):
 
     def init(self):
         # mimic app
+        self._api_wrapper.get_player()
+        # self._api_wrapper.check_challenge()
+        self._api_wrapper.call()
+
         self._api_wrapper.download_remote_config_version(plateform="IOS", app_version=3300)
         self._api_wrapper.get_inventory()
         self._api_wrapper.check_awarded_badges()
@@ -69,7 +73,8 @@ class Player(object):
             self._log('Failed to retrieve player and inventory stats', color='red')
             return False
 
-        self._player = response_dict['player']
+        self._player = self._api_wrapper.get_player_cache()
+
         self._inventory = response_dict['inventory']
         self._candies = response_dict['candy']
         self._pokemon = response_dict['pokemon']

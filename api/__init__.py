@@ -43,7 +43,6 @@ class PoGoApi(object):
             provider, username, password = self.provider, self.username, self.password
             return self._api.login(provider, username, password, app_simulation=False)
         except TypeError:
-            raise
             return False
 
     def set_position(self, lat, lng, alt):
@@ -54,6 +53,9 @@ class PoGoApi(object):
 
     def get_queued_methods(self):
         return self._api.list_curr_methods()
+
+    def get_player_cache(self):
+        return self.state.current_state.get("player", None)
 
     # Lazily queue RPC functions to be called. These will be filtered later.
     def __getattr__(self, func):
