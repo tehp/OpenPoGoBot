@@ -111,11 +111,11 @@ class Player(object):
                 with open('data/item_templates.json', 'w') as outfile:
                     json.dump(item_templates, outfile)
 
-        if item_templates is None:
+        if item_templates is None and os.path.isfile("data/item_templates.json"):
             with open('data/item_templates.json') as data_file:
                 item_templates = json.load(data_file)
 
-        item_templates = item_templates["item_templates"]
+        item_templates = item_templates["item_templates"] if item_templates is not None else None
         return item_templates
 
     def get_player(self):

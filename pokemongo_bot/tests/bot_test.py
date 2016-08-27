@@ -70,6 +70,7 @@ class BotTest(unittest.TestCase):
         pgo = bot.api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
         pgo.set_response('get_inventory', self._create_generic_inventory_response())
+        pgo.set_response('download_remote_config_version', self._create_generic_remote_config)
 
         bot.player_service.print_stats = Mock(return_value=None)
 
@@ -109,6 +110,7 @@ class BotTest(unittest.TestCase):
         pgo = bot.api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
         pgo.set_response('get_inventory', self._create_generic_inventory_response())
+        pgo.set_response('download_remote_config_version', self._create_generic_remote_config)
 
         bot.start()
 
@@ -181,6 +183,7 @@ class BotTest(unittest.TestCase):
         pgo = bot.api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
         pgo.set_response('get_inventory', self._create_generic_inventory_response())
+        pgo.set_response('download_remote_config_version', self._create_generic_remote_config)
 
         bot.start()
 
@@ -212,6 +215,7 @@ class BotTest(unittest.TestCase):
         pgo.should_login = [False, False, True]
         pgo.set_response('get_player', self._create_generic_player_response())
         pgo.set_response('get_inventory', self._create_generic_inventory_response())
+        pgo.set_response('download_remote_config_version', self._create_generic_remote_config)
 
         with patch('time.sleep', return_value=None) as sleep:
             bot.start()
@@ -232,6 +236,7 @@ class BotTest(unittest.TestCase):
         pgo.should_login = [False, False, True]
         pgo.set_response('get_player', self._create_generic_player_response())
         pgo.set_response('get_inventory', self._create_generic_inventory_response())
+        pgo.set_response('download_remote_config_version', self._create_generic_remote_config)
 
         bot.mapper.get_cells = Mock(return_value=[
             Cell({}),
@@ -304,11 +309,17 @@ class BotTest(unittest.TestCase):
         ])
 
     def test_get_username(self):
-        bot = self._create_generic_bot({})
+        bot = self._create_generic_bot({
+            'mapping': {
+                'location': '51.5037053,-0.2047603',
+                'location_cache': False,
+            }
+        })
 
         pgo = bot.api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
         pgo.set_response('get_inventory', self._create_generic_inventory_response())
+        pgo.set_response('download_remote_config_version', self._create_generic_remote_config)
 
         bot.start()
 
@@ -365,6 +376,12 @@ class BotTest(unittest.TestCase):
                     }
                 ]
             }
+        }
+
+    @staticmethod
+    def _create_generic_remote_config():
+        return {
+            'item_templates_timestamp_ms': -1
         }
 
     @staticmethod
