@@ -78,7 +78,19 @@ class PoGoApi(object):
         return 0
 
     def get_signature(self):
-        location_fix = Signature.LocationFix()
+        lat, lng, alt = self.get_position()
+
+        location_fix = [Signature.LocationFix(
+            provider='gps',
+            timestamp_snapshot=(get_time(ms=True) - RpcApi.START_TIME) - random.randint(100, 300),
+            latitude=lat,
+            longitude=lng,
+            horizontal_accuracy=round(random.uniform(50, 250), 7),
+            altitude=alt,
+            vertical_accuracy=random.randint(10, 20),
+            provider_status=3,
+            location_type=1
+        )]
 
         sensor_info = Signature.SensorInfo(
             timestamp_snapshot=(get_time(ms=True) - RpcApi.START_TIME) - random.randint(200, 400),
@@ -100,19 +112,6 @@ class PoGoApi(object):
             accelerometer_axes=3
         )
 
-        # device_info = None
-        # if self.device_info is not None:
-        #     device_info = Signature.DeviceInfo(
-        #         device_id=self.device_info["device_id"],
-        #         device_brand=self.device_info["device_brand"],
-        #         device_model=self.device_info["device_model"],
-        #         device_model_boot=self.device_info["device_model_boot"],
-        #         hardware_manufacturer=self.device_info["hardware_manufacturer"],
-        #         hardware_model=self.device_info["hardware_model"],
-        #         firmware_brand=self.device_info["firmware_brand"],
-        #         firmware_type=self.device_info["firmware_type"],
-        #     )
-
         activity_status = Signature.ActivityStatus(
             # walking=True,
             # stationary=True,
@@ -120,9 +119,10 @@ class PoGoApi(object):
             # tilting=True
         )
         signature = Signature(
-            #location_fix=location_fix,
+            location_fix=location_fix,
             sensor_info=sensor_info,
-            activity_status=activity_status
+            activity_status=activity_status,
+            unknown25=-8537042734809897855
         )
 
         if self.device_info is not None:

@@ -105,7 +105,7 @@ class Player(object):
                 self._api_wrapper.check_challenge()
                 self._api_wrapper.get_inventory()
                 self._api_wrapper.check_awarded_badges()
-                self._api_wrapper.download_settings(hash=self.dl_settings_hash)
+                self._api_wrapper.download_settings()
                 response_dict = self._api_wrapper.call()
                 item_templates = response_dict["DOWNLOAD_ITEM_TEMPLATES"]
                 with open('data/item_templates.json', 'w') as outfile:
