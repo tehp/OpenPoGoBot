@@ -69,7 +69,7 @@ class StateManager(object):
         # mutates at least one state.
         # Used for caching.
         self.method_mutates_states = {
-            "GET_PLAYER": [],
+            "GET_PLAYER": ["GET_PLAYER"],
             "GET_INVENTORY": [],
             "USE_ITEM_EGG_INCUBATOR": ["egg_incubators"],
             "GET_HATCHED_EGGS": ["GET_HATCHED_EGGS"],

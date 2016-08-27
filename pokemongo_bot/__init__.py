@@ -3,6 +3,7 @@ import sys
 import uuid
 
 import googlemaps
+import jsonpickle
 from pgoapi import PGoApi
 
 from app import kernel
@@ -32,8 +33,9 @@ def boot(service_container):
     device_info = dict(config['device_info'])
     if device_info["device_id"] is None:
         device_info["device_id"] = uuid.uuid4().hex
+    service_container.set_parameter('pogoapi.device_info', jsonpickle.encode(device_info))
 
-    service_container.register_singleton('pgoapi', PGoApi(device_info=device_info))
+    service_container.register_singleton('pgoapi', PGoApi())
     service_container.register_singleton('google_maps', googlemaps.Client(key=config["mapping"]["gmapkey"]))
 
     if config['movement']['path_finder'] in ['google', 'direct']:
