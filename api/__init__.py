@@ -24,7 +24,7 @@ class PoGoApi(object):
         self.username = username
         self.password = password
 
-        self.device_info = jsonpickle.decode(device_info)
+        self.device_info = jsonpickle.decode(device_info) if device_info is not None else None
 
         self.current_position = (0, 0, 0)
 
