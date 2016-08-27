@@ -315,6 +315,7 @@ class BotTest(unittest.TestCase):
                 'location_cache': False,
             }
         })
+        bot.mapper.google_maps.elevation = Mock(return_value=[{'elevation': 10.1}])
 
         pgo = bot.api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
@@ -381,7 +382,9 @@ class BotTest(unittest.TestCase):
     @staticmethod
     def _create_generic_remote_config():
         return {
-            'item_templates_timestamp_ms': -1
+            'download_remote_config_version': {
+                'item_templates_timestamp_ms': -1
+            }
         }
 
     @staticmethod
