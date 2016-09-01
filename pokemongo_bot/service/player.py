@@ -29,7 +29,8 @@ class Player(object):
 
     def login(self):
         self._logged_in = self._api_wrapper.login()
-        self._api_wrapper.init()
+        if self._logged_in:
+            self._api_wrapper.init()
         return self._logged_in
 
     def update(self, do_sleep=False):
