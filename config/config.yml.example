@@ -27,13 +27,18 @@ login:
 device_info:
     # leave device id blank for generating a new one at each session
     device_id: ""
-    device_brand: "Apple"
-    device_model: "iPhone"
-    device_model_boot: "iPhone8,2"
-    hardware_manufacturer: "Apple"
-    hardware_model: "N71AP"
-    firmware_brand: "iPhone OS"
-    firmware_type: "9.3.5"
+    android_board_name: "hammerhead"
+    android_bootloader: "HHZ21g"
+    device_brand: "google"
+    device_model: "hammerhead"
+    device_model_identifier: "MOB32A"
+    device_comms_model: "hammerhead"
+    hardware_manufacturer: "LGE"
+    hardware_model: "Nexus 5"
+    firmware_brand: "hammerhead"
+    firmware_tags: "release-keys"
+    firmware_type: "user"
+    firmware_fingerprint: "google/hammerhead/hammerhead:6.0.1/MOB32A/3167469:user/release-keys"
 
 mapping:
     # Required, see https://developers.google.com/maps/documentation/javascript/get-api-key for details

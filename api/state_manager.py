@@ -153,7 +153,6 @@ class StateManager(object):
         self.response_map[key](key, response)
 
     def _verify_challenge(self, key, response):
-        print(response)
         if response["challenge_url"] != " ":
             print(response["challenge_url"])
             raise AccountBannedException()
@@ -176,6 +175,8 @@ class StateManager(object):
             "eggs": new_inventory.eggs,
             "egg_incubators": new_inventory.egg_incubators
         }
+
+        new_state["inventory_timestamp"] = new_inventory.last_updated
 
         current_player = self.current_state.get("player", None)
         if current_player is None:
@@ -250,5 +251,4 @@ class StateManager(object):
         self._update_state({key: response})
 
     def _dl_settings(self, key, response):
-        self.current_state["dl_settings_hash"] = response["hash"]
-        self._update_state({key: response})
+        self._update_state({"download_settings": response})

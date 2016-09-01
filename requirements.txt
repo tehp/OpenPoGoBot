@@ -13,7 +13,7 @@ Jinja2==2.8
 jsonpickle==0.9.3
 MarkupSafe==0.23
 mock==2.0.0
--e git+https://github.com/keyphact/pgoapi.git@14fa3050c4e99f385a72b47bb345fd8b6b5bb1e9#egg=pgoapi-dev
+-e git+https://github.com/pogodevorg/pgoapi.git@b5d2667d85ee20085846e168990b1783bd6095d4#egg=pgoapi-dev
 protobuf==3.0.0
 protobuf-to-dict==0.1.0
 pycryptodomex==3.4.2

@@ -30,7 +30,7 @@ def boot(service_container):
     service_container.set_parameter('pogoapi.password', config['login']['password'])
     service_container.set_parameter('pogoapi.shared_lib', config['load_library'])
 
-    if config['device_info'] is not None:
+    if 'device_info' in config and config['device_info'] is not None:
         device_info = dict(config['device_info'])
         if device_info["device_id"] is None:
             device_info["device_id"] = uuid.uuid4().hex

@@ -21,6 +21,11 @@ class StealthApi(object):
         self.event_manager = event_manager
         self.state = self.api_wrapper.state.get_state()
 
+        self.download_settings_hash = None
+
+        self.plateform = "android"
+        self.version = 3500
+
     def login(self):
         return self.api_wrapper.login()
 
@@ -30,37 +35,42 @@ class StealthApi(object):
     def get_position(self):
         return self.api_wrapper.get_position()
 
-    def always(self):
-        # self.api_wrapper.check_challenge()
-        self.api_wrapper.get_hatched_eggs()
-        self.api_wrapper.check_awarded_badges()
-        self.api_wrapper.get_inventory()
-        self.api_wrapper.download_settings()
-
     def init(self):
         # mimic app
-        self.api_wrapper.get_player()
-        # self.api_wrapper.check_challenge()
+        self.api_wrapper.get_player(player_locale={'country':"EN", 'language':"us"})
+        self.api_wrapper.check_challenge()
         self.api_wrapper.call()
 
-        self.api_wrapper.download_remote_config_version(plateform="ANDROID", app_version=3300)
+        self.api_wrapper.download_remote_config_version(plateform=self.plateform, app_version=self.version)
         self.api_wrapper.get_inventory()
         self.api_wrapper.check_awarded_badges()
         self.api_wrapper.download_settings()
-        # self.api_wrapper.check_challenge()
+        self.api_wrapper.check_challenge()
         self.api_wrapper.get_hatched_eggs()
         response_dict = self.api_wrapper.call()
         item_template_update = response_dict["DOWNLOAD_REMOTE_CONFIG_VERSION"]["item_templates_timestamp_ms"]
 
-        self.api_wrapper.get_asset_digest(plateform="ANDROID", app_version=3300)
+        self.download_settings_hash = response_dict["download_settings"]["hash"]
+
+        self.api_wrapper.get_asset_digest(plateform=self.plateform, app_version=self.version)
         self.api_wrapper.get_inventory()
-        # self.api_wrapper.check_challenge()
+        self.api_wrapper.check_challenge()
         self.api_wrapper.check_awarded_badges()
         self.api_wrapper.download_settings()
         self.api_wrapper.get_hatched_eggs()
         self.api_wrapper.call()
 
         self.get_item_templates(item_template_update)
+
+    def always(self):
+        last_inventory_timestamp = self.state.get("inventory_timestamp", 0)
+        last_inventory_timestamp = 0 # for now
+
+        self.api_wrapper.check_challenge()
+        self.api_wrapper.get_hatched_eggs()
+        self.api_wrapper.check_awarded_badges()
+        self.api_wrapper.get_inventory(last_timestamp_ms=last_inventory_timestamp)
+        self.api_wrapper.download_settings(hash=self.download_settings_hash)
 
     def get_player(self):
         return self.state.get("player", None)

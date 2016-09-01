@@ -8,7 +8,6 @@ from pgoapi.exceptions import ServerSideRequestThrottlingException, ServerSideAc
     UnexpectedResponseException  # type: ignore
 from pgoapi.pgoapi import PGoApi, PGoApiRequest, RpcApi
 from pgoapi.protos.POGOProtos.Networking.Requests.RequestType_pb2 import RequestType
-from pgoapi.protos.POGOProtos.Networking.Envelopes.Signature_pb2 import Signature
 from pgoapi.utilities import get_time
 
 from app import kernel
@@ -17,7 +16,8 @@ from .stealth import StealthApi
 from .exceptions import AccountBannedException
 
 
-@kernel.container.register('api_wrapper', ['@pgoapi'], {'provider': '%pogoapi.provider%', 'username': '%pogoapi.username%', 'password': '%pogoapi.password%', 'shared_lib': '%pogoapi.shared_lib%', 'device_info': '%pogoapi.device_info%'})
+@kernel.container.register('api_wrapper', ['@pgoapi'], {'provider': '%pogoapi.provider%', 'username': '%pogoapi.username%', 'password': '%pogoapi.password%',
+                                                        'shared_lib': '%pogoapi.shared_lib%', 'device_info': '%pogoapi.device_info%'})
 class PoGoApi(object):
     def __init__(self, api, provider="google", username="", password="", shared_lib="encrypt.dll", device_info=None):
         self._api = api
@@ -25,7 +25,10 @@ class PoGoApi(object):
         self.username = username
         self.password = password
 
-        self.device_info = jsonpickle.decode(device_info) if device_info is not None else None
+        device_info = jsonpickle.decode(device_info) if device_info is not None else None
+        if "device_id" not in device_info or device_info["device_id"] is None or device_info["device_id"] == "":
+            device_info["device_id"] = '%016x' % random.randrange(16**16)
+        api.device_info = device_info
 
         self.current_position = (0, 0, 0)
 
@@ -78,60 +81,6 @@ class PoGoApi(object):
                 return int(field / 1000 - time.time())
         return 0
 
-    def get_signature(self):
-        lat, lng, alt = self.get_position()
-
-        location_fix = [Signature.LocationFix(
-            provider='gps',
-            timestamp_snapshot=(get_time(ms=True) - RpcApi.START_TIME) - random.randint(100, 300),
-            latitude=lat,
-            longitude=lng,
-            horizontal_accuracy=round(random.uniform(50, 250), 7),
-            altitude=alt,
-            vertical_accuracy=random.randint(10, 20),
-            provider_status=3,
-            location_type=1
-        )]
-
-        sensor_info = Signature.SensorInfo(
-            timestamp_snapshot=(get_time(ms=True) - RpcApi.START_TIME) - random.randint(200, 400),
-            magnetometer_x=random.uniform(-0.139084026217, 0.138112977147),
-            magnetometer_y=random.uniform(-0.2, 0.19),
-            magnetometer_z=random.uniform(-0.2, 0.4),
-            angle_normalized_x=random.uniform(-47.149471283, 61.8397789001),
-            angle_normalized_y=random.uniform(-47.149471283, 61.8397789001),
-            angle_normalized_z=random.uniform(-47.149471283, 5),
-            accel_raw_x=random.uniform(0.0729667818829, 0.0729667818829),
-            accel_raw_y=random.uniform(-2.788630499244109, 3.0586791383810468),
-            accel_raw_z=random.uniform(-0.34825887123552773, 0.19347580173737935),
-            gyroscope_raw_x=random.uniform(-0.9703824520111084, 0.8556089401245117),
-            gyroscope_raw_y=random.uniform(-1.7470258474349976, 1.4218578338623047),
-            gyroscope_raw_z=random.uniform(-0.9681901931762695, 0.8396636843681335),
-            accel_normalized_x=random.uniform(-0.31110161542892456, 0.1681540310382843),
-            accel_normalized_y=random.uniform(-0.6574847102165222, -0.07290205359458923),
-            accel_normalized_z=random.uniform(-0.9943905472755432, -0.7463029026985168),
-            accelerometer_axes=3
-        )
-
-        activity_status = Signature.ActivityStatus(
-            # walking=True,
-            # stationary=True,
-            # automotive=True,
-            # tilting=True
-        )
-        signature = Signature(
-            location_fix=location_fix,
-            sensor_info=sensor_info,
-            activity_status=activity_status,
-            unknown25=-8537042734809897855
-        )
-
-        if self.device_info is not None:
-            for key in self.device_info:
-                setattr(signature.device_info, key, self.device_info[key])
-
-        return signature
-
     def call(self, ignore_expiration=False, ignore_cache=False):
         methods, method_keys, self._pending_calls, self._pending_calls_keys = self._pending_calls, self._pending_calls_keys, {}, []
 
@@ -159,17 +108,13 @@ class PoGoApi(object):
             # build the request
             for method in uncached_method_keys:
                 my_args, my_kwargs = methods[method]
-                if method == "DOWNLOAD_SETTINGS":
-                    dlhash = self.state.get_state().get("dl_settings_hash")
-                    if dlhash is not None:
-                        my_kwargs["hash"] = dlhash
                 getattr(request, method)(*my_args, **my_kwargs)
 
             # random request delay to prevent status code 52: too many requests
             time.sleep(random.uniform(0.5, 1.5))
 
             try:
-                results = request.call(signature=self.get_signature())
+                results = request.call()
             except ServerSideRequestThrottlingException:
                 # status code 52: too many requests
                 print("[API] Requesting too fast. Retrying in 10 seconds...")
