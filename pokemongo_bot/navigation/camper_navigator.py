@@ -4,7 +4,7 @@ from pokemongo_bot.navigation.destination import Destination
 from pokemongo_bot.navigation.navigator import Navigator
 
 
-@kernel.container.register('camper_navigator', ['@config.core', '@api_wrapper', '@logger'])
+@kernel.container.register('camper_navigator', ['@config.core', '@stealth_api', '@logger'])
 class CamperNavigator(Navigator):
     def __init__(self, config, api_wrapper, logger):
         # type: (Namespace, PoGoApi, Logger) -> None

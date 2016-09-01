@@ -3,7 +3,7 @@ from pokemongo_bot.navigation.destination import Destination
 from pokemongo_bot.navigation.navigator import Navigator
 
 
-@kernel.container.register('waypoint_navigator', ['@config.core', '@api_wrapper'])
+@kernel.container.register('waypoint_navigator', ['@config.core', '@stealth_api'])
 class WaypointNavigator(Navigator):
     def __init__(self, config, api_wrapper):
         # type: (Namespace, PoGoApi) -> None

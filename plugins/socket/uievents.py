@@ -20,20 +20,21 @@ class UiEvents(object):
 
         @socketio.on("pokemon_settings", namespace="/event")
         def client_ask_for_pokemon_settings():
-            templates = self.bot.player_service.get_item_templates()
+            templates = self.bot.api_wrapper.get_item_templates()
             pokemon_settings = [t["pokemon_settings"] for t in templates if "pokemon_settings" in t]
             pokemon_settings = sorted(pokemon_settings, key=lambda p: p["pokemon_id"])
             socketio.emit("pokemon_settings", pokemon_settings, namespace="/event", room=request.sid)
 
         @socketio.on("pokemon_list", namespace="/event")
         def client_ask_for_pokemon_list():
-            self.bot.api_wrapper.get_player().get_inventory()
-            inventory = self.bot.api_wrapper.call()
+            pokemon = self.bot.player_service.get_pokemon()
+            candies = self.bot.player_service.get_candies()
+            eggs = self.bot.player_service.get_eggs()
 
             emit_object = {
-                "pokemon": inventory["pokemon"],
-                "candy": inventory["candy"],
-                "eggs_count": len(inventory["eggs"])
+                "pokemon": pokemon,
+                "candy": candies,
+                "eggs_count": len(eggs)
             }
             socketio.emit("pokemon_list", emit_object, namespace="/event", room=request.sid)
 
@@ -48,9 +49,7 @@ class UiEvents(object):
 
         @socketio.on("player_stats", namespace="/event")
         def client_ask_for_player_stats():
-            inventory = self.bot.api_wrapper.get_player().get_inventory().call()
-
-            player = inventory["player"]
+            player = self.bot.player_service.get_player()
             emit_object = {
                 "player": {
                     "level": player.level,
@@ -66,12 +65,14 @@ class UiEvents(object):
 
         @socketio.on("eggs_list", namespace="/event")
         def client_ask_for_eggs_list():
-            inventory = self.bot.api_wrapper.get_player().get_inventory().call()
+            player = self.bot.player_service.get_player()
+            eggs = self.bot.player_service.get_eggs()
+            egg_incubators = self.bot.player_service.get_egg_incubators()
 
             emit_object = {
-                "km_walked": inventory["player"].km_walked,
-                "eggs": inventory["eggs"],
-                "egg_incubators": inventory["egg_incubators"]
+                "km_walked": player.km_walked,
+                "eggs": eggs,
+                "egg_incubators": egg_incubators
             }
             socketio.emit("eggs_list", emit_object, namespace="/event", room=request.sid)
 
@@ -81,12 +82,12 @@ class UiEvents(object):
 
             pkm_id = int(evt["id"])
 
-            all_pokemons = self.bot.api_wrapper.get_player().get_inventory().call()["pokemon"]
+            all_pokemons = self.bot.player_service.get_pokemon()
 
             pokemon = self._find(lambda p: p.unique_id == pkm_id, all_pokemons)
 
             if pokemon is not None:
-                self.bot.api_wrapper.release_pokemon(pokemon_id=int(evt["id"])).call()
+                self.bot.api_wrapper.release_pokemon(pokemon_id=int(evt["id"]))
                 self.bot.fire('after_transfer_pokemon', pokemon=pokemon)
 
                 pokemon_num = pokemon.pokemon_id
@@ -104,12 +105,12 @@ class UiEvents(object):
 
             pkm_id = int(evt["id"])
 
-            all_pokemons = self.bot.api_wrapper.get_player().get_inventory().call()["pokemon"]
+            all_pokemons = self.bot.player_service.get_pokemon()
 
             pokemon = self._find(lambda p: p.unique_id == pkm_id, all_pokemons)
 
             if pokemon is not None:
-                response = self.bot.api_wrapper.evolve_pokemon(pokemon_id=int(evt["id"])).call()
+                response = self.bot.api_wrapper.evolve_pokemon(pokemon_id=int(evt["id"]))
                 if response['evolution'].success:
                     evolved_id = response['evolution'].get_pokemon().pokemon_id
                     self.log('Evolved {} into {}'.format(self.bot.pokemon_list[pokemon.pokemon_id - 1]['Name'],
@@ -123,7 +124,7 @@ class UiEvents(object):
             count = int(evt["count"])
             item_name = self.bot.item_list[item_id]
             self.log("Recycling {} {}{}".format(count, item_name, "s" if count > 1 else ""))
-            self.bot.api_wrapper.recycle_inventory_item(item_id=item_id, count=count).call()
+            self.bot.api_wrapper.recycle_inventory_item(item_id=item_id, count=count)
 
         @socketio.on("favorite_pokemon", namespace="/event")
         def client_ask_for_favorite_pokemon(evt):
@@ -132,7 +133,7 @@ class UiEvents(object):
             pkm_id = int(evt["id"])
             favorite = evt["favorite"]
 
-            self.bot.api_wrapper.set_favorite_pokemon(pokemon_id=pkm_id, is_favorite=favorite).call()
+            self.bot.api_wrapper.set_favorite_pokemon(pokemon_id=pkm_id, is_favorite=favorite)
 
         @socketio.on("set_destination", namespace="/event")
         def client_set_destination(evt):

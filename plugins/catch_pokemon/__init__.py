@@ -28,12 +28,10 @@ class CatchPokemon(Plugin):
             spawn_point_id = pokemon_encounter['spawn_point_id']
             player_latitude = pokemon_encounter['latitude']
             player_longitude = pokemon_encounter['longitude']
-            bot.api_wrapper.encounter(encounter_id=encounter_id,
-                                      spawn_point_id=spawn_point_id,
-                                      player_latitude=player_latitude,
-                                      player_longitude=player_longitude)
-
-            response = bot.api_wrapper.call()
+            response = bot.api_wrapper.encounter(encounter_id=encounter_id,
+                                                 spawn_point_id=spawn_point_id,
+                                                 player_latitude=player_latitude,
+                                                 player_longitude=player_longitude)
 
             encounter_data = response["encounter"]
             status = encounter_data.status
@@ -107,14 +105,13 @@ class CatchPokemon(Plugin):
     def throw_pokeball(self, bot, encounter_id, pokeball, spawn_point_id, pokemon, pos):
         # type: (PokemonGoBot, int, int, str, Pokemon) -> bool
 
-        bot.api_wrapper.catch_pokemon(encounter_id=encounter_id,
-                                      pokeball=pokeball,
-                                      normalized_reticle_size=1.950 - random.random() / 200,
-                                      spawn_point_id=spawn_point_id,
-                                      hit_pokemon=True,
-                                      spin_modifier=1,
-                                      normalized_hit_position=1)
-        response = bot.api_wrapper.call()
+        response = bot.api_wrapper.catch_pokemon(encounter_id=encounter_id,
+                                                 pokeball=pokeball,
+                                                 normalized_reticle_size=1.950 - random.random() / 200,
+                                                 spawn_point_id=spawn_point_id,
+                                                 hit_pokemon=True,
+                                                 spin_modifier=1,
+                                                 normalized_hit_position=1)
         if response is None:
             return False
         pokemon_catch_response = response["encounter"]

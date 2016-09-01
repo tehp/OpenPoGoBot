@@ -70,7 +70,7 @@ class BotTest(unittest.TestCase):
         pgo = bot.api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
         pgo.set_response('get_inventory', self._create_generic_inventory_response())
-        pgo.set_response('download_remote_config_version', self._create_generic_remote_config)
+        pgo.set_response('DOWNLOAD_REMOTE_CONFIG_VERSION', self._create_generic_remote_config)
 
         bot.player_service.print_stats = Mock(return_value=None)
 
@@ -110,7 +110,7 @@ class BotTest(unittest.TestCase):
         pgo = bot.api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
         pgo.set_response('get_inventory', self._create_generic_inventory_response())
-        pgo.set_response('download_remote_config_version', self._create_generic_remote_config)
+        pgo.set_response('DOWNLOAD_REMOTE_CONFIG_VERSION', self._create_generic_remote_config)
 
         bot.start()
 
@@ -142,6 +142,8 @@ class BotTest(unittest.TestCase):
                 'location_cache': True,
             }
         })
+
+        pgo.set_response('DOWNLOAD_REMOTE_CONFIG_VERSION', self._create_generic_remote_config)
 
         if os.path.isfile('data/last-location-'+account+'.json'):
             os.unlink('data/last-location-'+account+'.json')
@@ -183,7 +185,7 @@ class BotTest(unittest.TestCase):
         pgo = bot.api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
         pgo.set_response('get_inventory', self._create_generic_inventory_response())
-        pgo.set_response('download_remote_config_version', self._create_generic_remote_config)
+        pgo.set_response('DOWNLOAD_REMOTE_CONFIG_VERSION', self._create_generic_remote_config)
 
         bot.start()
 
@@ -215,7 +217,7 @@ class BotTest(unittest.TestCase):
         pgo.should_login = [False, False, True]
         pgo.set_response('get_player', self._create_generic_player_response())
         pgo.set_response('get_inventory', self._create_generic_inventory_response())
-        pgo.set_response('download_remote_config_version', self._create_generic_remote_config)
+        pgo.set_response('DOWNLOAD_REMOTE_CONFIG_VERSION', self._create_generic_remote_config)
 
         with patch('time.sleep', return_value=None) as sleep:
             bot.start()
@@ -236,7 +238,7 @@ class BotTest(unittest.TestCase):
         pgo.should_login = [False, False, True]
         pgo.set_response('get_player', self._create_generic_player_response())
         pgo.set_response('get_inventory', self._create_generic_inventory_response())
-        pgo.set_response('download_remote_config_version', self._create_generic_remote_config)
+        pgo.set_response('DOWNLOAD_REMOTE_CONFIG_VERSION', self._create_generic_remote_config)
 
         bot.mapper.get_cells = Mock(return_value=[
             Cell({}),
@@ -310,19 +312,23 @@ class BotTest(unittest.TestCase):
 
     def test_get_username(self):
         bot = self._create_generic_bot({
+            'plugins': {
+                'exclude': ['another_test_plugin'],
+            },
             'mapping': {
                 'location': '51.5037053,-0.2047603',
                 'location_cache': False,
             }
         })
         bot.mapper.google_maps.elevation = Mock(return_value=[{'elevation': 10.1}])
+        bot.player_service.print_stats = Mock(return_value=None)
 
         pgo = bot.api_wrapper.get_api()
         pgo.set_response('get_player', self._create_generic_player_response())
         pgo.set_response('get_inventory', self._create_generic_inventory_response())
-        pgo.set_response('download_remote_config_version', self._create_generic_remote_config)
+        pgo.set_response('DOWNLOAD_REMOTE_CONFIG_VERSION', self._create_generic_remote_config)
 
-        bot.start()
+        bot.api_wrapper.get_player()
 
         assert (bot.get_username()) == 'test_account'
 
@@ -382,7 +388,7 @@ class BotTest(unittest.TestCase):
     @staticmethod
     def _create_generic_remote_config():
         return {
-            'download_remote_config_version': {
+            'DOWNLOAD_REMOTE_CONFIG_VERSION': {
                 'item_templates_timestamp_ms': -1
             }
         }

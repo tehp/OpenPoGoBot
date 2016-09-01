@@ -2,7 +2,7 @@
 from app import Plugin
 from app import kernel
 
-@kernel.container.register('collect_rewards', ['@pokemongo_bot', '@api_wrapper', '@event_manager', '@logger'], tags=['plugin'])
+@kernel.container.register('collect_rewards', ['@pokemongo_bot', '@stealth_api', '@event_manager', '@logger'], tags=['plugin'])
 class CollectRewards(Plugin):
     """
     # ----
@@ -65,7 +65,7 @@ class CollectRewards(Plugin):
 
         # api call - request the rewards
         # Example : {'items_awarded': [{'item_id': 1, 'item_count': 15}, {'item_id': 1, 'item_count': 15}], 'result': 1}
-        response_dict = self.api_wrapper.level_up_rewards(level=CollectRewards.level_current).call()
+        response_dict = self.api_wrapper.level_up_rewards(level=CollectRewards.level_current)
         reward_dict = response_dict['LEVEL_UP_REWARDS']
 
         # check if there is a reward to give out

@@ -104,32 +104,14 @@ class StateManager(object):
 
     # Check whether a method is cached or if it needs to be updated.
     def is_method_cached(self, method):
-        affected_states = self.method_returns_states[method]
-        for state in affected_states:
-            if self.is_stale(state):
-                return False
-        return True
+        return False
 
     # Filter the list of methods so that only uncached methods (or methods that will become
     # uncached) and state-invalidating methods will be called. Note that the order is
     # important - calling GET_INVENTORY before FORT_SEARCH, for example, will return the cached
     # and now invalidated inventory object. To fix, call FORT_SEARCH and then GET_INVENTORY.
     def filter_cached_methods(self, method_keys):
-        will_be_stale = {}
-        uncached_methods = []
-        for method in method_keys:
-            affected_states = self.method_mutates_states[method]
-            if len(affected_states) > 0:
-                uncached_methods.append(method)
-                for state in affected_states:
-                    will_be_stale[state] = True
-            else:
-                returned_states = self.method_returns_states[method]
-                for state in returned_states:
-                    if self.is_stale(state) or will_be_stale.get(state, False):
-                        uncached_methods.append(method)
-                        break
-        return uncached_methods
+        return method_keys
 
     # Update a state object and mark it as valid.
     def _update_state(self, data):

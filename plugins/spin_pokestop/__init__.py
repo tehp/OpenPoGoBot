@@ -73,7 +73,7 @@ class SpinPokestop(Plugin):
 
         fort_details = bot.api_wrapper.fort_details(fort_id=pokestop.fort_id,
                                                     latitude=pokestop.latitude,
-                                                    longitude=pokestop.longitude).call()
+                                                    longitude=pokestop.longitude)
         dist = distance(bot.stepper.current_lat, bot.stepper.current_lng, pokestop.latitude, pokestop.longitude)
         self.log(
             "Nearby PokeStop found \"{}\" ({} away)".format(
@@ -86,13 +86,12 @@ class SpinPokestop(Plugin):
 
         self.log("Spinning...", color="yellow")
         sleep(3)
-        bot.api_wrapper.fort_search(fort_id=fort_id,
-                                    fort_latitude=latitude,
-                                    fort_longitude=longitude,
-                                    player_latitude=player_latitude,
-                                    player_longitude=player_longitude)
+        response = bot.api_wrapper.fort_search(fort_id=fort_id,
+                                               fort_latitude=latitude,
+                                               fort_longitude=longitude,
+                                               player_latitude=player_latitude,
+                                               player_longitude=player_longitude)
 
-        response = bot.api_wrapper.call()
         if response is None:
             self.log("Got empty response from the API. Skipping.", color="red")
             return

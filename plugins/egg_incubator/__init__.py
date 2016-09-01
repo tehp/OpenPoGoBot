@@ -54,5 +54,5 @@ class EggIncubator(Plugin):
         if incubator is None or egg is None:
             return
 
-        bot.api_wrapper.use_item_egg_incubator(item_id=incubator.unique_id, pokemon_id=egg.unique_id).call()
+        bot.api_wrapper.use_item_egg_incubator(item_id=incubator.unique_id, pokemon_id=egg.unique_id)
         self.log("Put a {}km egg into an incubator".format(int(egg.total_distance)), "green")

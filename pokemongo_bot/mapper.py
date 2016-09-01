@@ -10,7 +10,7 @@ from app import kernel
 from pokemongo_bot.utils import distance
 
 
-@kernel.container.register('mapper', ['@config.core', '@api_wrapper', '@google_maps', '@logger'])
+@kernel.container.register('mapper', ['@config.core', '@stealth_api', '@google_maps', '@logger'])
 class Mapper(object):
     def __init__(self, config, api_wrapper, google_maps, logger):
         # type: (Namespace, PoGoApi, Client) -> None
@@ -25,12 +25,11 @@ class Mapper(object):
             self.config['mapping']['cell_radius']
         )
         timestamp = [0, ] * len(cell_id)
-        self.api_wrapper.get_map_objects(latitude=lat,
-                                         longitude=lng,
-                                         since_timestamp_ms=timestamp,
-                                         cell_id=cell_id)
+        response_dict = self.api_wrapper.get_map_objects(latitude=lat,
+                                                         longitude=lng,
+                                                         since_timestamp_ms=timestamp,
+                                                         cell_id=cell_id)
 
-        response_dict = self.api_wrapper.call()
         if response_dict is None:
             return []
 

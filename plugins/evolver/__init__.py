@@ -42,8 +42,7 @@ class Evolver(Plugin):
             for pokemon in pokemon_evolve:
                 if num_evolve > pokemon_candies:
                     break
-                bot.api_wrapper.evolve_pokemon(pokemon_id=pokemon.unique_id)
-                response = bot.api_wrapper.call()
+                response = bot.api_wrapper.evolve_pokemon(pokemon_id=pokemon.unique_id)
                 if response['evolution'].success:
                     pokemon_candies -= (num_evolve - 1)
                     num_evolved += 1

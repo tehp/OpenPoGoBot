@@ -7,7 +7,7 @@ from pokemongo_bot.human_behaviour import sleep, random_lat_long_delta
 from pokemongo_bot.utils import distance, format_time, format_dist
 
 
-@kernel.container.register('stepper', ['@config.core', '@api_wrapper', '%path_finder%', '@logger'])
+@kernel.container.register('stepper', ['@config.core', '@stealth_api', '%path_finder%', '@logger'])
 class Stepper(object):
     AVERAGE_STRIDE_LENGTH_IN_METRES = 0.60
 

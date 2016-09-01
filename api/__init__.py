@@ -13,6 +13,7 @@ from pgoapi.utilities import get_time
 
 from app import kernel
 from .state_manager import StateManager
+from .stealth import StealthApi
 from .exceptions import AccountBannedException
 
 

@@ -76,7 +76,7 @@ class RecycleItems(Plugin):
             quantity = recyclable_items[item_type]
             item_name = bot.item_list[item_type]
             self.log("Recycling {} {}{}".format(quantity, item_name, "s" if quantity > 1 else ""), color="green")
-            bot.api_wrapper.recycle_inventory_item(item_id=item_type, count=quantity).call()
+            bot.api_wrapper.recycle_inventory_item(item_id=item_type, count=quantity)
             recycled_items += quantity
 
             sleep(2)
