@@ -36,6 +36,12 @@ class Encounter(JSONEncodable):
 
         self.probability = data.get("capture_probability", {}).get("capture_probability", [0.0, 0.0, 0.0])
 
+    def update_disk_encounter(self, data):
+        self.status = data.get("result", 0)
+        pokemon_data = data.get("pokemon_data", None)
+        self.wild_pokemon = Pokemon(pokemon_data) if pokemon_data is not None else None
+        self.probability = data.get("capture_probability", {}).get("capture_probability", [0.0, 0.0, 0.0])
+
     def update_catch_pokemon(self, data):
         self.status = data.get("status", 0)
         self.captured_pokemon_id = data.get("catpured_pokemon_id", 0)

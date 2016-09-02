@@ -27,6 +27,7 @@ class PokeStop(Fort):
         self.lure_expires_timestamp_ms = lure_info.get("lure_expires_timestamp_ms", None)
         self.lure_encounter_id = lure_info.get("encounter_id", None)
         self.lure_pokemon_id = lure_info.get("active_pokemon_id", None)
+        self.lure_fort_id = lure_info.get("fort_id", None)
         self.fort_type = 1
 
     def is_lure_active(self):

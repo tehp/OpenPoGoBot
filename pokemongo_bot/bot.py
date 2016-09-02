@@ -17,7 +17,7 @@ from pokemongo_bot.mapper import Mapper
 from pokemongo_bot.stepper import Stepper
 from pokemongo_bot.event_manager import EventManager
 from pokemongo_bot.navigation import CamperNavigator, FortNavigator, WaypointNavigator
-
+from api.encounter import Encounter
 
 # Uncomment for type annotations on Python 3
 # from typing import Any, List, Dict, Union, Tuple
@@ -156,9 +156,22 @@ class PokemonGoBot(object):
             encounters += cell.catchable_pokemon + cell.wild_pokemon
             pokestops += cell.pokestops
 
+        lure_encounters = []
+        for fort in pokestops:
+            if fort.lure_encounter_id is not None:
+                lure_encounters.append({
+                    "encounter_id": fort.lure_encounter_id,
+                    "latitude": fort.latitude,
+                    "longitude": fort.longitude,
+                    "fort_id": fort.lure_fort_id
+                })
+
+        if len(lure_encounters):
+            self.fire("lure_pokemon_found", encounters=lure_encounters)
         if len(encounters):
             self.fire("pokemon_found", encounters=encounters)
         if len(pokestops):
+            # should only fire new pokestops
             self.fire("pokestops_found", pokestops=pokestops)
 
     def fire(self, event, *args, **kwargs):

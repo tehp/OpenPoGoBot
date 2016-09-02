@@ -19,6 +19,7 @@ class StateManager(object):
             "GET_INVENTORY": self._parse_inventory,
             "GET_MAP_OBJECTS": self._parse_map,
             "ENCOUNTER": self._parse_encounter,
+            "DISK_ENCOUNTER": self._parse_disk_encounter,
             "RELEASE_POKEMON": self._noop,
             "CATCH_POKEMON": self._parse_catch_pokemon,
             "PLAYER_UPDATE": self._noop,
@@ -44,6 +45,7 @@ class StateManager(object):
             "DOWNLOAD_SETTINGS": [],
             "GET_MAP_OBJECTS": ["worldmap"],
             "ENCOUNTER": ["encounter"],
+            "DISK_ENCOUNTER": [],
             "RELEASE_POKEMON": [],
             "PLAYER_UPDATE": [],
             "FORT_DETAILS": ["fort"],
@@ -69,6 +71,7 @@ class StateManager(object):
             "DOWNLOAD_SETTINGS": [],
             "GET_MAP_OBJECTS": ["worldmap"],
             "ENCOUNTER": ["encounter", "player", "pokedex"],
+            "DISK_ENCOUNTER": ["encounter"],
             "RELEASE_POKEMON": ["pokemon", "candy"],
             "CATCH_POKEMON": ["encounter", "player", "pokemon", "pokedex", "candy", "inventory"],
             "PLAYER_UPDATE": ["player", "inventory"],
@@ -203,6 +206,11 @@ class StateManager(object):
         current_encounter = Encounter()
         current_encounter.update_encounter(response)
         self._update_state({"encounter": current_encounter})
+
+    def _parse_disk_encounter(self, key, response):
+        current_encounter = Encounter()
+        current_encounter.update_disk_encounter(response)
+        self._update_state({"disk_encounter": current_encounter})
 
     def _parse_catch_pokemon(self, key, response):
         current_encounter = self.current_state.get("encounter", None)
