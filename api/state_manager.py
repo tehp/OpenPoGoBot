@@ -94,6 +94,8 @@ class StateManager(object):
         full_inventory = self.current_state.get("full_inventory", InventoryParser())
         full_inventory.update(response)
 
+        logging.debug(response)
+
         new_state = {
             "full_inventory": full_inventory,
             "inventory": full_inventory.items,
