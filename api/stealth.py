@@ -119,6 +119,14 @@ class StealthApi(object):
         self.always()
         return self.api_wrapper.call()
 
+    def disk_encounter(self, encounter_id, fort_id, player_latitude, player_longitude):
+        self.api_wrapper.disk_encounter(encounter_id=encounter_id,
+                                   fort_id=fort_id,
+                                   player_latitude=player_latitude,
+                                   player_longitude=player_longitude)
+        self.always()
+        return self.api_wrapper.call()
+
     def catch_pokemon(self, encounter_id, pokeball, normalized_reticle_size, spawn_point_id, hit_pokemon, spin_modifier, normalized_hit_position):
         self.api_wrapper.catch_pokemon(encounter_id=encounter_id,
                                        pokeball=pokeball,
