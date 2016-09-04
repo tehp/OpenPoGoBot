@@ -108,10 +108,18 @@ class BotEvents(object):
         self.socketio.emit("transfered_pokemon", emitted_object, namespace="/event")
 
     def player_level_up_event(self, level=None):
-        emitted_object = {
-            "level": level
+        player = self.bot.player_service.get_player()
+        emit_object = {
+            "player": {
+                "level": player.level,
+                "unique_pokedex_entries": player.unique_pokedex_entries,
+                "pokemons_captured": player.pokemons_captured,
+                "next_level_xp": player.next_level_xp,
+                "prev_level_xp": player.prev_level_xp,
+                "experience": player.experience
+            }
         }
-        self.socketio.emit("player_level_up", emitted_object, namespace="/event")
+        self.socketio.emit("player_stats", emit_object, namespace="/event")
 
     def on_route_event(self, bot=None, route=None):
         if route is not None:

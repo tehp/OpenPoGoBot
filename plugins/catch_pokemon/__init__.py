@@ -114,12 +114,10 @@ class CatchPokemon(Plugin):
             fort_id = pokemon_encounter['fort_id']
             player_latitude = pokemon_encounter['latitude']
             player_longitude = pokemon_encounter['longitude']
-            bot.api_wrapper.disk_encounter(encounter_id=encounter_id,
-                                           fort_id=fort_id,
-                                           player_latitude=player_latitude,
-                                           player_longitude=player_longitude)
-
-            response = bot.api_wrapper.call()
+            response = bot.api_wrapper.disk_encounter(encounter_id=encounter_id,
+                                                     fort_id=fort_id,
+                                                     player_latitude=player_latitude,
+                                                     player_longitude=player_longitude)
 
             encounter_data = response["disk_encounter"]
             status = encounter_data.status

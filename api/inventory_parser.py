@@ -58,11 +58,10 @@ class InventoryParser(JSONEncodable):
                 item = item.get("deleted_item", {})
                 for type in item:
                     if type == "pokemon_id":
-                        print("before " + str(len(self.pokemon)))
-                        self.pokemon = [p for p in self.pokemon if p.pokemon_id != item["pokemon_id"]]
-                        print("after " + str(len(self.pokemon)))
+                        self.pokemon = [p for p in self.pokemon if p.unique_id != item["pokemon_id"]]
                     else:
-                        print("ERROR, unhadle deletion of " + type)
+                        print("ERROR: unhandled deletion of " + type)
+                        print(item)
 
         del self.items["count"]
         self.items["count"] = sum(self.items.values())

@@ -89,8 +89,6 @@ class StateManager(object):
         full_inventory = self.current_state.get("full_inventory", InventoryParser())
         full_inventory.update(response)
 
-        print(response)
-
         new_state = {
             "full_inventory": full_inventory,
             "inventory": full_inventory.items,
@@ -107,8 +105,6 @@ class StateManager(object):
             current_player = Player()
         current_player.update_get_inventory_stats(response)
         new_state["player"] = current_player
-
-        # TODO: detect player level change
 
         self._update_state(new_state)
 

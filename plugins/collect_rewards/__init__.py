@@ -36,36 +36,36 @@ class CollectRewards(Plugin):
         player = data._player
 
         # store it locally
-        CollectRewards.xp_current = int(player.experience)
-        CollectRewards.xp_next_level = int(player.next_level_xp)
-        CollectRewards.xp_to_next_level = int(player.next_level_xp) - int(player.experience)
-        CollectRewards.level_current = int(player.level)
+        self.xp_current = int(player.experience)
+        self.xp_next_level = int(player.next_level_xp)
+        self.xp_to_next_level = int(player.next_level_xp) - int(player.experience)
+        self.level_current = int(player.level)
 
         # check for rewards on startup
-        if CollectRewards.level_previous is None:
+        if self.level_previous is None:
             # try to claim rewards
             self._claim_levelup_reward()
 
         # check for level up
-        if int(player.level) > CollectRewards.level_previous:
+        if int(player.level) > self.level_previous:
             # try to claim rewards
             self._claim_levelup_reward()
 
     def _claim_levelup_reward(self):
         fire_event = False
         # level up notice
-        if CollectRewards.level_previous is None:
+        if self.level_previous is None:
             self.log('Running initial reward check ...', color='yellow')
         else:
-            self.log('Congratulations! You have reached level {}'.format(CollectRewards.level_current), color='green')
+            self.log('Congratulations! You have reached level {}'.format(self.level_current), color='green')
             fire_event = True
 
         # set previous level to current level
-        CollectRewards.level_previous = CollectRewards.level_current
+        self.level_previous = self.level_current
 
         # api call - request the rewards
         # Example : {'items_awarded': [{'item_id': 1, 'item_count': 15}, {'item_id': 1, 'item_count': 15}], 'result': 1}
-        response_dict = self.api_wrapper.level_up_rewards(level=CollectRewards.level_current)
+        response_dict = self.api_wrapper.level_up_rewards(level=self.level_current)
         reward_dict = response_dict['LEVEL_UP_REWARDS']
 
         # check if there is a reward to give out
@@ -83,4 +83,4 @@ class CollectRewards(Plugin):
 
         # fire event
         if fire_event:
-            self.event_manager.fire('player_level_up', level=CollectRewards.level_current)
+            self.event_manager.fire('player_level_up', level=self.level_current)
