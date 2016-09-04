@@ -95,18 +95,12 @@ class PoGoApi(object):
                 print("[API] Failed to login after 10 tries, exiting.")
                 exit(1)
 
-        # See which methods are uncached
-        # If all methods are cached and do not invalidate any states, we can just return current state
-        uncached_method_keys = self.state.filter_cached_methods(method_keys) if ignore_cache is False else method_keys
-        if len(uncached_method_keys) == 0:
-            return self.state.get_state()
-
         for _ in range(10):
 
             request = self._api.create_request()
 
             # build the request
-            for method in uncached_method_keys:
+            for method in method_keys:
                 my_args, my_kwargs = methods[method]
                 getattr(request, method)(*my_args, **my_kwargs)
 
@@ -146,10 +140,8 @@ class PoGoApi(object):
                     continue
 
                 # status code 1: success
-                with open('api-test.txt', 'w') as outfile:
+                with open('api-last.txt', 'w') as outfile:
                     outfile.write(str(results))
-
-                self.state.mark_stale(uncached_method_keys)
 
                 # Transform our responses and return our current state
                 responses = results.get("responses", {})

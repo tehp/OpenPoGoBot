@@ -22,7 +22,7 @@ class Player(JSONEncodable):
         self.next_level_xp = 0
         self.prev_level_xp = 0
         self.experience = 0
-        self.level = 1
+        self.level = 0
         self.hatched_eggs = []
 
     def update_hatched_eggs(self, data):

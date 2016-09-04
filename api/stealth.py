@@ -53,18 +53,13 @@ class StealthApi(object):
         self.download_settings_hash = response_dict["download_settings"]["hash"]
 
         self.api_wrapper.get_asset_digest(plateform=self.plateform, app_version=self.version)
-        self.api_wrapper.get_inventory()
-        self.api_wrapper.check_challenge()
-        self.api_wrapper.check_awarded_badges()
-        self.api_wrapper.download_settings()
-        self.api_wrapper.get_hatched_eggs()
+        self.always()
         self.api_wrapper.call()
 
         self.get_item_templates(item_template_update)
 
     def always(self):
         last_inventory_timestamp = self.state.get("inventory_timestamp", 0)
-        last_inventory_timestamp = 0 # for now
 
         self.api_wrapper.check_challenge()
         self.api_wrapper.get_hatched_eggs()

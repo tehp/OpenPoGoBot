@@ -39,82 +39,12 @@ class StateManager(object):
             "LEVEL_UP_REWARDS": self._identity
         }
 
-        # Maps methods to the state objects that they refresh.
-        # Used for caching.
-        self.method_returns_states = {
-            "GET_PLAYER": ["player"],
-            "GET_INVENTORY": ["player", "inventory", "pokemon", "pokedex", "candy", "eggs"],
-            "USE_ITEM_EGG_INCUBATOR": ["egg_incubators"],
-            "GET_HATCHED_EGGS": [],
-            "CHECK_AWARDED_BADGES": ["CHECK_AWARDED_BADGES"],
-            "CHECK_CHALLENGE": ["CHECK_CHALLENGE"],
-            "DOWNLOAD_SETTINGS": ["DOWNLOAD_SETTINGS"],
-            "DOWNLOAD_REMOTE_CONFIG_VERSION": ["DOWNLOAD_REMOTE_CONFIG_VERSION"],
-            "GET_ASSET_DIGEST": ["GET_ASSET_DIGEST"],
-            "GET_MAP_OBJECTS": ["worldmap"],
-            "ENCOUNTER": ["encounter"],
-            "DISK_ENCOUNTER": [],
-            "RELEASE_POKEMON": [],
-            "PLAYER_UPDATE": [],
-            "FORT_DETAILS": ["fort"],
-            "FORT_SEARCH": ["FORT_SEARCH"],
-            "RECYCLE_INVENTORY_ITEM": [],
-            "EVOLVE_POKEMON": ["evolution"],
-            "DOWNLOAD_ITEM_TEMPLATES": ["DOWNLOAD_ITEM_TEMPLATES"],
-            "SET_FAVORITE_POKEMON": ["SET_FAVORITE_POKEMON"],
-            "LEVEL_UP_REWARDS": []
-        }
-
-        # Maps methods to the state objects that they invalidate.
-        # (ie. require another API call to get the correct data)
-        # If a method needs to always be called, ensure that it
-        # mutates at least one state.
-        # Used for caching.
-        self.method_mutates_states = {
-            "GET_PLAYER": ["GET_PLAYER"],
-            "GET_INVENTORY": [],
-            "USE_ITEM_EGG_INCUBATOR": ["egg_incubators"],
-            "GET_HATCHED_EGGS": ["GET_HATCHED_EGGS"],
-            "CHECK_AWARDED_BADGES": ["CHECK_AWARDED_BADGES"],
-            "CHECK_CHALLENGE": ["CHECK_CHALLENGE"],
-            "DOWNLOAD_SETTINGS": ["DOWNLOAD_SETTINGS"],
-            "DOWNLOAD_REMOTE_CONFIG_VERSION": ["DOWNLOAD_REMOTE_CONFIG_VERSION"],
-            "GET_ASSET_DIGEST": ["GET_ASSET_DIGEST"],
-            "GET_MAP_OBJECTS": ["worldmap"],
-            "ENCOUNTER": ["encounter", "player", "pokedex"],
-            "DISK_ENCOUNTER": ["encounter"],
-            "RELEASE_POKEMON": ["pokemon", "candy"],
-            "CATCH_POKEMON": ["encounter", "player", "pokemon", "pokedex", "candy", "inventory"],
-            "PLAYER_UPDATE": ["player", "inventory"],
-            "FORT_DETAILS": ["fort"],
-            "FORT_SEARCH": ["player", "inventory", "eggs"],
-            "RECYCLE_INVENTORY_ITEM": ["inventory"],
-            "EVOLVE_POKEMON": ["player", "inventory", "pokemon", "pokedex", "candy"],
-            "DOWNLOAD_ITEM_TEMPLATES": [],
-            "SET_FAVORITE_POKEMON": ["pokemon"],
-            "LEVEL_UP_REWARDS": ["inventory"]
-        }
-
         self.current_state = {}
 
         self.staleness = {}
 
     def _noop(self, *args, **kwargs):
         pass
-
-    def is_stale(self, key):
-        return self.staleness.get(key, True)
-
-    # Check whether a method is cached or if it needs to be updated.
-    def is_method_cached(self, method):
-        return False
-
-    # Filter the list of methods so that only uncached methods (or methods that will become
-    # uncached) and state-invalidating methods will be called. Note that the order is
-    # important - calling GET_INVENTORY before FORT_SEARCH, for example, will return the cached
-    # and now invalidated inventory object. To fix, call FORT_SEARCH and then GET_INVENTORY.
-    def filter_cached_methods(self, method_keys):
-        return method_keys
 
     # Update a state object and mark it as valid.
     def _update_state(self, data):
@@ -134,18 +64,6 @@ class StateManager(object):
         for key in keys:
             return_object[key] = self.current_state.get(key, None)
         return self.current_state
-
-    # Mark the states affected by the given methods as invalid/stale.
-    def mark_stale(self, methods):
-        for method in methods:
-            for state in self.method_mutates_states[method]:
-                self.staleness[state] = True
-
-    # Mark the states returned by the given methods as invalid/stale.
-    def mark_returned_stale(self, methods):
-        for method in methods:
-            for state in self.method_returns_states[method]:
-                self.staleness[state] = True
 
     # Transform the returned data from the server into data objects and
     # then update the current state.
@@ -168,24 +86,29 @@ class StateManager(object):
         self._update_state({"player": current_player})
 
     def _parse_inventory(self, key, response):
-        new_inventory = InventoryParser(response)
+        full_inventory = self.current_state.get("full_inventory", InventoryParser())
+        full_inventory.update(response)
+
+        print(response)
 
         new_state = {
-            "inventory": new_inventory.items,
-            "pokedex": new_inventory.pokedex_entries,
-            "candy": new_inventory.candy,
-            "pokemon": new_inventory.pokemon,
-            "eggs": new_inventory.eggs,
-            "egg_incubators": new_inventory.egg_incubators
+            "full_inventory": full_inventory,
+            "inventory": full_inventory.items,
+            "pokedex": full_inventory.pokedex_entries,
+            "candy": full_inventory.candy,
+            "pokemon": full_inventory.pokemon,
+            "eggs": full_inventory.eggs,
+            "egg_incubators": full_inventory.egg_incubators,
+            "inventory_timestamp": full_inventory.last_updated
         }
-
-        new_state["inventory_timestamp"] = new_inventory.last_updated
 
         current_player = self.current_state.get("player", None)
         if current_player is None:
             current_player = Player()
         current_player.update_get_inventory_stats(response)
         new_state["player"] = current_player
+
+        # TODO: detect player level change
 
         self._update_state(new_state)
 
