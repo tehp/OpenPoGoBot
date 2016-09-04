@@ -43,3 +43,6 @@ encrypt.dll
 *.o
 encrypt.c
 data/item_templates.json
+
+# Logs
+logs

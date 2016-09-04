@@ -9,6 +9,8 @@ from .encounter import Encounter
 from .item import Incubator
 from .exceptions import AccountBannedException
 
+import logging
+
 class StateManager(object):
     def __init__(self):
 
@@ -43,6 +45,7 @@ class StateManager(object):
 
         self.staleness = {}
 
+
     def _noop(self, *args, **kwargs):
         pass
 
@@ -71,11 +74,13 @@ class StateManager(object):
         if key not in self.response_map:
             print(response)
             print("Unimplemented response " + key)
+            logging.error("Unimplemented response " + key)
         self.response_map[key](key, response)
 
     def _verify_challenge(self, key, response):
         if response["challenge_url"] != " ":
-            print(response["challenge_url"])
+            logging.error("Challenge URL: %s", response["challenge_url"])
+            print("ERROR Challenge:" + response["challenge_url"])
             raise AccountBannedException()
 
     def _parse_player(self, key, response):

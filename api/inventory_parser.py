@@ -1,3 +1,5 @@
+import logging
+
 from .json_encodable import JSONEncodable
 from .pokemon import Egg, Pokemon
 from .item import Incubator
@@ -60,6 +62,8 @@ class InventoryParser(JSONEncodable):
                     if type == "pokemon_id":
                         self.pokemon = [p for p in self.pokemon if p.unique_id != item["pokemon_id"]]
                     else:
+                        logging.error("deleted_item not handled: %s", type)
+                        logging.info("item: %s", item)
                         print("ERROR: unhandled deletion of " + type)
                         print(item)
 

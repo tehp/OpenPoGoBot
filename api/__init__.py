@@ -1,6 +1,7 @@
 from __future__ import print_function
 import time
 import random
+import logging
 import jsonpickle
 
 from six import integer_types  # type: ignore
@@ -102,6 +103,7 @@ class PoGoApi(object):
             # build the request
             for method in method_keys:
                 my_args, my_kwargs = methods[method]
+                logging.debug("%s(%s)", method, my_kwargs)
                 getattr(request, method)(*my_args, **my_kwargs)
 
             # random request delay to prevent status code 52: too many requests

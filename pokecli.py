@@ -30,6 +30,8 @@ from __future__ import print_function
 import os
 import ssl
 import sys
+import logging
+import datetime
 
 import colorama
 
@@ -41,6 +43,12 @@ if sys.version_info >= (2, 7, 9):
     # pylint: disable=protected-access
     ssl._create_default_https_context = ssl._create_unverified_context  # type: ignore
 
+# Temp logging to detect issue
+if not os.path.exists("logs"):
+    os.makedirs("logs")
+elif os.path.exists("logs/debug.log"):
+    os.rename("logs/debug.log", "logs/debug.%s.log" % datetime.datetime.now().strftime("%Y%m%d%H%M%S"))
+logging.basicConfig(filename='logs/debug.log',level=logging.DEBUG, format=u"[%(asctime)s] %(levelname)-8s %(message)s")
 
 def init_config():
     config_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'config', 'config.yml')
