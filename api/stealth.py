@@ -116,9 +116,9 @@ class StealthApi(object):
 
     def disk_encounter(self, encounter_id, fort_id, player_latitude, player_longitude):
         self.api_wrapper.disk_encounter(encounter_id=encounter_id,
-                                   fort_id=fort_id,
-                                   player_latitude=player_latitude,
-                                   player_longitude=player_longitude)
+                                        fort_id=fort_id,
+                                        player_latitude=player_latitude,
+                                        player_longitude=player_longitude)
         self.always()
         return self.api_wrapper.call()
 
