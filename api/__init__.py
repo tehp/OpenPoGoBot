@@ -38,9 +38,9 @@ class PoGoApi(object):
         self._pending_calls = {}
         self._pending_calls_keys = []
 
-        api.set_proxy({
-            'https://pgorelease.nianticlabs.com': "http://localhost:61221"
-        })
+        # api.set_proxy({
+        #     'https://pgorelease.nianticlabs.com': "http://localhost:61221"
+        # })
 
         self._api.activate_signature(shared_lib)
 
