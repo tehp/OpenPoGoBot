@@ -38,17 +38,22 @@ class PoGoApi(object):
         self._pending_calls = {}
         self._pending_calls_keys = []
 
+        api.set_proxy({
+            'https://pgorelease.nianticlabs.com': "http://localhost:61221"
+        })
+
         self._api.activate_signature(shared_lib)
 
     def get_api(self):
         return self._api
 
     def login(self):
-        try:
-            provider, username, password = self.provider, self.username, self.password
-            return self._api.login(provider, username, password, app_simulation=False)
-        except TypeError:
-            return False
+        self._api.set_authentication(self.provider, username=self.username, password=self.password)
+        request = self._api.create_request()
+        request.get_player(player_locale={'country':"EN", 'language':"us"})
+        request.check_challenge()
+        response = request.call()
+        return True if response else None
 
     def set_position(self, lat, lng, alt):
         self._api.set_position(lat, lng, alt)
@@ -58,9 +63,6 @@ class PoGoApi(object):
 
     def get_queued_methods(self):
         return self._api.list_curr_methods()
-
-    def get_player_cache(self):
-        return self.state.current_state.get("player", None)
 
     # Lazily queue RPC functions to be called. These will be filtered later.
     def __getattr__(self, func):

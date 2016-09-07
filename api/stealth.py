@@ -9,6 +9,7 @@ from six import integer_types  # type: ignore
 
 from pgoapi.exceptions import ServerSideRequestThrottlingException, ServerSideAccessForbiddenException, \
     UnexpectedResponseException  # type: ignore
+from POGOProtos.Enums import Platform_pb2
 
 from app import kernel
 from .state_manager import StateManager
@@ -23,11 +24,8 @@ class StealthApi(object):
 
         self.download_settings_hash = None
 
-        self.plateform = "android"
+        self.platform = Platform_pb2.ANDROID
         self.version = 3500
-
-    def login(self):
-        return self.api_wrapper.login()
 
     def set_position(self, lat, lng, alt):
         self.api_wrapper.set_position(lat, lng, alt)
@@ -35,24 +33,23 @@ class StealthApi(object):
     def get_position(self):
         return self.api_wrapper.get_position()
 
+    def login(self):
+        return self.api_wrapper.login()
+
     def init(self):
         # mimic app
-        self.api_wrapper.get_player(player_locale={'country':"EN", 'language':"us"})
+        self.api_wrapper.download_remote_config_version(platform=self.platform, app_version=self.version)
         self.api_wrapper.check_challenge()
-        self.api_wrapper.call()
-
-        self.api_wrapper.download_remote_config_version(plateform=self.plateform, app_version=self.version)
+        self.api_wrapper.get_hatched_eggs()
         self.api_wrapper.get_inventory()
         self.api_wrapper.check_awarded_badges()
         self.api_wrapper.download_settings()
-        self.api_wrapper.check_challenge()
-        self.api_wrapper.get_hatched_eggs()
         response_dict = self.api_wrapper.call()
         item_template_update = response_dict["DOWNLOAD_REMOTE_CONFIG_VERSION"]["item_templates_timestamp_ms"]
 
         self.download_settings_hash = response_dict["download_settings"]["hash"]
 
-        self.api_wrapper.get_asset_digest(plateform=self.plateform, app_version=self.version)
+        self.api_wrapper.get_asset_digest(platform=self.platform, app_version=self.version)
         self.always()
         self.api_wrapper.call()
 
